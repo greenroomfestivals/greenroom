@@ -5,7 +5,10 @@ import type { ReactNode } from "react";
 import { FestivalProvider } from "@/components/festival/FestivalContext";
 import { ParticipantNavbar } from "@/components/participant/ParticipantNavbar";
 import { CustomDomainProvider } from "@/components/providers/custom-domain-provider";
-import { isCloudinaryUrl, resizeCloudinaryImage } from "@/core/integrations/cloudinary-transform";
+import {
+  isCloudinaryUrl,
+  resizeCloudinaryImage,
+} from "@/core/integrations/cloudinary-transform";
 import type { ProgrammeStatus } from "@/core/types/app-enums";
 import { isFestivalExpired } from "@/features/festivals/lib/festival-expiry";
 import { findFestivalBySlug } from "@/features/festivals/repositories/festival.repository";
@@ -32,10 +35,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const festival = await findFestivalBySlug(slug);
   if (!festival) return {};
-  
+
   const branding = getBrandingFromJson(festival.branding);
   const fallbackColor = branding?.colors?.primary || "#d72626";
-  const initials = ((festival.name || "GR").substring(0, 2)).toUpperCase();
+  const initials = (festival.name || "GR").substring(0, 2).toUpperCase();
   const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${fallbackColor}"/><text x="50" y="54" font-family="sans-serif" font-weight="bold" font-size="45" fill="white" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`;
   const fallbackIcon = `data:image/svg+xml;base64,${Buffer.from(fallbackSvg).toString("base64")}`;
 

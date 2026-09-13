@@ -1,4 +1,5 @@
 import { inArray } from "drizzle-orm";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 // Removed unused breadcrumb imports
@@ -23,8 +24,14 @@ import { getSession } from "@/core/auth/session";
 import { db } from "@/core/database/client";
 import { stage as stageTable } from "@/core/database/schema";
 import { MS, serverNowMs } from "@/core/datetime/server";
+import {
+  isCloudinaryUrl,
+  resizeCloudinaryImage,
+} from "@/core/integrations/cloudinary-transform";
+import { findFestivalBySlug } from "@/features/festivals/repositories/festival.repository";
 import { getFestivalContext } from "@/features/festivals/services/festival-context.service";
 import { getDerivedFestivalStatus } from "@/features/festivals/services/festival-status.service";
+import { getBrandingFromJson } from "@/features/festivals/types/festival.types";
 import { getInAppBannerState } from "@/features/notifications/services/in-app-banner.service";
 import { loadFeatureOverrides } from "@/features/plan-features/services/plan-features.service";
 import { getResolvedTier } from "@/features/plan-features/services/tier";
@@ -35,10 +42,6 @@ import {
 import { getActiveRoleCookie } from "@/features/role-switch/role-switch-cookie.server";
 import { StageAssignmentService } from "@/features/stages/services/stage-assignment.service";
 import { getStageFilterCookie } from "@/features/stages/stage-filter-cookie.server";
-import type { Metadata } from "next";
-import { findFestivalBySlug } from "@/features/festivals/repositories/festival.repository";
-import { getBrandingFromJson } from "@/features/festivals/types/festival.types";
-import { isCloudinaryUrl, resizeCloudinaryImage } from "@/core/integrations/cloudinary-transform";
 
 export async function generateMetadata({
   params,
@@ -51,7 +54,7 @@ export async function generateMetadata({
 
   const branding = getBrandingFromJson(festival.branding);
   const fallbackColor = branding?.colors?.primary || "#d72626";
-  const initials = ((festival.name || "GR").substring(0, 2)).toUpperCase();
+  const initials = (festival.name || "GR").substring(0, 2).toUpperCase();
   const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${fallbackColor}"/><text x="50" y="54" font-family="sans-serif" font-weight="bold" font-size="45" fill="white" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`;
   const fallbackIcon = `data:image/svg+xml;base64,${Buffer.from(fallbackSvg).toString("base64")}`;
 

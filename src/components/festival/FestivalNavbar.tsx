@@ -127,10 +127,16 @@ export function FestivalNavbar({
         <div className="hidden shrink-0 items-center md:flex">
           {!expired && (
             <Link
-              href={hasParticipantSession && participantSlug ? `${linkBase}/${participantSlug}/dashboard` : `${linkBase}/login`}
+              href={
+                hasParticipantSession && participantSlug
+                  ? `${linkBase}/${participantSlug}/dashboard`
+                  : `${linkBase}/login`
+              }
               className="text-sm font-medium text-primary transition-opacity hover:opacity-70"
             >
-              {hasParticipantSession && participantSlug ? "Dashboard" : "Participant login"}
+              {hasParticipantSession && participantSlug
+                ? "Dashboard"
+                : "Participant login"}
             </Link>
           )}
         </div>
@@ -180,11 +186,17 @@ export function FestivalNavbar({
                 })}
                 {!expired && (
                   <Link
-                    href={hasParticipantSession && participantSlug ? `${linkBase}/${participantSlug}/dashboard` : `${linkBase}/login`}
+                    href={
+                      hasParticipantSession && participantSlug
+                        ? `${linkBase}/${participantSlug}/dashboard`
+                        : `${linkBase}/login`
+                    }
                     onClick={() => setIsOpen(false)}
                     className="block py-3 text-[15px] font-medium text-primary"
                   >
-                    {hasParticipantSession && participantSlug ? "Dashboard" : "Participant login"}
+                    {hasParticipantSession && participantSlug
+                      ? "Dashboard"
+                      : "Participant login"}
                   </Link>
                 )}
               </nav>

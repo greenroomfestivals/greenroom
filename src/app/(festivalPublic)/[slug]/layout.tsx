@@ -361,10 +361,15 @@ export default async function FestivalLayout({
     "@graph": jsonLdGraph,
   };
 
-  const { getParticipantSessionFromCookie } = await import("@/core/auth/participant-session");
+  const { getParticipantSessionFromCookie } = await import(
+    "@/core/auth/participant-session"
+  );
   const participantSession = await getParticipantSessionFromCookie();
-  const hasParticipantSession = !!participantSession && participantSession.festivalId === festival.id;
-  const participantSlug = hasParticipantSession ? participantSession.participant.profileSlug : null;
+  const hasParticipantSession =
+    !!participantSession && participantSession.festivalId === festival.id;
+  const participantSlug = hasParticipantSession
+    ? participantSession.participant.profileSlug
+    : null;
 
   return (
     <CustomDomainProvider customDomain={customDomain}>

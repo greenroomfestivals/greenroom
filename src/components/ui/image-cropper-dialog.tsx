@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
 import { ZoomIn, ZoomOut } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import Cropper from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,7 +32,7 @@ export function ImageCropperDialog({
     (croppedArea: any, croppedAreaPixels: any) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
-    []
+    [],
   );
 
   const handleConfirm = async () => {
@@ -56,12 +56,13 @@ export function ImageCropperDialog({
         <DialogHeader>
           <DialogTitle>Crop Logo</DialogTitle>
         </DialogHeader>
-        <div 
+        <div
           className="relative w-full h-[350px] rounded-lg overflow-hidden border"
           style={{
-            backgroundImage: "repeating-linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb), repeating-linear-gradient(45deg, #e5e7eb 25%, #ffffff 25%, #ffffff 75%, #e5e7eb 75%, #e5e7eb)",
+            backgroundImage:
+              "repeating-linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb), repeating-linear-gradient(45deg, #e5e7eb 25%, #ffffff 25%, #ffffff 75%, #e5e7eb 75%, #e5e7eb)",
             backgroundPosition: "0 0, 10px 10px",
-            backgroundSize: "20px 20px"
+            backgroundSize: "20px 20px",
           }}
         >
           {imageSrc && (

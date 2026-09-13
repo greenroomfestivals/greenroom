@@ -3,17 +3,27 @@
 import {
   CheckCircle2,
   Circle,
+  Maximize,
   MessageSquare,
   MessageSquarePlus,
+  Minimize,
   UserRound,
   Users2,
   UserX,
-  Maximize,
-  Minimize,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useMarkCodeLetterAbsence } from "@/api/client/server-actions";
 import { StatusPill } from "@/components/app/AppSection";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -42,6 +52,7 @@ import {
 } from "@/features/judgement/actions/judgement.actions";
 import { compareCodeLetters } from "@/features/programmes/services/scratch-code-plan";
 import { toast } from "@/lib/toast";
+import { FloatingLauncher, ScratchpadOverlay } from "./scratchpad";
 
 function AbsentToggle({
   isAbsent,
@@ -540,7 +551,9 @@ export function StagePortalScoringClient({
     "complete",
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
-  
+  const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -924,26 +937,56 @@ export function StagePortalScoringClient({
 
   if (submissionPhase === "review") {
     return (
-      <SubmissionReviewView
-        stageName={stageName}
-        programmeName={payload.programme.name}
-        categoryName={payload.programme.categoryName}
-        judgingMode={payload.judgingMode}
-        judges={reviewJudges}
-        codeLetters={activeCodeLetters}
-        scoresByKey={scoresByKey}
-        remarksByKey={remarksByKey}
-        onRemarkChange={onRemarkChange}
-        policyRows={reviewPolicyRows}
-        isPending={isPending}
-        submitError={submitError}
-        onEdit={() => {
-          setSubmissionPhase("idle");
-          setSubmitError(null);
-          setReviewPolicyRows([]);
-        }}
-        onConfirm={onConfirmSubmit}
-      />
+      <>
+        <SubmissionReviewView
+          stageName={stageName}
+          programmeName={payload.programme.name}
+          categoryName={payload.programme.categoryName}
+          judgingMode={payload.judgingMode}
+          judges={reviewJudges}
+          codeLetters={activeCodeLetters}
+          scoresByKey={scoresByKey}
+          remarksByKey={remarksByKey}
+          onRemarkChange={onRemarkChange}
+          policyRows={reviewPolicyRows}
+          isPending={isPending}
+          submitError={submitError}
+          onEdit={() => {
+            setSubmissionPhase("idle");
+            setSubmitError(null);
+            setReviewPolicyRows([]);
+          }}
+          onConfirm={() => setShowConfirmDialog(true)}
+        />
+
+        <AlertDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Complete judging?</AlertDialogTitle>
+              <AlertDialogDescription>
+                All scores will be submitted. Your scratchpad will be locked and
+                become read-only until you leave this judging session.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowConfirmDialog(false);
+                  onConfirmSubmit();
+                }}
+                disabled={isPending}
+              >
+                Complete Judging
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
 
@@ -1289,15 +1332,20 @@ export function StagePortalScoringClient({
           <div className="flex gap-2">
             <Button
               variant="outline"
-              size="icon"
-              className="h-11 w-11 shrink-0 rounded-full"
+              className="h-11 shrink-0 rounded-full gap-2 px-4"
               onClick={toggleFullscreen}
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
               {isFullscreen ? (
-                <Minimize className="h-5 w-5" />
+                <>
+                  <Minimize className="h-4 w-4" />
+                  <span className="hidden sm:inline">Exit Fullscreen</span>
+                </>
               ) : (
-                <Maximize className="h-5 w-5" />
+                <>
+                  <Maximize className="h-4 w-4" />
+                  <span className="hidden sm:inline">⛶ Fullscreen</span>
+                </>
               )}
             </Button>
             <Button
@@ -1328,6 +1376,21 @@ export function StagePortalScoringClient({
           </div>
         </div>
       </StickyBar>
+
+      {!isScratchpadOpen && (
+        <FloatingLauncher onClick={() => setIsScratchpadOpen(true)} />
+      )}
+
+      {isScratchpadOpen && (
+        <ScratchpadOverlay
+          configId={payload.configId}
+          programmeId={payload.programme.id}
+          judgeMode={payload.judgingMode}
+          judgeId={selectedJudgeId}
+          isReadOnly={selectedJudgeAlreadySubmitted}
+          onClose={() => setIsScratchpadOpen(false)}
+        />
+      )}
     </div>
   );
 }

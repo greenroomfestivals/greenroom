@@ -506,7 +506,8 @@ export async function updateFestivalBrandingAction(data: {
     };
 
     const previousLogo = typeof current.logo === "string" ? current.logo : null;
-    const nextLogo = typeof nextBranding.logo === "string" ? nextBranding.logo : null;
+    const nextLogo =
+      typeof nextBranding.logo === "string" ? nextBranding.logo : null;
 
     await StorageBackedFieldService.mutateSingleUrl({
       festivalId: festival.id,

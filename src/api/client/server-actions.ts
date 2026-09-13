@@ -72,10 +72,7 @@ import { useInlineErrorMutation } from "./useInlineErrorMutation";
 
 export function useStagePortalLogin() {
   return useInlineErrorMutation({
-    mutationFn: async (input: {
-      festivalSlug: string;
-      pin: string;
-    }) => {
+    mutationFn: async (input: { festivalSlug: string; pin: string }) => {
       return getStagePortalLoginAction(input);
     },
     meta: { requireInlineError: true, errorScope: "stage-portal-login" },

@@ -20,10 +20,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { cn } from "@/core/utils/cn";
 import { updateFestivalBrandingAction } from "@/features/festivals/actions/festival-crud.actions";
 import { toast } from "@/lib/toast";
-import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 
 interface VisualIdentityDialogProps {
   festival: {
@@ -102,7 +102,7 @@ export function VisualIdentityDialog({
       toast.error(msg);
       return;
     }
-    
+
     // For SVG, we might not want to crop, but assuming we do or it's rasterized.
     const url = URL.createObjectURL(file);
     setCropImageSrc(url);
@@ -205,9 +205,13 @@ export function VisualIdentityDialog({
 
           <div className="space-y-4 text-center sm:text-left flex-1 py-2">
             <div className="space-y-1.5">
-              <h4 className="font-semibold text-foreground text-lg">Festival Logo</h4>
+              <h4 className="font-semibold text-foreground text-lg">
+                Festival Logo
+              </h4>
               <p className="text-sm text-muted-foreground">
-                Recommended: Square image (512x512px).<br className="hidden sm:block" /> Supports PNG, JPG, or SVG up to 1MB.
+                Recommended: Square image (512x512px).
+                <br className="hidden sm:block" /> Supports PNG, JPG, or SVG up
+                to 1MB.
               </p>
             </div>
 
