@@ -106,6 +106,7 @@ export function CheckpointSessionsClient({
         id: selectedSession.id,
         name: selectedSession.name,
         checkpointName: selectedSession.checkpointName,
+        sessionDate: selectedSession.sessionDate,
         windowStartMin: selectedSession.windowStartMin,
         windowEndMin: selectedSession.windowEndMin,
         status: selectedSession.status,

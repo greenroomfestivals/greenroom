@@ -1,9 +1,16 @@
 "use client";
 
 import { format } from "date-fns";
-import { AlertCircle, Camera, Loader2, Lock, ScanLine } from "lucide-react";
+import {
+  AlertCircle,
+  Camera,
+  Copy,
+  Loader2,
+  Lock,
+  ScanLine,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { QrScanner } from "@/components/festival/event-works/programme-reporting/QrScanner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/core/utils/cn";
 import { useLiveChannel } from "@/hooks/use-live-channel";
+import { toast } from "@/lib/toast";
 import {
   getRosterAction,
   getSessionScansAction,
@@ -40,6 +48,8 @@ export interface CheckpointSessionView {
   id: string;
   name: string;
   checkpointName: string;
+  /** ISO date (YYYY-MM-DD) the session runs on. */
+  sessionDate: string;
   windowStartMin: number | null;
   windowEndMin: number | null;
   status: "OPEN" | "CLOSED";
@@ -127,22 +137,16 @@ export function CheckpointScanner({
       groupId: groupId !== "all" ? groupId : undefined,
       categoryId: categoryId !== "all" ? categoryId : undefined,
     };
-    if (view === "scanned") {
-      const res = await getSessionScansAction({
-        sessionId: session.id,
-        ...filterArgs,
-      });
-      if (res.success) setScans(res.scans);
-    } else {
-      const res = await getRosterAction({
-        festivalId,
-        sessionId: session.id,
-        ...filterArgs,
-      });
-      if (res.success) setRoster(res.roster);
-    }
+    // Load BOTH lists in parallel so the inline tab counts and the Copy button
+    // are accurate regardless of which tab is active.
+    const [scansRes, rosterRes] = await Promise.all([
+      getSessionScansAction({ sessionId: session.id, ...filterArgs }),
+      getRosterAction({ festivalId, sessionId: session.id, ...filterArgs }),
+    ]);
+    if (scansRes.success) setScans(scansRes.scans);
+    if (rosterRes.success) setRoster(rosterRes.roster);
     setLoading(false);
-  }, [festivalId, session.id, view, groupId, categoryId]);
+  }, [festivalId, session.id, groupId, categoryId]);
 
   useEffect(() => {
     void fetchData();
@@ -205,7 +209,93 @@ export function CheckpointScanner({
   }, [festivalId, session.id, status]);
 
   const absentList = roster.filter((r) => !r.present);
-  const presentCount = roster.length - absentList.length;
+  const presentList = roster.filter((r) => r.present);
+  const presentCount = presentList.length;
+  const absentCount = absentList.length;
+
+  /**
+   * Build a plain-text attendance summary for WhatsApp / SMS paste.
+   *
+   * Heading:  `Attendance · 10:22 · Sep 13, Friday`
+   *           (current time + the session date with weekday)
+   *
+   * Each section (`Present` / `Absent`) lists one participant per 4-line
+   * block — chest, category, name, group. Absent blocks prefix lines 2–4
+   * with ` │   ` so WhatsApp renders them as a quote/indent, visually
+   * separating present from absent. Filters are honoured: when the manager
+   * has filtered by Group or Category, only those rows are included.
+   */
+  const attendanceText = useMemo(() => {
+    const presentBlock = (row: {
+      chestNumber: string | null;
+      categoryName: string | null;
+      participantName: string;
+      groupName: string | null;
+    }) => {
+      const lines: string[] = [];
+      if (row.chestNumber) lines.push(row.chestNumber);
+      lines.push(row.categoryName ?? "");
+      lines.push(row.participantName);
+      lines.push(row.groupName ?? "");
+      return lines.join("\n");
+    };
+
+    const absentBlock = (row: {
+      chestNumber: string | null;
+      categoryName: string | null;
+      participantName: string;
+      groupName: string | null;
+    }) => {
+      const lines: string[] = [];
+      if (row.chestNumber) lines.push(row.chestNumber);
+      const indent = " │   ";
+      lines.push(`${indent}${row.categoryName ?? ""}`);
+      lines.push(`${indent}${row.participantName}`);
+      lines.push(`${indent}${row.groupName ?? ""}`);
+      return lines.join("\n");
+    };
+
+    const now = format(new Date(), "HH:mm");
+    // session.sessionDate is expected to be a `YYYY-MM-DD` string. Fall back
+    // to today's date if a future build drops it so the copy button never
+    // throws the page into a TypeError.
+    const dateParts = session.sessionDate?.split("-").map(Number) ?? [];
+    const dayLabel =
+      dateParts.length === 3 && dateParts.every((n) => Number.isFinite(n))
+        ? format(
+            new Date(dateParts[0]!, dateParts[1]! - 1, dateParts[2]!, 12, 0),
+            "MMM d, EEEE",
+          )
+        : format(new Date(), "MMM d, EEEE");
+
+    const heading = `${session.checkpointName} · ${now} · ${dayLabel}`;
+    const presentSection = presentList.length
+      ? `Present (${presentCount})\n${presentList.map(presentBlock).join("\n\n")}`
+      : `Present (0)`;
+    const absentSection = absentList.length
+      ? `Absent (${absentCount})\n${absentList.map(absentBlock).join("\n\n")}`
+      : `Absent (0)`;
+
+    return [heading, presentSection, absentSection].join("\n\n");
+  }, [
+    session.checkpointName,
+    session.sessionDate,
+    presentList,
+    absentList,
+    presentCount,
+    absentCount,
+  ]);
+
+  const handleCopyAttendance = async () => {
+    try {
+      await navigator.clipboard.writeText(attendanceText);
+      toast.success(
+        `Copied attendance — ${presentCount} present, ${absentCount} absent.`,
+      );
+    } catch {
+      toast.error("Couldn't copy. Select the text manually.");
+    }
+  };
 
   const filterControls = (
     <div className="flex flex-col sm:flex-row gap-2">
@@ -261,14 +351,39 @@ export function CheckpointScanner({
             </span>
           </DrawerTitle>
           {isScannable && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void handleCopyAttendance()}
+                disabled={presentCount === 0 && absentCount === 0}
+                aria-label="Copy attendance as text"
+                title="Copy attendance as text"
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy
+              </Button>
+              <Button
+                size="sm"
+                variant={cameraOpen ? "secondary" : "default"}
+                onClick={() => setCameraOpen((v) => !v)}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                {cameraOpen ? "Close camera" : "Open camera"}
+              </Button>
+            </div>
+          )}
+          {!isScannable && (
             <Button
               size="sm"
-              variant={cameraOpen ? "secondary" : "default"}
-              className="shrink-0"
-              onClick={() => setCameraOpen((v) => !v)}
+              variant="outline"
+              onClick={() => void handleCopyAttendance()}
+              disabled={presentCount === 0 && absentCount === 0}
+              aria-label="Copy attendance as text"
+              title="Copy attendance as text"
             >
-              <Camera className="mr-2 h-4 w-4" />
-              {cameraOpen ? "Close camera" : "Open camera"}
+              <Copy className="mr-2 h-4 w-4" />
+              Copy
             </Button>
           )}
         </div>
@@ -308,48 +423,76 @@ export function CheckpointScanner({
 
         <div className="space-y-4">
           {/* Scanned / absent toggle — full-width on mobile, inline with the
-              group/category filters on desktop. */}
+              group/category filters on desktop. Each tab carries its count
+              so the manager can see present vs absent at a glance. */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="flex w-full rounded-lg border bg-muted p-0.5 sm:w-auto">
               <button
                 type="button"
                 onClick={() => setView("scanned")}
                 className={cn(
-                  "flex-1 rounded-md px-4 py-1.5 text-sm transition-colors sm:flex-none",
+                  "flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-1.5 text-sm transition-colors sm:flex-none",
                   view === "scanned"
                     ? "bg-background font-medium shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                Scanned
+                <span>Scanned</span>
+                <span
+                  className={cn(
+                    "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums",
+                    view === "scanned"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-background text-muted-foreground",
+                  )}
+                >
+                  {loading ? "—" : scans.length}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => setView("absent")}
                 className={cn(
-                  "flex-1 rounded-md px-4 py-1.5 text-sm transition-colors sm:flex-none",
+                  "flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-1.5 text-sm transition-colors sm:flex-none",
                   view === "absent"
                     ? "bg-background font-medium shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                Absent
+                <span>Absent</span>
+                <span
+                  className={cn(
+                    "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums",
+                    view === "absent"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-background text-muted-foreground",
+                  )}
+                >
+                  {loading ? "—" : absentCount}
+                </span>
               </button>
             </div>
 
             <div className="sm:ml-auto">{filterControls}</div>
           </div>
 
-          {view === "absent" && !loading && roster.length > 0 && (
+          {!loading && roster.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {presentCount}
-              </span>{" "}
-              present ·{" "}
-              <span className="font-medium text-foreground">
-                {absentList.length}
-              </span>{" "}
-              absent
+              {view === "scanned" ? (
+                <>
+                  <span className="font-medium text-foreground">
+                    {presentCount}
+                  </span>{" "}
+                  scanned
+                </>
+              ) : (
+                <>
+                  <span className="font-medium text-foreground">
+                    {absentCount}
+                  </span>{" "}
+                  absent
+                </>
+              )}
             </p>
           )}
 
@@ -371,7 +514,6 @@ export function CheckpointScanner({
                         <TableHead>Group</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Scanned At</TableHead>
-                        <TableHead>Scanned By</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -387,9 +529,6 @@ export function CheckpointScanner({
                           <TableCell>{s.categoryName ?? "—"}</TableCell>
                           <TableCell className="text-muted-foreground whitespace-nowrap">
                             {formatScannedAt(s.scannedAt)}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {s.scannedByName ?? "—"}
                           </TableCell>
                         </TableRow>
                       ))}
