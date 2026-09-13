@@ -1,6 +1,7 @@
 "use client";
 
 import { Excalidraw, MainMenu, WelcomeScreen } from "@excalidraw/excalidraw";
+import "@excalidraw/excalidraw/index.css";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type {
   AppState,
