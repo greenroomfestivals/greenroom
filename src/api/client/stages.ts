@@ -20,15 +20,19 @@ export function useStages(festivalId: string) {
   });
 }
 
+/** Server returns `{ stage, pin }` so the freshly-minted PIN can be shown
+ *  immediately to the manager (it's hashed on disk after this point). */
+export type CreateStageResult = { stage: Stage; pin: string };
+
 export function useCreateStage() {
   const qc = useQueryClient();
   return useMutation<
-    Stage,
+    CreateStageResult,
     Error,
     { festivalId: string; data: StageDataInput }
   >({
     mutationFn: async ({ festivalId, data }) => {
-      const response = await apiClient.post<ApiResponse<Stage>>(
+      const response = await apiClient.post<ApiResponse<CreateStageResult>>(
         `/stages?festivalId=${encodeURIComponent(festivalId)}`,
         { data },
       );

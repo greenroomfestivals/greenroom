@@ -45,7 +45,13 @@ interface StageDialogProps {
   stageToEdit?: any; // or typed Stage
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  /**
+   * Called after a successful create with the new stage id and the freshly
+   * minted PIN. On update we pass `undefined` for the PIN since the dialog
+   * surface doesn't surface it. The parent uses this to auto-open the
+   * credentials dialog with the PIN pre-populated.
+   */
+  onSuccess: (result: { stageId: string; pin?: string }) => void;
 }
 
 export function StageDialog({
@@ -111,21 +117,22 @@ export function StageDialog({
           data,
         });
         toast.success("Stage updated successfully");
+        onSuccess({ stageId: stageToEdit.id });
       } else {
-        const newStage = await createStage.mutateAsync({ festivalId, data });
+        const created = await createStage.mutateAsync({ festivalId, data });
         if (selectedManagerIds.length > 0) {
           await Promise.all(
             selectedManagerIds.map((memberId) =>
               assignManager.mutateAsync({
                 festivalId,
-                data: { stageId: newStage.id, memberId },
+                data: { stageId: created.stage.id, memberId },
               }),
             ),
           );
         }
         toast.success("Stage created successfully");
+        onSuccess({ stageId: created.stage.id, pin: created.pin });
       }
-      onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       const message = error.message || "Failed to save stage";

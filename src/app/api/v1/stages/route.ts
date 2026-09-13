@@ -61,12 +61,16 @@ const handler = createProtectedHandler({
       })
       .returning();
 
-    await provisionStagePortalCredential({
+    // Provision the portal credential inside the same request so the manager
+    // can hand the freshly-minted PIN to judges from the next screen instead
+    // of having to click "Reset PIN" (which would invalidate any session
+    // already logged in with this PIN). Returns { stage, pin }.
+    const { pin } = await provisionStagePortalCredential({
       festivalId,
       stageId: newStage.id,
     });
 
-    return ok(newStage);
+    return ok({ stage: newStage, pin });
   },
 });
 

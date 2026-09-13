@@ -88,6 +88,12 @@ export function StagesClient({
   const [portalAccessStageId, setPortalAccessStageId] = useState<string | null>(
     null,
   );
+  // PIN returned by the create-stage API. Surfaced in the credentials dialog
+  // so the manager can copy it immediately without having to click Reset
+  // (which would invalidate any session already using this PIN).
+  const [pendingNewStagePin, setPendingNewStagePin] = useState<string | null>(
+    null,
+  );
   const [pendingMemberId, setPendingMemberId] = useState<string | null>(null);
   const { data: members = [] } = useMembers(festivalId);
   const { data: stageAssignments = [] } = useStageAssignments(festivalId);
@@ -413,8 +419,14 @@ export function StagesClient({
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           stageToEdit={selectedStage}
-          onSuccess={() => {
-            // Revalidation handled by server action
+          onSuccess={({ stageId, pin }) => {
+            // If the new stage came back with a fresh PIN, jump straight into
+            // the credentials dialog so the manager can copy it for judges.
+            // Revalidation is handled by the server action / useCreateStage.
+            if (pin) {
+              setPendingNewStagePin(pin);
+              setPortalAccessStageId(stageId);
+            }
           }}
         />
       )}
@@ -478,9 +490,13 @@ export function StagesClient({
         }
         open={!!portalAccessStageId}
         onOpenChange={(open) => {
-          if (!open) setPortalAccessStageId(null);
+          if (!open) {
+            setPortalAccessStageId(null);
+            setPendingNewStagePin(null);
+          }
         }}
         isReadOnly={isReadOnly}
+        initialPin={pendingNewStagePin}
       />
     </div>
   );
