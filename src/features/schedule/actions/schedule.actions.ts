@@ -1,7 +1,6 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { format } from "date-fns";
 import { and, asc, count, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { assertFestivalAccess } from "@/core/auth/assert-festival-access";
 import { getSession } from "@/core/auth/session";
@@ -122,12 +121,11 @@ async function getTimeConflictError(
         o.endTime ? parseStoredScheduleInstant(o.endTime) : null,
       )
     ) {
-      const timeStr = format(startTime, "h:mm a");
       const name = getEntryDisplayName(o);
       return {
-        prefix: `${timeStr} overlaps with `,
+        prefix: `This time overlaps with `,
         highlight: name,
-        suffix: " on this stage.  Pick another time or another stage.",
+        suffix: " on this stage. Pick another time or another stage.",
       };
     }
   }

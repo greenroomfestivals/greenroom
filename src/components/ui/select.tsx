@@ -122,10 +122,9 @@ const SelectItem = React.forwardRef<
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
-    onPointerUp={(e) => {
-      if (e.pointerType === "touch") {
-        e.currentTarget.click();
-      }
+    onTouchEnd={(e) => {
+      e.preventDefault();
+      e.currentTarget.click();
     }}
     {...props}
   >

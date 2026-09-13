@@ -139,8 +139,8 @@ export function buildDayWiseSchedulePdf(
       bullets.push(`Stage: ${row.stageName}`);
     if (options.includeSpeakers && row.speakers)
       bullets.push(`Speakers: ${row.speakers}`);
-    if (options.includeEntryType && row.entryType)
-      bullets.push(`Type: ${row.entryType}`);
+    if (options.includeEntryType && row.entryType === "SESSION")
+      bullets.push(`Type: Session`);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -162,7 +162,9 @@ export function buildDayWiseSchedulePdf(
     ensureSpace(rowHeight);
 
     // Row Background
-    if (isAlternateRow) {
+    if (row.entryType === "SESSION") {
+      doc.setFillColor(248, 245, 252); // Light purple/gray for session
+    } else if (isAlternateRow) {
       doc.setFillColor(232, 240, 242); // Light blueish grey
     } else {
       doc.setFillColor(255, 255, 255);

@@ -53,12 +53,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         suppressHydrationWarning
-        onPointerUp={(e: React.PointerEvent<HTMLButtonElement>) => {
-          if (e.pointerType === "touch") {
-            e.currentTarget.click();
-          }
-          onPointerUp?.(e);
-        }}
+        onPointerUp={onPointerUp}
         {...props}
       />
     );

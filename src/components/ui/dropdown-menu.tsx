@@ -88,11 +88,9 @@ const DropdownMenuItem = React.forwardRef<
       inset && "pl-8",
       className,
     )}
-    onPointerUp={(e) => {
-      if (e.pointerType === "touch") {
-        e.currentTarget.click();
-      }
-      props.onPointerUp?.(e);
+    onTouchEnd={(e) => {
+      e.preventDefault();
+      e.currentTarget.click();
     }}
     {...props}
   />
@@ -110,11 +108,9 @@ const DropdownMenuCheckboxItem = React.forwardRef<
       className,
     )}
     checked={checked}
-    onPointerUp={(e) => {
-      if (e.pointerType === "touch") {
-        e.currentTarget.click();
-      }
-      props.onPointerUp?.(e);
+    onTouchEnd={(e) => {
+      e.preventDefault();
+      e.currentTarget.click();
     }}
     {...props}
   >
@@ -139,11 +135,9 @@ const DropdownMenuRadioItem = React.forwardRef<
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
-    onPointerUp={(e) => {
-      if (e.pointerType === "touch") {
-        e.currentTarget.click();
-      }
-      props.onPointerUp?.(e);
+    onTouchEnd={(e) => {
+      e.preventDefault();
+      e.currentTarget.click();
     }}
     {...props}
   >
