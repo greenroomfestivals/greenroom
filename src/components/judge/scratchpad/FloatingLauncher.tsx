@@ -107,7 +107,7 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
       className={cn(
         "fixed z-[100] flex h-10 w-10 items-center justify-center rounded-full shadow-lg transition-transform touch-none",
         isOpen
-          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 xl:hidden"
+          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 lg:hidden"
           : "bg-primary text-primary-foreground",
         isDragging
           ? "cursor-grabbing scale-105"

@@ -526,7 +526,7 @@ function StickyBar({ children, isSplit }: { children: React.ReactNode; isSplit?:
     <div
       className={cn(
         "fixed bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md",
-        isSplit ? "inset-x-0 xl:inset-x-auto xl:left-0 xl:w-[var(--split-left)]" : "inset-x-0"
+        isSplit ? "inset-x-0 lg:inset-x-auto lg:left-0 lg:w-[var(--split-left)]" : "inset-x-0"
       )}
       style={{
         paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
@@ -561,10 +561,19 @@ export function StagePortalScoringClient({
   const [isDraggingSplit, setIsDraggingSplit] = useState(false);
 
   useEffect(() => {
+    // On mount, if it's a tablet (lg but not xl), default to 70% left section
+    if (typeof window !== "undefined") {
+      if (window.innerWidth >= 1024 && window.innerWidth < 1280) {
+        setSplitRatio(70);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isDraggingSplit) return;
     const onMove = (e: PointerEvent) => {
       const ratio = (e.clientX / window.innerWidth) * 100;
-      setSplitRatio(Math.max(40, Math.min(60, ratio)));
+      setSplitRatio(Math.max(30, Math.min(80, ratio)));
     };
     const onUp = () => setIsDraggingSplit(false);
     window.addEventListener("pointermove", onMove);
@@ -1032,17 +1041,17 @@ export function StagePortalScoringClient({
     <div
       className={cn(
         "transition-all duration-300",
-        isScratchpadOpen ? "xl:flex xl:h-[100dvh] xl:overflow-hidden" : "",
+        isScratchpadOpen ? "lg:flex lg:h-[100dvh] lg:overflow-hidden" : "",
       )}
       style={{
-        "--split-left": `${splitRatio}vw`,
-        "--split-right": `${100 - splitRatio}vw`,
+        "--split-left": `calc(${splitRatio}% - 1px)`,
+        "--split-right": `calc(${100 - splitRatio}% - 1px)`,
       } as React.CSSProperties}
     >
       <div
         className={cn(
           "pb-32 relative transition-all",
-          isScratchpadOpen ? "xl:overflow-y-auto xl:w-[var(--split-left)] xl:shrink-0" : "flex-1 w-full",
+          isScratchpadOpen ? "lg:overflow-y-auto lg:w-[var(--split-left)] lg:shrink-0" : "flex-1 w-full",
         )}
       >
         <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
@@ -1420,7 +1429,7 @@ export function StagePortalScoringClient({
       {isScratchpadOpen && (
         <>
           <div
-            className="hidden xl:flex relative w-[2px] cursor-col-resize items-center justify-center bg-border hover:bg-primary/50 transition-colors z-50 shrink-0"
+            className="hidden lg:flex relative w-[2px] cursor-col-resize items-center justify-center bg-border hover:bg-primary/50 transition-colors z-50 shrink-0"
             onPointerDown={(e) => {
               e.preventDefault();
               setIsDraggingSplit(true);
