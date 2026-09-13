@@ -374,6 +374,8 @@ export function JudgementWizardClient({
             programmeCategory: programme.programmeCategory ?? null,
             programmeType: programme.programmeType,
             details: programme.reportingDetails,
+            active: activeByProgrammeId.get(programme.id) ?? null,
+            formatDateTime: formatCardDateTime,
           });
         }}
         onShowCredentials={(stage) =>

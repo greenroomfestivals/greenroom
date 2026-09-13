@@ -104,6 +104,9 @@ export type ParticipantsViewState = {
   programmeCategory: string | null;
   programmeType: "INDIVIDUAL" | "GROUP";
   details: ReportingDetails;
+  /** Active judgement config snapshot — judges, mode, status, timing. */
+  active?: ActiveConfig | null;
+  formatDateTime: (value: string | Date) => string;
 };
 
 export const POLICY_SCORE_LIMIT = 100;
