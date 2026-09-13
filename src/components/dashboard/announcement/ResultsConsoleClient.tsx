@@ -200,10 +200,15 @@ function SortableProgrammeRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "hover:bg-muted/50 transition-colors bg-background cursor-pointer",
+        "transition-colors bg-background",
+        p.status === "ANNOUNCED" ? "opacity-50 pointer-events-none" : "hover:bg-muted/50 cursor-pointer",
         isDragging && "opacity-80 shadow-md relative",
       )}
-      onClick={() => setActiveProgramme(p)}
+      onClick={() => {
+        if (p.status !== "ANNOUNCED") {
+          setActiveProgramme(p);
+        }
+      }}
     >
       <TableCell
         className={cn(
@@ -268,8 +273,15 @@ function MobileProgrammeCard({
 }: SortableProgrammeRowProps) {
   return (
     <Card
-      className="flex flex-col gap-3 p-4 bg-card cursor-pointer hover:border-primary/40 active:bg-muted/30 transition-colors"
-      onClick={() => setActiveProgramme(p)}
+      className={cn(
+        "flex flex-col gap-3 p-4 bg-card transition-colors",
+        p.status === "ANNOUNCED" ? "opacity-50 pointer-events-none" : "cursor-pointer hover:border-primary/40 active:bg-muted/30"
+      )}
+      onClick={() => {
+        if (p.status !== "ANNOUNCED") {
+          setActiveProgramme(p);
+        }
+      }}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
@@ -324,6 +336,8 @@ export function ResultsConsoleClient({
   const [isPending, startTransition] = useTransition();
   const [activeProgramme, setActiveProgramme] =
     useState<AnnouncerQueueProgramme | null>(null);
+
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING_PUBLICATION" | "PUBLISHED" | "ANNOUNCED">("ALL");
 
   // Section 2 filters
   const [standingsScope, setStandingsScope] = useState<"published" | "all">(
@@ -482,6 +496,9 @@ export function ResultsConsoleClient({
 
   const filteredSorted = useMemo(() => {
     let list = sorted;
+    if (statusFilter !== "ALL") {
+      list = list.filter((p) => p.status === statusFilter);
+    }
     if (searchQuery) {
       const lower = searchQuery.toLowerCase();
       list = list.filter(
@@ -491,7 +508,7 @@ export function ResultsConsoleClient({
       );
     }
     return list;
-  }, [sorted, searchQuery]);
+  }, [sorted, searchQuery, statusFilter]);
 
   const newResultsSinceStandings =
     standingsContext.highestPublishedResultNumber != null &&
@@ -622,13 +639,34 @@ export function ResultsConsoleClient({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto max-w-full">
+            <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
+              {/* All Tab */}
+              <div
+                onClick={() => setStatusFilter("ALL")}
+                onKeyDown={(e) => e.key === "Enter" && setStatusFilter("ALL")}
+                tabIndex={0}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ring-1 whitespace-nowrap cursor-pointer transition-opacity",
+                  "bg-muted/50 text-foreground ring-border hover:bg-muted",
+                  statusFilter === "ALL" ? "opacity-100 ring-primary/30" : "opacity-50"
+                )}
+              >
+                <span>All</span>
+                <span className="rounded-full bg-foreground/10 px-1.5 text-xs font-bold">
+                  {programmes.length}
+                </span>
+              </div>
+
               {STATUS_PILLS.map((pill) => (
                 <div
                   key={pill.label}
+                  onClick={() => setStatusFilter(pill.key)}
+                  onKeyDown={(e) => e.key === "Enter" && setStatusFilter(pill.key)}
+                  tabIndex={0}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ring-1 whitespace-nowrap",
+                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ring-1 whitespace-nowrap cursor-pointer transition-opacity hover:opacity-100",
                     pill.active,
+                    statusFilter === pill.key ? "opacity-100" : "opacity-50"
                   )}
                 >
                   <span className={cn("h-2 w-2 rounded-full", pill.dot)} />
@@ -638,7 +676,15 @@ export function ResultsConsoleClient({
                   </span>
                 </div>
               ))}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-green-500/10 text-green-600 dark:text-green-400 ring-green-500/25">
+              <div
+                onClick={() => setStatusFilter("PUBLISHED")}
+                onKeyDown={(e) => e.key === "Enter" && setStatusFilter("PUBLISHED")}
+                tabIndex={0}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-green-500/10 text-green-600 dark:text-green-400 ring-green-500/25 cursor-pointer transition-opacity hover:opacity-100",
+                  statusFilter === "PUBLISHED" ? "opacity-100" : "opacity-50"
+                )}
+              >
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                 <span>Published</span>
                 <span className="rounded-full bg-green-500/20 px-1.5 text-xs font-bold">
@@ -646,7 +692,15 @@ export function ResultsConsoleClient({
                   {statusCounts["PUBLISHED"] ?? 0}
                 </span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-sky-500/10 text-sky-600 dark:text-sky-400 ring-sky-500/25">
+              <div
+                onClick={() => setStatusFilter("ANNOUNCED")}
+                onKeyDown={(e) => e.key === "Enter" && setStatusFilter("ANNOUNCED")}
+                tabIndex={0}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-sky-500/10 text-sky-600 dark:text-sky-400 ring-sky-500/25 cursor-pointer transition-opacity hover:opacity-100",
+                  statusFilter === "ANNOUNCED" ? "opacity-100" : "opacity-50"
+                )}
+              >
                 <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
                 <span>Announced</span>
                 <span className="rounded-full bg-sky-500/20 px-1.5 text-xs font-bold">
@@ -965,10 +1019,10 @@ export function ResultsConsoleClient({
                           <TableRow>
                             <TableHead className="w-12">SI</TableHead>
                             <TableHead className="w-16">Code</TableHead>
+                            <TableHead className="w-20">Prize</TableHead>
                             <TableHead>Participant</TableHead>
                             <TableHead>Group</TableHead>
                             <TableHead className="w-16">Grade</TableHead>
-                            <TableHead className="w-20">Prize</TableHead>
                             <TableHead className="w-20 text-right">
                               Award Pts
                             </TableHead>
@@ -994,6 +1048,15 @@ export function ResultsConsoleClient({
                                 <TableCell className="font-mono">
                                   {r.codeLetter ?? "—"}
                                 </TableCell>
+                                <TableCell>
+                                  {r.position === 1
+                                    ? "🥇 1st"
+                                    : r.position === 2
+                                      ? "🥈 2nd"
+                                      : r.position === 3
+                                        ? "🥉 3rd"
+                                        : "—"}
+                                </TableCell>
                                 <TableCell className="font-medium">
                                   {r.participantName ?? "—"}
                                   {r.chestNumber && (
@@ -1007,15 +1070,6 @@ export function ResultsConsoleClient({
                                 </TableCell>
                                 <TableCell className="font-medium">
                                   {r.grade ?? "—"}
-                                </TableCell>
-                                <TableCell>
-                                  {r.position === 1
-                                    ? "🥇 1st"
-                                    : r.position === 2
-                                      ? "🥈 2nd"
-                                      : r.position === 3
-                                        ? "🥉 3rd"
-                                        : "—"}
                                 </TableCell>
                                 <TableCell className="text-right font-mono font-bold">
                                   {r.awardPoints}

@@ -488,10 +488,10 @@ export function AnnouncerClient({
                           <TableRow>
                             <TableHead className="w-12">SI</TableHead>
                             <TableHead className="w-16">Code</TableHead>
+                            <TableHead className="w-20">Prize</TableHead>
                             <TableHead>Participant</TableHead>
                             <TableHead>Group</TableHead>
                             <TableHead className="w-16">Grade</TableHead>
-                            <TableHead className="w-20">Prize</TableHead>
                             <TableHead className="w-20 text-right">
                               Award Pts
                             </TableHead>
@@ -517,6 +517,15 @@ export function AnnouncerClient({
                                 <TableCell className="font-mono">
                                   {r.codeLetter ?? "—"}
                                 </TableCell>
+                                <TableCell>
+                                  {r.position === 1
+                                    ? "🥇 1st"
+                                    : r.position === 2
+                                      ? "🥈 2nd"
+                                      : r.position === 3
+                                        ? "🥉 3rd"
+                                        : "—"}
+                                </TableCell>
                                 <TableCell className="font-medium">
                                   {r.participantName ?? "—"}
                                   {r.chestNumber && (
@@ -530,15 +539,6 @@ export function AnnouncerClient({
                                 </TableCell>
                                 <TableCell className="font-medium">
                                   {r.grade ?? "—"}
-                                </TableCell>
-                                <TableCell>
-                                  {r.position === 1
-                                    ? "🥇 1st"
-                                    : r.position === 2
-                                      ? "🥈 2nd"
-                                      : r.position === 3
-                                        ? "🥉 3rd"
-                                        : "—"}
                                 </TableCell>
                                 <TableCell className="text-right font-mono font-bold">
                                   {r.awardPoints}
