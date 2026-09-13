@@ -939,73 +939,6 @@ export function StagePortalScoringClient({
     });
   };
 
-  if (submissionPhase === "review") {
-    return (
-      <>
-        <SubmissionReviewView
-          stageName={stageName}
-          programmeName={payload.programme.name}
-          categoryName={payload.programme.categoryName}
-          judgingMode={payload.judgingMode}
-          judges={reviewJudges}
-          codeLetters={activeCodeLetters}
-          scoresByKey={scoresByKey}
-          remarksByKey={remarksByKey}
-          onRemarkChange={onRemarkChange}
-          policyRows={reviewPolicyRows}
-          isPending={isPending}
-          submitError={submitError}
-          onEdit={() => {
-            setSubmissionPhase("idle");
-            setSubmitError(null);
-            setReviewPolicyRows([]);
-          }}
-          onConfirm={() => setShowConfirmDialog(true)}
-        />
-
-        <AlertDialog
-          open={showConfirmDialog}
-          onOpenChange={setShowConfirmDialog}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Complete judging?</AlertDialogTitle>
-              <AlertDialogDescription>
-                All scores will be submitted. Your scratchpad will be locked and
-                become read-only until you leave this judging session.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowConfirmDialog(false);
-                  onConfirmSubmit();
-                }}
-                disabled={isPending}
-              >
-                Complete Judging
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </>
-    );
-  }
-
-  if (submissionPhase === "summary") {
-    return (
-      <SubmissionSummaryView
-        stageName={stageName}
-        programmeName={payload.programme.name}
-        categoryName={payload.programme.categoryName}
-        variant={summaryVariant}
-        onContinue={onDone}
-      />
-    );
-  }
-
   const isGroup = payload.judgingMode === "GROUP";
   const modeLabel = isGroup ? "Group panel" : "Separate judges";
   const ModeIcon = isGroup ? Users2 : UserRound;
@@ -1024,7 +957,67 @@ export function StagePortalScoringClient({
           isScratchpadOpen ? "lg:overflow-y-auto lg:w-[60%] xl:w-[50%] lg:shrink-0" : "flex-1 w-full",
         )}
       >
-        <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
+        {submissionPhase === "review" ? (
+          <>
+            <SubmissionReviewView
+              stageName={stageName}
+              programmeName={payload.programme.name}
+              categoryName={payload.programme.categoryName}
+              judgingMode={payload.judgingMode}
+              judges={reviewJudges}
+              codeLetters={activeCodeLetters}
+              scoresByKey={scoresByKey}
+              remarksByKey={remarksByKey}
+              onRemarkChange={onRemarkChange}
+              policyRows={reviewPolicyRows}
+              isPending={isPending}
+              submitError={submitError}
+              onEdit={() => {
+                setSubmissionPhase("idle");
+                setSubmitError(null);
+                setReviewPolicyRows([]);
+              }}
+              onConfirm={() => setShowConfirmDialog(true)}
+            />
+            <AlertDialog
+              open={showConfirmDialog}
+              onOpenChange={setShowConfirmDialog}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Complete judging?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    All scores will be submitted. Your scratchpad will be locked and
+                    become read-only until you leave this judging session.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowConfirmDialog(false);
+                      onConfirmSubmit();
+                    }}
+                    disabled={isPending}
+                  >
+                    Complete Judging
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        ) : submissionPhase === "summary" ? (
+          <SubmissionSummaryView
+            stageName={stageName}
+            programmeName={payload.programme.name}
+            categoryName={payload.programme.categoryName}
+            variant={summaryVariant}
+            onContinue={onDone}
+          />
+        ) : (
+          <>
+            <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
         {/* Sticky context bar: the programme, the mode and how far through you
           are stay on screen while you scroll a long list of code letters.
           Previously progress was a mobile-only card at the top and a
@@ -1389,6 +1382,8 @@ export function StagePortalScoringClient({
           </div>
         </div>
       </StickyBar>
+      </>
+      )}
       </div>
 
       <FloatingLauncher
