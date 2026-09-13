@@ -59,7 +59,7 @@ export async function getCallListAssignmentsAction(
         groupName: groupTable.name,
         participantName: participantTable.name,
         chestNumber: participantTable.chestNumber,
-        codeLetter: programmeCodeLetterTable.codeLetter,
+        codeLetter: programmeCodeLetterTable.code,
         isTeamLead: sql<boolean>`CASE WHEN ${programmeTeamLead.participantId} IS NOT NULL THEN true ELSE false END`,
       })
       .from(programmeAssignment)

@@ -191,7 +191,7 @@ function SubmissionSummaryView({
   const isPartial = variant === "partial";
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center py-10 text-center">
+    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-10 text-center sm:px-6">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/15 text-success">
         <CheckCircle2 className="h-8 w-8" aria-hidden />
       </div>
@@ -263,7 +263,7 @@ function SubmissionReviewView({
       .length;
 
   return (
-    <div className="pb-28">
+    <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-28 sm:px-6 sm:pt-10">
       <header className="border-b border-border pb-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {stageName}
