@@ -20,7 +20,7 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
     const snapToEdge = (x: number, y: number) => {
       if (typeof window === "undefined") return { x, y };
       const padding = 24;
-      const buttonSize = 56; // w-14 h-14 = 56px
+      const buttonSize = 40; // w-10 h-10 = 40px
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
@@ -48,7 +48,7 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
   const snapToEdgeForDrag = (x: number, y: number) => {
     if (typeof window === "undefined") return { x, y };
     const padding = 24;
-    const buttonSize = 56;
+    const buttonSize = 40;
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
     let newX = x;
@@ -105,9 +105,9 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       className={cn(
-        "fixed z-[100] flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform touch-none",
+        "fixed z-[100] flex h-10 w-10 items-center justify-center rounded-full shadow-lg transition-transform touch-none",
         isOpen
-          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 xl:hidden"
           : "bg-primary text-primary-foreground",
         isDragging
           ? "cursor-grabbing scale-105"
@@ -120,7 +120,7 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
       }}
       aria-label={isOpen ? "Close Scratchpad" : "Open Scratchpad"}
     >
-      {isOpen ? <X className="h-6 w-6" /> : <PenTool className="h-6 w-6" />}
+      {isOpen ? <X className="h-4 w-4" /> : <PenTool className="h-4 w-4" />}
     </button>
   );
 }

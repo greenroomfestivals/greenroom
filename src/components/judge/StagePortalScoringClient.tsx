@@ -10,6 +10,7 @@ import {
   UserRound,
   Users2,
   UserX,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useMarkCodeLetterAbsence } from "@/api/client/server-actions";
@@ -525,7 +526,7 @@ function StickyBar({ children, isSplit }: { children: React.ReactNode; isSplit?:
     <div
       className={cn(
         "fixed bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md",
-        isSplit ? "left-0 right-0 lg:right-[50vw]" : "inset-x-0"
+        isSplit ? "inset-x-0 xl:inset-x-auto xl:left-0 xl:w-[var(--split-left)]" : "inset-x-0"
       )}
       style={{
         paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
@@ -556,6 +557,23 @@ export function StagePortalScoringClient({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [splitRatio, setSplitRatio] = useState(50);
+  const [isDraggingSplit, setIsDraggingSplit] = useState(false);
+
+  useEffect(() => {
+    if (!isDraggingSplit) return;
+    const onMove = (e: PointerEvent) => {
+      const ratio = (e.clientX / window.innerWidth) * 100;
+      setSplitRatio(Math.max(40, Math.min(60, ratio)));
+    };
+    const onUp = () => setIsDraggingSplit(false);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [isDraggingSplit]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
@@ -1014,13 +1032,17 @@ export function StagePortalScoringClient({
     <div
       className={cn(
         "transition-all duration-300",
-        isScratchpadOpen ? "lg:flex lg:h-[100dvh] lg:overflow-hidden" : "",
+        isScratchpadOpen ? "xl:flex xl:h-[100dvh] xl:overflow-hidden" : "",
       )}
+      style={{
+        "--split-left": `${splitRatio}vw`,
+        "--split-right": `${100 - splitRatio}vw`,
+      } as React.CSSProperties}
     >
       <div
         className={cn(
-          "pb-32 flex-1 relative transition-all",
-          isScratchpadOpen ? "lg:overflow-y-auto" : "",
+          "pb-32 relative transition-all",
+          isScratchpadOpen ? "xl:overflow-y-auto xl:w-[var(--split-left)] xl:shrink-0" : "flex-1 w-full",
         )}
       >
         <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
@@ -1396,14 +1418,39 @@ export function StagePortalScoringClient({
       />
 
       {isScratchpadOpen && (
-        <ScratchpadOverlay
-          configId={payload.configId}
-          programmeId={payload.programme.id}
-          judgeMode={payload.judgingMode}
-          judgeId={selectedJudgeId}
-          isReadOnly={selectedJudgeAlreadySubmitted}
-          onClose={() => setIsScratchpadOpen(false)}
-        />
+        <>
+          <div
+            className="hidden xl:flex relative w-[2px] cursor-col-resize items-center justify-center bg-border hover:bg-primary/50 transition-colors z-50 shrink-0"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setIsDraggingSplit(true);
+            }}
+          >
+            {/* The close button on top of the split line */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[51]">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsScratchpadOpen(false);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md hover:scale-105 transition-transform"
+                title="Close scratchpad"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {/* Wider invisible grab area so it's easier to grab */}
+            <div className="absolute inset-y-0 -inset-x-2" />
+          </div>
+          <ScratchpadOverlay
+            configId={payload.configId}
+            programmeId={payload.programme.id}
+            judgeMode={payload.judgingMode}
+            judgeId={selectedJudgeId}
+            isReadOnly={selectedJudgeAlreadySubmitted}
+            onClose={() => setIsScratchpadOpen(false)}
+          />
+        </>
       )}
     </div>
   );
