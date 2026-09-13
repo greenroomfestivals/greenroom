@@ -77,7 +77,7 @@ export function StagePortalScorePageClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
+    <div className="w-full">
       <StagePortalScoringClient
         stageName={data?.stageName ?? ""}
         payload={payload ?? ({} as any)}
