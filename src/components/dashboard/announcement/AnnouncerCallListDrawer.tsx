@@ -102,7 +102,7 @@ export function AnnouncerCallListDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
+      <DrawerContent>
         <DrawerHeader className="text-left border-b pb-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -147,7 +147,7 @@ export function AnnouncerCallListDrawer({
           </div>
         </DrawerHeader>
 
-        <div className="p-4 overflow-y-auto min-h-[300px]">
+        <div className="p-4 overflow-y-auto flex-1 min-h-[300px]">
           {isPending ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
               <Loader2 className="h-8 w-8 animate-spin mb-4" />
