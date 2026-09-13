@@ -660,10 +660,7 @@ export function AnnouncerClient({
                     ) : (
                       <Megaphone className="h-5 w-5 mr-2" />
                     )}
-                    Announce{" "}
-                    {activeProgramme.resultNumber != null
-                      ? `#${activeProgramme.resultNumber}`
-                      : ""}
+                    Mark as Announced
                   </Button>
                 </DrawerFooter>
                 {activeProgramme.resultNumber == null && (
