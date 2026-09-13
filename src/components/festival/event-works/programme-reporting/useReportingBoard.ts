@@ -237,6 +237,20 @@ export function useReportingBoard({
               .map((m) => m.participantName)
               .filter((name): name is string => Boolean(name));
 
+        const teamLeadName =
+          (teamLeadsForProgramme as any)?.[lead.groupId ?? ""]?.[teamNumber]
+            ?.participantName ??
+          lead.teamLeadName ??
+          lead.participantName ??
+          null;
+
+        // GROUP tile label: "Amir Sohail & Party 2" — team lead (or group
+        // name as a fallback) joined with the party/team number so the
+        // active-scratching panel reads naturally for teams.
+        const partyLabel = teamNumber > 0 ? `Party ${teamNumber}` : "Party";
+        const primaryName = teamLeadName ?? lead.groupName ?? "Party";
+        const nameColumn = `${primaryName} & ${partyLabel}`;
+
         return {
           key: teamKey,
           mode: "team",
@@ -245,19 +259,11 @@ export function useReportingBoard({
           teamNumber,
           teamParticipantIds,
           teamMemberNames,
-          nameColumn:
-            teamNumber > 0
-              ? `${lead.groupName ?? "Group"} · Party ${teamNumber}`
-              : (lead.groupName ?? "Party"),
+          nameColumn,
           groupName: lead.groupName,
           teamCell: teamNumber,
           isReported: members.some((m) => m.isReported),
-          teamLeadName:
-            (teamLeadsForProgramme as any)?.[lead.groupId ?? ""]?.[teamNumber]
-              ?.participantName ??
-            lead.teamLeadName ??
-            lead.participantName ??
-            null,
+          teamLeadName,
         };
       });
     }

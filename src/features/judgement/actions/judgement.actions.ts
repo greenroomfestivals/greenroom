@@ -418,11 +418,11 @@ export async function getJudgementWizardDataAction(festivalId: string) {
               const key = `${groupName ?? "no-group"}::${teamNo ?? "no-team"}`;
 
               const teamLeadName = assignmentRow?.teamLeadName;
+              const partyLabel =
+                teamNo != null && teamNo > 0 ? `Party ${teamNo}` : "Party";
               const fallbackLabel = groupName
-                ? teamNo
-                  ? `${groupName} - Team ${teamNo}`
-                  : groupName
-                : `Team ${teamNo ?? "—"}`;
+                ? `${groupName} & ${partyLabel}`
+                : partyLabel;
               const label =
                 teamLeadName || r.participant?.name || fallbackLabel;
 
@@ -478,8 +478,8 @@ export async function getJudgementWizardDataAction(festivalId: string) {
                     : r.participant.name
                   : r.group?.name
                     ? teamNo
-                      ? `${r.group.name} - Team ${teamNo}`
-                      : r.group.name
+                      ? `${r.group.name} & Party ${teamNo}`
+                      : `${r.group.name} & Party`
                     : null;
                 if (!label) return null;
 

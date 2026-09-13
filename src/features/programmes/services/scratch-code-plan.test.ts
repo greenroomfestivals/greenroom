@@ -4,16 +4,10 @@ import {
   compareCodeLetters,
   groupIntoUnits,
   planScratchCodes,
+  roundRobinByGroup,
   sequentialAlphabetCode,
   unitKey,
 } from "./scratch-code-plan";
-
-/** Deterministic stand-in for the real shuffle: reverses in place. */
-function reverseShuffle<T>(arr: T[]): void {
-  arr.reverse();
-}
-
-function noShuffle<T>(_arr: T[]): void {}
 
 function makeRow(overrides: Partial<CheckoutRow> = {}): CheckoutRow {
   return {
@@ -192,7 +186,8 @@ describe("groupIntoUnits", () => {
     ).toHaveLength(0);
   });
 });
-describe("planScratchCodes", () => {
+
+describe("planScratchCodes (INDIVIDUAL)", () => {
   const units = groupIntoUnits(
     [
       makeRow({ participantId: "p1", reportedAt: "2026-08-10T10:01:00.000Z" }),
@@ -203,59 +198,27 @@ describe("planScratchCodes", () => {
   );
 
   it("gives every unit exactly one code", () => {
-    const plan = planScratchCodes(units, reverseShuffle);
+    const plan = planScratchCodes(units, "INDIVIDUAL");
     expect(plan).toHaveLength(3);
     expect(new Set(plan.map((a) => a.code)).size).toBe(3);
   });
 
-  it("numbers the queue by checkout order, not by code order", () => {
-    const plan = planScratchCodes(units, reverseShuffle);
+  it("hands out codes A, B, C in checkout order", () => {
+    const plan = planScratchCodes(units, "INDIVIDUAL");
+    const byParticipant = new Map(plan.map((a) => [a.participantId, a]));
+
+    expect(byParticipant.get("p1")?.code).toBe("A");
+    expect(byParticipant.get("p2")?.code).toBe("B");
+    expect(byParticipant.get("p3")?.code).toBe("C");
+  });
+
+  it("assigns queue positions 1..N by checkout order", () => {
+    const plan = planScratchCodes(units, "INDIVIDUAL");
     const byParticipant = new Map(plan.map((a) => [a.participantId, a]));
 
     expect(byParticipant.get("p1")?.queuePosition).toBe(1);
     expect(byParticipant.get("p2")?.queuePosition).toBe(2);
     expect(byParticipant.get("p3")?.queuePosition).toBe(3);
-
-    // Reversed draw order, so the last to check out holds the first code.
-    expect(byParticipant.get("p3")?.code).toBe("A");
-    expect(byParticipant.get("p1")?.code).toBe("C");
-  });
-
-  it("hands out codes in draw order starting at A", () => {
-    const plan = planScratchCodes(units, noShuffle);
-    expect(plan.map((a) => a.code)).toEqual(["A", "B", "C"]);
-    expect(plan.map((a) => a.queuePosition)).toEqual([1, 2, 3]);
-  });
-
-  it("issues one queue position per team, not per member", () => {
-    const teamUnits = groupIntoUnits(
-      [
-        makeRow({
-          participantId: "p1",
-          groupId: "g1",
-          teamNumber: 1,
-          reportedAt: "2026-08-10T10:01:00.000Z",
-        }),
-        makeRow({
-          participantId: "p2",
-          groupId: "g1",
-          teamNumber: 1,
-          reportedAt: "2026-08-10T10:01:30.000Z",
-        }),
-        makeRow({
-          participantId: "p3",
-          groupId: "g2",
-          teamNumber: 1,
-          reportedAt: "2026-08-10T10:02:00.000Z",
-        }),
-      ],
-      "GROUP",
-    );
-    const plan = planScratchCodes(teamUnits, noShuffle);
-    expect(plan).toHaveLength(2);
-    expect(plan.map((a) => a.queuePosition).sort()).toEqual([1, 2]);
-    expect(plan.every((a) => a.participantId === null)).toBe(true);
-    expect(plan.map((a) => a.groupId)).toEqual(["g1", "g2"]);
   });
 
   it("assigns contiguous queue positions with no gaps or repeats", () => {
@@ -268,7 +231,7 @@ describe("planScratchCodes", () => {
       ),
       "INDIVIDUAL",
     );
-    const plan = planScratchCodes(many, reverseShuffle);
+    const plan = planScratchCodes(many, "INDIVIDUAL");
     expect(plan.map((a) => a.queuePosition).sort((a, b) => a - b)).toEqual(
       Array.from({ length: 30 }, (_, i) => i + 1),
     );
@@ -287,7 +250,7 @@ describe("planScratchCodes", () => {
       ],
       "INDIVIDUAL",
     );
-    const plan = planScratchCodes(mixed, noShuffle);
+    const plan = planScratchCodes(mixed, "INDIVIDUAL");
     const byParticipant = new Map(plan.map((a) => [a.participantId, a]));
     expect(byParticipant.get("p3")?.queuePosition).toBe(1);
     expect(byParticipant.get("p1")?.queuePosition).toBe(2);
@@ -295,6 +258,177 @@ describe("planScratchCodes", () => {
   });
 
   it("returns nothing when nobody checked out", () => {
-    expect(planScratchCodes([], reverseShuffle)).toEqual([]);
+    expect(planScratchCodes([], "INDIVIDUAL")).toEqual([]);
+  });
+});
+
+describe("planScratchCodes (GROUP)", () => {
+  // Three groups A, B, C each with 2 teams, reported in A1, A2, B1, B2,
+  // C1, C2 order.
+  const teamUnits = groupIntoUnits(
+    [
+      makeRow({
+        participantId: "pA1",
+        groupId: "A",
+        teamNumber: 1,
+        reportedAt: "2026-08-10T10:01:00.000Z",
+      }),
+      makeRow({
+        participantId: "pA2",
+        groupId: "A",
+        teamNumber: 2,
+        reportedAt: "2026-08-10T10:02:00.000Z",
+      }),
+      makeRow({
+        participantId: "pB1",
+        groupId: "B",
+        teamNumber: 1,
+        reportedAt: "2026-08-10T10:03:00.000Z",
+      }),
+      makeRow({
+        participantId: "pB2",
+        groupId: "B",
+        teamNumber: 2,
+        reportedAt: "2026-08-10T10:04:00.000Z",
+      }),
+      makeRow({
+        participantId: "pC1",
+        groupId: "C",
+        teamNumber: 1,
+        reportedAt: "2026-08-10T10:05:00.000Z",
+      }),
+      makeRow({
+        participantId: "pC2",
+        groupId: "C",
+        teamNumber: 2,
+        reportedAt: "2026-08-10T10:06:00.000Z",
+      }),
+    ],
+    "GROUP",
+  );
+
+  it("issues one code per team", () => {
+    const plan = planScratchCodes(teamUnits, "GROUP");
+    expect(plan).toHaveLength(6);
+    expect(plan.every((a) => a.participantId === null)).toBe(true);
+    expect(new Set(plan.map((a) => a.code)).size).toBe(6);
+  });
+
+  it("round-robins codes across groups so each group gets one letter per cycle", () => {
+    const plan = planScratchCodes(teamUnits, "GROUP");
+    const byTeam = new Map(
+      plan.map((a) => [`${a.groupId}-${a.teamNumber}`, a]),
+    );
+
+    // Cycle 1 — A, B, C
+    expect(byTeam.get("A-1")?.code).toBe("A");
+    expect(byTeam.get("B-1")?.code).toBe("B");
+    expect(byTeam.get("C-1")?.code).toBe("C");
+
+    // Cycle 2 — D, E, F
+    expect(byTeam.get("A-2")?.code).toBe("D");
+    expect(byTeam.get("B-2")?.code).toBe("E");
+    expect(byTeam.get("C-2")?.code).toBe("F");
+  });
+
+  it("keeps queue position = checkout order, not code order", () => {
+    const plan = planScratchCodes(teamUnits, "GROUP");
+    const byTeam = new Map(
+      plan.map((a) => [`${a.groupId}-${a.teamNumber}`, a]),
+    );
+
+    expect(byTeam.get("A-1")?.queuePosition).toBe(1);
+    expect(byTeam.get("A-2")?.queuePosition).toBe(2);
+    expect(byTeam.get("B-1")?.queuePosition).toBe(3);
+    expect(byTeam.get("B-2")?.queuePosition).toBe(4);
+    expect(byTeam.get("C-1")?.queuePosition).toBe(5);
+    expect(byTeam.get("C-2")?.queuePosition).toBe(6);
+  });
+
+  it("falls back to checkout order when there is only one group", () => {
+    const singleGroup = groupIntoUnits(
+      [
+        makeRow({
+          participantId: "p1",
+          groupId: "X",
+          teamNumber: 1,
+          reportedAt: "2026-08-10T10:01:00.000Z",
+        }),
+        makeRow({
+          participantId: "p2",
+          groupId: "X",
+          teamNumber: 2,
+          reportedAt: "2026-08-10T10:02:00.000Z",
+        }),
+        makeRow({
+          participantId: "p3",
+          groupId: "X",
+          teamNumber: 3,
+          reportedAt: "2026-08-10T10:03:00.000Z",
+        }),
+      ],
+      "GROUP",
+    );
+    const plan = planScratchCodes(singleGroup, "GROUP");
+    const byTeam = new Map(
+      plan.map((a) => [`${a.groupId}-${a.teamNumber}`, a]),
+    );
+    expect(byTeam.get("X-1")?.code).toBe("A");
+    expect(byTeam.get("X-2")?.code).toBe("B");
+    expect(byTeam.get("X-3")?.code).toBe("C");
+  });
+
+  it("orders groups stably by id when interleaving", () => {
+    // Groups reported in C, A, B order — round-robin still walks A, B, C.
+    const outOfOrderGroups = groupIntoUnits(
+      [
+        makeRow({
+          participantId: "pC1",
+          groupId: "C",
+          teamNumber: 1,
+          reportedAt: "2026-08-10T10:01:00.000Z",
+        }),
+        makeRow({
+          participantId: "pA1",
+          groupId: "A",
+          teamNumber: 1,
+          reportedAt: "2026-08-10T10:02:00.000Z",
+        }),
+        makeRow({
+          participantId: "pB1",
+          groupId: "B",
+          teamNumber: 1,
+          reportedAt: "2026-08-10T10:03:00.000Z",
+        }),
+      ],
+      "GROUP",
+    );
+    const plan = planScratchCodes(outOfOrderGroups, "GROUP");
+    const byTeam = new Map(
+      plan.map((a) => [`${a.groupId}-${a.teamNumber}`, a]),
+    );
+    expect(byTeam.get("A-1")?.code).toBe("A");
+    expect(byTeam.get("B-1")?.code).toBe("B");
+    expect(byTeam.get("C-1")?.code).toBe("C");
+  });
+});
+
+describe("roundRobinByGroup", () => {
+  it("returns an empty array for empty input", () => {
+    expect(roundRobinByGroup([])).toEqual([]);
+  });
+
+  it("returns the single unit untouched", () => {
+    const units = [
+      {
+        key: "team:A 1",
+        participantId: null,
+        groupId: "A",
+        teamNumber: 1,
+        recipients: [],
+        checkedOutAt: "2026-08-10T10:01:00.000Z",
+      },
+    ];
+    expect(roundRobinByGroup(units)).toEqual(units);
   });
 });

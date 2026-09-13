@@ -1,4 +1,4 @@
-import { randomInt, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/core/database/client";
 import {
@@ -14,15 +14,6 @@ import type {
   ReportingReset,
 } from "@/features/programmes/domain/reporting-events";
 import { type CheckoutRow, groupIntoUnits, unitKey } from "./scratch-code-plan";
-
-export function shuffleInPlace<T>(arr: T[]): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = randomInt(0, i + 1);
-    const t = arr[i];
-    arr[i] = arr[j]!;
-    arr[j] = t!;
-  }
-}
 
 export type CodeLetterEntry = { participantId: string; code: string };
 

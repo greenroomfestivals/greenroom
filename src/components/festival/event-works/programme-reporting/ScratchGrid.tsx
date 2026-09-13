@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/core/utils/cn";
@@ -65,16 +65,13 @@ export function ScratchGrid({
                   (#{current.queuePosition} of {tiles.length})
                 </span>
               </p>
-              {current.teamLeadName ? (
-                <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
-                  <Crown className="h-3 w-3 shrink-0 text-primary" />
-                  {current.teamLeadName}
-                </p>
-              ) : current.subLabel ? (
-                <p className="truncate text-muted-foreground text-xs">
-                  {current.subLabel}
-                </p>
-              ) : null}
+              <p className="truncate text-[11px] text-muted-foreground">
+                <ActiveTileDetails
+                  subLabel={current.subLabel}
+                  teamNumber={current.teamNumber ?? null}
+                  teamLeadName={current.teamLeadName ?? null}
+                />
+              </p>
             </>
           ) : (
             <p className="text-muted-foreground text-sm">
@@ -163,5 +160,58 @@ export function ScratchGrid({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Renders the structured detail row under the active participant label.
+ *
+ * Always surfaces what we know about the next participant in a uniform shape
+ * so INDIVIDUAL and GROUP programmes read the same way:
+ *
+ *   Group: A · Party: 2     ← both shown when present
+ *   Group: A                ← party omitted for INDIVIDUAL
+ *   Party: 2                ← group omitted when the unit has no group label
+ *
+ * Returns `null` when neither group nor party is known — keeps the row from
+ * collapsing to a stray separator.
+ */
+function ActiveTileDetails({
+  subLabel,
+  teamNumber,
+  teamLeadName: _teamLeadName,
+}: {
+  subLabel: string | null;
+  teamNumber: number | null;
+  teamLeadName: string | null;
+}) {
+  const hasGroup = Boolean(subLabel);
+  const hasParty = teamNumber != null && teamNumber > 0;
+
+  if (!hasGroup && !hasParty) return null;
+
+  if (hasGroup && hasParty) {
+    return (
+      <>
+        Group:{" "}
+        <strong className="font-medium text-foreground">{subLabel}</strong> ·
+        Party:{" "}
+        <strong className="font-medium text-foreground">{teamNumber}</strong>
+      </>
+    );
+  }
+  if (hasGroup) {
+    return (
+      <>
+        Group:{" "}
+        <strong className="font-medium text-foreground">{subLabel}</strong>
+      </>
+    );
+  }
+  return (
+    <>
+      Party:{" "}
+      <strong className="font-medium text-foreground">{teamNumber}</strong>
+    </>
   );
 }

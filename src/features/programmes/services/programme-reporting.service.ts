@@ -24,7 +24,6 @@ import {
   type AccessSession,
   StageAssignmentService,
 } from "@/features/stages/services/stage-assignment.service";
-import { shuffleInPlace } from "./code-letter-adapter.service";
 import { ReportingEventAdapter } from "./reporting-event-adapter.service";
 import { groupIntoUnits, planScratchCodes } from "./scratch-code-plan";
 
@@ -784,7 +783,7 @@ export const ProgrammeReportingService = {
       session.programmeType,
     );
 
-    const assignments = planScratchCodes(units, shuffleInPlace);
+    const assignments = planScratchCodes(units, session.programmeType);
 
     session.completeCheckout(actorName, assignments);
     const events = await ReportingSessionRepository.save(session);
