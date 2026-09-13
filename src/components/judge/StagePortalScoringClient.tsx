@@ -263,6 +263,7 @@ function SubmissionReviewView({
   submitError,
   onEdit,
   onConfirm,
+  isSplit,
 }: {
   stageName: string;
   programmeName: string;
@@ -278,6 +279,7 @@ function SubmissionReviewView({
   submitError: string | null;
   onEdit: () => void;
   onConfirm: () => void;
+  isSplit?: boolean;
 }) {
   const [remarkCodeId, setRemarkCodeId] = useState<string | null>(null);
   const policyByCode = new Map(policyRows.map((r) => [r.codeLetterId, r]));
@@ -446,7 +448,7 @@ function SubmissionReviewView({
         </p>
       )}
 
-      <StickyBar>
+      <StickyBar isSplit={isSplit}>
         <Button
           variant="outline"
           className="h-11 flex-1 rounded-full"
@@ -460,7 +462,7 @@ function SubmissionReviewView({
           onClick={onConfirm}
           disabled={isPending}
         >
-          {isPending ? "Submitting…" : "Confirm and submit"}
+          {isPending ? "Submitting..." : "Confirm and submit"}
         </Button>
       </StickyBar>
 
@@ -960,6 +962,7 @@ export function StagePortalScoringClient({
         {submissionPhase === "review" ? (
           <>
             <SubmissionReviewView
+              isSplit={isScratchpadOpen}
               stageName={stageName}
               programmeName={payload.programme.name}
               categoryName={payload.programme.categoryName}
