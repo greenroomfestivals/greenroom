@@ -53,6 +53,7 @@ export default async function AnnouncerPage({
     <div className="pt-4 sm:pt-6 h-full">
       <AnnouncerConsoleClient
         festivalId={festival.id}
+        festivalSlug={slug}
         queuedStandings={queuedStandings}
         afterCount={festival.standingsPublishedAtResultNumber}
         callList={callList}

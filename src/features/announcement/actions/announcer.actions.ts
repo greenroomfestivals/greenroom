@@ -11,6 +11,7 @@ import {
   participant as participantTable,
   programmeAssignment,
   programmeAssignmentMember,
+  programmeCodeLetter as programmeCodeLetterTable,
   programme as programmeTable,
   programmeTeamLead,
   result as resultTable,
@@ -58,10 +59,15 @@ export async function getCallListAssignmentsAction(
         groupName: groupTable.name,
         participantName: participantTable.name,
         chestNumber: participantTable.chestNumber,
+        codeLetter: programmeCodeLetterTable.codeLetter,
         isTeamLead: sql<boolean>`CASE WHEN ${programmeTeamLead.participantId} IS NOT NULL THEN true ELSE false END`,
       })
       .from(programmeAssignment)
       .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
+      .leftJoin(
+        programmeCodeLetterTable,
+        eq(programmeAssignment.id, programmeCodeLetterTable.assignmentId),
+      )
       .leftJoin(
         programmeAssignmentMember,
         eq(programmeAssignment.id, programmeAssignmentMember.assignmentId),

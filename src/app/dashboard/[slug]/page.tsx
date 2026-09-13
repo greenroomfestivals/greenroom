@@ -106,6 +106,7 @@ export default async function FestivalDashboardPage({
       ) : effectiveRole === "ANNOUNCER" && announcerData ? (
         <AnnouncerConsoleClient
           festivalId={festival.id}
+          festivalSlug={slug}
           queuedStandings={announcerData.queuedStandings}
           afterCount={announcerData.afterCount}
           callList={announcerData.callList}

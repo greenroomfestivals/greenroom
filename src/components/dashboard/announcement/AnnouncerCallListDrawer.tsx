@@ -31,6 +31,7 @@ type AssignmentRow = {
   groupName: string | null;
   participantName: string | null;
   chestNumber: string | null;
+  codeLetter: string | null;
   isTeamLead: boolean;
 };
 
@@ -78,6 +79,9 @@ export function AnnouncerCallListDrawer({
           isTeamLead: curr.isTeamLead,
         });
       }
+      if (!acc[curr.id].codeLetter && curr.codeLetter) {
+        acc[curr.id].codeLetter = curr.codeLetter;
+      }
       return acc;
     },
     {} as Record<
@@ -86,6 +90,7 @@ export function AnnouncerCallListDrawer({
         id: string;
         teamNumber: number | null;
         groupName: string | null;
+        codeLetter?: string | null;
         members: {
           name: string;
           chestNumber: string | null;
@@ -176,6 +181,17 @@ export function AnnouncerCallListDrawer({
                   ) : null}
 
                   <div className="space-y-2">
+                    <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+                      {item?.type === "INDIVIDUAL" && assignment.groupName && (
+                        <span className="font-medium">{assignment.groupName}</span>
+                      )}
+                      {assignment.codeLetter && (
+                        <>
+                          {item?.type === "INDIVIDUAL" && assignment.groupName && <span>•</span>}
+                          <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded text-foreground text-xs">Code: {assignment.codeLetter}</span>
+                        </>
+                      )}
+                    </div>
                     {assignment.members.map((member, i) => (
                       <div
                         key={i}

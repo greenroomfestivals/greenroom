@@ -71,7 +71,14 @@ export async function getCallListProgrammes(
   });
 
   const notified = schedules
-    .filter((s) => s.callListNotifiedAt != null)
+    .filter(
+      (s) =>
+        s.callListNotifiedAt != null &&
+        s.programme &&
+        !["PENDING_PUBLICATION", "PUBLISHED", "ANNOUNCED"].includes(
+          s.programme.status,
+        ),
+    )
     .map((s) => ({
       id: s.programme!.id,
       name: s.programme!.name,
@@ -92,7 +99,7 @@ export async function getCallListProgrammes(
   return Array.from(inProgressMap.values()).sort((a, b) => {
     const aTime = a.startedAt ? new Date(a.startedAt).getTime() : 0;
     const bTime = b.startedAt ? new Date(b.startedAt).getTime() : 0;
-    return aTime - bTime; // ascending
+    return bTime - aTime; // descending (newest on top)
   });
 }
 

@@ -57,6 +57,7 @@ function PlaceLabel({ rank }: { rank: number }) {
 
 interface Props {
   festivalId: string;
+  festivalSlug: string;
   queuedStandings: TeamStandingRow[];
   afterCount: number | null;
   callList: ActiveReportingProgramme[];
@@ -65,6 +66,7 @@ interface Props {
 
 export function AnnouncerConsoleClient({
   festivalId,
+  festivalSlug,
   queuedStandings,
   afterCount,
   callList,
@@ -117,13 +119,22 @@ export function AnnouncerConsoleClient({
   return (
     <div className="flex flex-col h-full min-h-[calc(100vh-4rem)]">
       {/* Greeting Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          {greeting}, {userName ? userName.split(" ")[0] : "there"}! {emoji}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          It&apos;s {dateStr}. Let&apos;s get ready for event day.
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {greeting}, {userName ? userName.split(" ")[0] : "there"}! {emoji}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            It&apos;s {dateStr}. Let&apos;s get ready for event day.
+          </p>
+        </div>
+        <a
+          href={`/dashboard/${festivalSlug}/event-works/announcement`}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2.5 px-4 transition-colors w-full sm:w-auto"
+        >
+          <Megaphone className="h-4 w-4" />
+          Go to Announcement Page
+        </a>
       </div>
 
       {/* Two-column layout */}
