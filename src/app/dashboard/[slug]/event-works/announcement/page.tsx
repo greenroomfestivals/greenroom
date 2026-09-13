@@ -10,7 +10,7 @@ import {
 } from "@/features/announcement/services/announcer.service";
 import { findFestivalBySlugOrId } from "@/features/festivals/repositories/festival.repository";
 import { getFestivalContext } from "@/features/festivals/services/festival-context.service";
-import { getEffectiveFeatureTagEnabled } from "@/features/plan-features/services/plan-features-tags.service";
+
 
 export default async function AnnouncerPage({
   params,
@@ -35,12 +35,6 @@ export default async function AnnouncerPage({
   const festival = await findFestivalBySlugOrId(slug);
   if (!festival) notFound();
 
-  const tier = (festival.tier ?? "STANDARD") as Tier;
-  const canUse = await getEffectiveFeatureTagEnabled(
-    tier,
-    "eventWorks.externalJudging",
-  );
-  if (!canUse) notFound();
 
   const [queue, nextNumber, publishedResults, standingsContext] =
     await Promise.all([
