@@ -520,10 +520,13 @@ function SubmissionReviewView({
  * Judges work standing up with one thumb, so the primary action never
  * scrolls out of reach, and it clears the iOS home indicator.
  */
-function StickyBar({ children }: { children: React.ReactNode }) {
+function StickyBar({ children, isSplit }: { children: React.ReactNode; isSplit?: boolean }) {
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md"
+      className={cn(
+        "fixed bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md",
+        isSplit ? "left-0 right-0 lg:right-[50vw]" : "inset-x-0"
+      )}
       style={{
         paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
       }}
@@ -1008,8 +1011,19 @@ export function StagePortalScoringClient({
   const progressPct = Math.min(100, Math.max(0, progress.pct));
 
   return (
-    <div className="pb-32">
-      {/* Sticky context bar: the programme, the mode and how far through you
+    <div
+      className={cn(
+        "transition-all duration-300",
+        isScratchpadOpen ? "lg:flex lg:h-[100dvh] lg:overflow-hidden" : "",
+      )}
+    >
+      <div
+        className={cn(
+          "pb-32 flex-1 relative transition-all",
+          isScratchpadOpen ? "lg:overflow-y-auto" : "",
+        )}
+      >
+        {/* Sticky context bar: the programme, the mode and how far through you
           are stay on screen while you scroll a long list of code letters.
           Previously progress was a mobile-only card at the top and a
           desktop-only bar in the footer, so neither width had it while
@@ -1312,7 +1326,7 @@ export function StagePortalScoringClient({
         )}
       </section>
 
-      <StickyBar>
+      <StickyBar isSplit={isScratchpadOpen}>
         <div className="flex w-full flex-col gap-2">
           {submitError && (
             <p
@@ -1372,10 +1386,12 @@ export function StagePortalScoringClient({
           </div>
         </div>
       </StickyBar>
+      </div>
 
-      {!isScratchpadOpen && (
-        <FloatingLauncher onClick={() => setIsScratchpadOpen(true)} />
-      )}
+      <FloatingLauncher
+        isOpen={isScratchpadOpen}
+        onClick={() => setIsScratchpadOpen(!isScratchpadOpen)}
+      />
 
       {isScratchpadOpen && (
         <ScratchpadOverlay

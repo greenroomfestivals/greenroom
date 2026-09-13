@@ -1,13 +1,14 @@
-import { PenTool } from "lucide-react";
+import { PenTool, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/core/utils/cn";
 
 interface FloatingLauncherProps {
+  isOpen?: boolean;
   onClick: () => void;
 }
 
-export function FloatingLauncher({ onClick }: FloatingLauncherProps) {
+export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
   const [position, setPosition] = useState({ x: 24, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -104,7 +105,10 @@ export function FloatingLauncher({ onClick }: FloatingLauncherProps) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       className={cn(
-        "fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform touch-none",
+        "fixed z-[100] flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform touch-none",
+        isOpen
+          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          : "bg-primary text-primary-foreground",
         isDragging
           ? "cursor-grabbing scale-105"
           : "cursor-pointer hover:scale-105",
@@ -114,9 +118,9 @@ export function FloatingLauncher({ onClick }: FloatingLauncherProps) {
         left: position.x,
         top: position.y,
       }}
-      aria-label="Open Scratchpad"
+      aria-label={isOpen ? "Close Scratchpad" : "Open Scratchpad"}
     >
-      <PenTool className="h-6 w-6" />
+      {isOpen ? <X className="h-6 w-6" /> : <PenTool className="h-6 w-6" />}
     </button>
   );
 }
