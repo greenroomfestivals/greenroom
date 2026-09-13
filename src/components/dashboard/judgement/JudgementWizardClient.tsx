@@ -184,14 +184,20 @@ export function JudgementWizardClient({
 
   // ----------------------------------------------------- derived lists ----
   const filteredJudgeProgrammes = useMemo(
-    () =>
-      judgementFilters.filterProgrammes(judgeProgrammes, {
+    () => {
+      const filtered = judgementFilters.filterProgrammes(judgeProgrammes, {
         search: filters.searchQuery,
         filterType: filters.filterType,
         filterCategory: filters.filterCategory,
         matchesStageFilter: filters.matchesStageFilter,
         matchesScheduleAndDate: filters.matchesScheduleAndDate,
-      }),
+      });
+      return filtered.sort((a, b) => {
+        const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
+        const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
+        return bActive - aActive;
+      });
+    },
     [
       judgeProgrammes,
       filters.searchQuery,
@@ -199,12 +205,13 @@ export function JudgementWizardClient({
       filters.filterCategory,
       filters.matchesStageFilter,
       filters.matchesScheduleAndDate,
+      activeByProgrammeId,
     ],
   );
 
   const filteredRejudgeProgrammes = useMemo(
-    () =>
-      rejudgeProgrammes.filter((p) => {
+    () => {
+      const filtered = rejudgeProgrammes.filter((p) => {
         if (!filters.matchesStageFilter(p.reportingDetails?.stageId ?? null))
           return false;
         if (!filters.matchesScheduleAndDate(p.reportingDetails)) return false;
@@ -230,7 +237,13 @@ export function JudgementWizardClient({
         )
           return false;
         return true;
-      }),
+      });
+      return filtered.sort((a, b) => {
+        const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
+        const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
+        return bActive - aActive;
+      });
+    },
     [
       rejudgeProgrammes,
       filters.matchesStageFilter,
@@ -239,6 +252,7 @@ export function JudgementWizardClient({
       filters.rejudgeCategoryFilter,
       filters.rejudgeJudgingModeFilter,
       judgedByProgrammeId,
+      activeByProgrammeId,
     ],
   );
 
