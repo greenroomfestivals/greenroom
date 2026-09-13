@@ -137,6 +137,7 @@ export {
   useStagePortalBoard,
   useStagePortalCredential,
   useStagePortalLogin,
+  useStagePortalPin,
   useStagePortalScorePayload,
   useStartJudgement,
   useStartProgrammeReporting,

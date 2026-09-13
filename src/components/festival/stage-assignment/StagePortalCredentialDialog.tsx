@@ -2,7 +2,7 @@
 
 import { Copy, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useResetStagePortalCredential } from "@/api/client/server-actions";
+import { useResetStagePortalCredential, useStagePortalPin } from "@/api/client/server-actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,14 +43,18 @@ export function StagePortalCredentialDialog({
   const [revealedPin, setRevealedPin] = useState<string | null>(null);
   const reset = useResetStagePortalCredential();
 
+  const pinQuery = useStagePortalPin(festivalId, open ? stageId : null);
+
   // Seed the revealed PIN from the caller whenever it changes (e.g. when the
   // credentials dialog is auto-opened after a stage was created). Closing the
   // dialog clears it so a re-open without a fresh `initialPin` starts clean.
   useEffect(() => {
     if (initialPin) {
       setRevealedPin(initialPin);
+    } else if (pinQuery.data?.pin) {
+      setRevealedPin(pinQuery.data.pin);
     }
-  }, [initialPin]);
+  }, [initialPin, pinQuery.data?.pin]);
 
   const copyToClipboard = async (label: string, value: string) => {
     try {
@@ -65,7 +69,9 @@ export function StagePortalCredentialDialog({
     <Dialog
       open={open}
       onOpenChange={(o) => {
-        if (!o) setRevealedPin(null);
+        if (!o) {
+          setRevealedPin(null);
+        }
         onOpenChange(o);
       }}
     >
@@ -76,14 +82,14 @@ export function StagePortalCredentialDialog({
           </DialogTitle>
           <DialogDescription>
             Judges enter this PIN on the stage portal to log in. Share it
-            securely — it's only shown right after creation or reset.
+            securely.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {revealedPin ? (
             <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                PIN (shown once — copy it now)
+                PIN
               </p>
               <div className="mt-1 flex items-center gap-1.5">
                 <p className="min-w-0 flex-1 truncate font-mono text-lg font-bold tracking-widest text-primary">
@@ -103,7 +109,7 @@ export function StagePortalCredentialDialog({
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              The PIN is only shown right after it's created or reset.
+              {pinQuery.isLoading ? "Loading PIN..." : "The PIN is not available."}
             </p>
           )}
           {!isReadOnly && stageId ? (

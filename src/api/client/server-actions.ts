@@ -63,7 +63,9 @@ import {
 } from "@/features/stage-portal/actions/stage-portal.actions";
 import {
   getStagePortalCredentialAction,
+  provisionStagePortalCredential,
   resetStagePortalCredentialAction,
+  getStagePortalPinAction,
 } from "@/features/stage-portal/actions/stage-portal-credential.actions";
 import { provisionOffStageAction } from "@/features/stages/actions/off-stage.actions";
 import { toast } from "@/lib/toast";
@@ -267,6 +269,14 @@ export function useStagePortalCredential(festivalId: string, stageId: string) {
   return useQuery({
     queryKey: ["stage-portal-credential", festivalId, stageId],
     queryFn: async () => getStagePortalCredentialAction(festivalId, stageId),
+    enabled: !!festivalId && !!stageId,
+  });
+}
+
+export function useStagePortalPin(festivalId: string, stageId: string | null) {
+  return useQuery({
+    queryKey: ["stage-portal-pin", festivalId, stageId],
+    queryFn: () => getStagePortalPinAction(festivalId, stageId!),
     enabled: !!festivalId && !!stageId,
   });
 }

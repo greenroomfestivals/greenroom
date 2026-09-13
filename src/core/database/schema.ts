@@ -992,6 +992,7 @@ export const stagePortalCredential = pgTable(
     stageId: text("stage_id").notNull(),
     accessCode: text("access_code").notNull(),
     pinHash: text("pin_hash").notNull(),
+    pinPlaintext: text("pin_plaintext"),
     attempts: integer().default(0).notNull(),
     lockedUntil: tzTimestampNamed("locked_until"),
     createdAt: tzTimestampNamed("created_at")

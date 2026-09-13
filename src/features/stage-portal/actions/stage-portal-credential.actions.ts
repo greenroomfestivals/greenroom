@@ -39,6 +39,7 @@ export async function provisionStagePortalCredential(
     stageId: input.stageId,
     accessCode,
     pinHash,
+    pinPlaintext: pin,
     attempts: 0,
     lockedUntil: null,
     createdAt: now,
@@ -65,6 +66,25 @@ export async function getStagePortalCredentialAction(
   if (!credential) throw new AppError(ERROR_MESSAGES.NOT_FOUND);
 
   return { accessCode: credential.accessCode };
+}
+
+export async function getStagePortalPinAction(
+  festivalId: string,
+  stageId: string,
+) {
+  const session = await getSession();
+  await assertFestivalAccess(session, festivalId, { requireWritable: true });
+
+  const credential = await db.query.stagePortalCredential.findFirst({
+    where: and(
+      eq(credentialTable.festivalId, festivalId),
+      eq(credentialTable.stageId, stageId),
+    ),
+    columns: { pinPlaintext: true },
+  });
+  if (!credential) throw new AppError(ERROR_MESSAGES.NOT_FOUND);
+
+  return { pin: credential.pinPlaintext };
 }
 
 export async function resetStagePortalCredentialAction(
@@ -94,6 +114,7 @@ export async function resetStagePortalCredentialAction(
       .set({
         accessCode,
         pinHash,
+        pinPlaintext: pin,
         attempts: 0,
         lockedUntil: null,
         updatedAt: now,
