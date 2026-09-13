@@ -346,24 +346,31 @@ export function AnnouncerClient({
 
         {/* Right Column (1/4) */}
         <div className="space-y-6 lg:col-span-1 order-1 lg:order-2">
-          {standingsContext.queuedTeamStandings.length > 0 && (
-            <Card className="border-violet-500/20 bg-violet-500/5 shadow-sm">
-              <CardHeader className="py-4 border-b border-violet-500/10">
-                <CardTitle className="text-sm font-semibold flex items-center justify-between text-violet-700 dark:text-violet-400">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4" />
-                    Queued Standings
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4">
-                <div className="text-sm text-muted-foreground">
-                  Standings updated after Result #
-                  {standingsContext.standingsPublishedAtResultNumber} are
-                  waiting to be announced.
-                </div>
+          <div className="border ring-1 ring-border rounded-xl bg-card overflow-hidden shadow-sm sticky top-6">
+            <div className="p-4 border-b flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold tracking-tight flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-amber-500" />
+                  Team Standings
+                </h2>
+                {standingsContext.queuedTeamStandings.length > 0 &&
+                standingsContext.standingsPublishedAtResultNumber != null ? (
+                  <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono px-2 py-0.5 text-xs shadow-sm">
+                    After #{standingsContext.standingsPublishedAtResultNumber}
+                  </Badge>
+                ) : standingsContext.standingsAnnouncedAt ? (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-normal bg-background"
+                  >
+                    Updated
+                  </Badge>
+                ) : null}
+              </div>
+
+              {standingsContext.queuedTeamStandings.length > 0 && (
                 <Button
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                  className="w-full bg-[#0088cc] hover:bg-[#0088cc]/90 text-white shadow-sm"
                   onClick={() => {
                     startTransition(async () => {
                       const res = await announceStandings(festivalId);
@@ -384,53 +391,42 @@ export function AnnouncerClient({
                   )}
                   Announce Standings
                 </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="border-0 ring-1 ring-border rounded-xl bg-card overflow-hidden shadow-sm sticky top-6">
-            <div className="bg-muted/50 p-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold tracking-tight flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                Live Standings
-              </h2>
-              {standingsContext.standingsAnnouncedAt && (
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-normal bg-background"
-                >
-                  Updated
-                </Badge>
               )}
             </div>
 
             <ScrollArea className="max-h-[400px]">
-              {standingsContext.publishedStandings.length === 0 ? (
+              {(standingsContext.queuedTeamStandings.length > 0
+                ? standingsContext.queuedTeamStandings
+                : standingsContext.publishedStandings
+              ).length === 0 ? (
                 <p className="text-sm text-muted-foreground p-6 text-center">
                   No standings published yet.
                 </p>
               ) : (
                 <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75 border-b shadow-sm">
-                    <TableRow>
-                      <TableHead className="w-16 pl-3">Place</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead className="text-right pr-3">Pts</TableHead>
+                  <TableHeader className="sticky top-0 z-10 bg-card border-b shadow-sm">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-20 pl-4 font-bold text-xs tracking-wider text-muted-foreground uppercase">Rank</TableHead>
+                      <TableHead className="font-bold text-xs tracking-wider text-muted-foreground uppercase">Team</TableHead>
+                      <TableHead className="text-right pr-4 font-bold text-xs tracking-wider text-muted-foreground uppercase">Pts</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {standingsContext.publishedStandings.map((s) => (
+                    {(standingsContext.queuedTeamStandings.length > 0
+                      ? standingsContext.queuedTeamStandings
+                      : standingsContext.publishedStandings
+                    ).map((s) => (
                       <TableRow
                         key={s.name}
-                        className={cn(MEDAL_ROWS[s.rank - 1])}
+                        className={cn("hover:bg-muted/50 transition-colors", MEDAL_ROWS[s.rank - 1])}
                       >
-                        <TableCell className="pl-3 py-2">
+                        <TableCell className="pl-4 py-3">
                           <PlaceLabel rank={s.rank} />
                         </TableCell>
-                        <TableCell className="font-semibold py-2 text-sm">
+                        <TableCell className="font-semibold py-3 text-[15px]">
                           {s.name}
                         </TableCell>
-                        <TableCell className="text-right font-mono font-bold pr-3 py-2 text-sm">
+                        <TableCell className="text-right font-mono font-bold pr-4 py-3 text-[15px]">
                           {s.points}
                         </TableCell>
                       </TableRow>

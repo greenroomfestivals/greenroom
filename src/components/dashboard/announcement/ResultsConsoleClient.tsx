@@ -854,55 +854,67 @@ export function ResultsConsoleClient({
             />
           )}
         </div>
-
         {/* Section 2 — Team Standings */}
         <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-6 lg:self-start order-1 lg:order-2">
-          <div className="flex items-center lg:flex-row justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2 w-full sm:w-fit">
-              <div className="relative w-1/3 md:w-24">
-                <Input
-                  type="number"
-                  min={0}
-                  placeholder="After #"
-                  className="h-8 pl-3 text-sm font-medium"
-                  value={upToResultNumber}
-                  onChange={(e) => handleAfterNumberChange(e.target.value)}
-                />
+          <div className="border ring-1 ring-border rounded-xl bg-card overflow-hidden flex flex-col">
+            <div className="p-4 border-b flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold tracking-tight flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-amber-500" />
+                  Team Standings
+                </h2>
+                {upToResultNumber && parseInt(upToResultNumber, 10) > 0 && (
+                  <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono px-2 py-0.5 text-xs shadow-sm">
+                    After #{upToResultNumber}
+                  </Badge>
+                )}
               </div>
-              <Select
-                value={standingsScope}
-                onValueChange={(v) =>
-                  setStandingsScope(v as "published" | "all")
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                disabled={
+                  isPending ||
+                  !upToResultNumber ||
+                  parseInt(upToResultNumber, 10) < 0
                 }
+                onClick={handlePublishStandings}
               >
-                <SelectTrigger className="h-8 bg-background w-2/3 md:w-fit text-sm font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="published">Published Results</SelectItem>
-                  <SelectItem value="all">All Results</SelectItem>
-                </SelectContent>
-              </Select>
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Megaphone className="h-4 w-4 mr-2" />
+                )}
+                Send to Announcer
+              </Button>
             </div>
 
-            <Button
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 w-full md:w-fit text-white shadow-sm h-8"
-              disabled={
-                isPending ||
-                !upToResultNumber ||
-                parseInt(upToResultNumber, 10) < 0
-              }
-              onClick={handlePublishStandings}
-            >
-              {isPending && (
-                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-              )}
-              Send to Announcer
-            </Button>
-          </div>
-
-          <div className="border rounded-xl bg-card overflow-hidden flex flex-col">
+            <div className="bg-muted/30 p-3 border-b flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 w-full sm:w-fit">
+                <div className="relative w-1/3 md:w-24">
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="After #"
+                    className="h-8 pl-3 text-sm font-medium bg-background"
+                    value={upToResultNumber}
+                    onChange={(e) => handleAfterNumberChange(e.target.value)}
+                  />
+                </div>
+                <Select
+                  value={standingsScope}
+                  onValueChange={(v) =>
+                    setStandingsScope(v as "published" | "all")
+                  }
+                >
+                  <SelectTrigger className="h-8 bg-background w-2/3 md:w-fit text-sm font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="published">Published Results</SelectItem>
+                    <SelectItem value="all">All Results</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <ScrollArea className="max-h-[400px] relative">
               {isFetchingStandings && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-20 flex items-center justify-center">
@@ -915,16 +927,16 @@ export function ResultsConsoleClient({
                 </p>
               ) : (
                 <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-muted/30 backdrop-blur supports-[backdrop-filter]:bg-card/75 border-b shadow-sm">
-                    <TableRow>
-                      <TableHead className="w-20 pl-4 font-semibold text-foreground">
-                        Place
+                  <TableHeader className="sticky top-0 z-10 bg-card border-b shadow-sm">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-20 pl-4 font-bold text-xs tracking-wider text-muted-foreground uppercase">
+                        Rank
                       </TableHead>
-                      <TableHead className="font-semibold text-foreground">
+                      <TableHead className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
                         Team
                       </TableHead>
-                      <TableHead className="text-right pr-4 font-semibold text-foreground whitespace-nowrap">
-                        Points
+                      <TableHead className="text-right pr-4 font-bold text-xs tracking-wider text-muted-foreground uppercase whitespace-nowrap">
+                        Pts
                       </TableHead>
                     </TableRow>
                   </TableHeader>

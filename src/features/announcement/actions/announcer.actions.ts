@@ -208,11 +208,14 @@ export async function publishResult(
     });
     if (!programme) return { success: false, error: "Programme not found" };
 
-    if (programme.resultNumber == null) {
-      return {
-        success: false,
-        error: "Assign a result number before publishing.",
-      };
+    let finalResultNumber = programme.resultNumber;
+
+    if (finalResultNumber == null) {
+      const maxResult = await db
+        .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
+        .from(programmeTable)
+        .where(eq(programmeTable.festivalId, festivalId));
+      finalResultNumber = (maxResult[0]?.maxNum ?? 0) + 1;
     }
 
     const session = await getSession();
@@ -232,6 +235,7 @@ export async function publishResult(
       .update(programmeTable)
       .set({
         status: "PUBLISHED",
+        resultNumber: finalResultNumber,
         publishedAt: now,
         publishedByEmail: (session?.email as string) ?? null,
         publishedByName: actorName,
@@ -278,11 +282,14 @@ export async function announceResult(
     });
     if (!programme) return { success: false, error: "Programme not found" };
 
-    if (programme.resultNumber == null) {
-      return {
-        success: false,
-        error: "Assign a result number before announcing.",
-      };
+    let finalResultNumber = programme.resultNumber;
+
+    if (finalResultNumber == null) {
+      const maxResult = await db
+        .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
+        .from(programmeTable)
+        .where(eq(programmeTable.festivalId, festivalId));
+      finalResultNumber = (maxResult[0]?.maxNum ?? 0) + 1;
     }
 
     const session = await getSession();
@@ -302,6 +309,7 @@ export async function announceResult(
       .update(programmeTable)
       .set({
         status: "ANNOUNCED",
+        resultNumber: finalResultNumber,
         publishedAt: now,
         publishedByEmail: (session?.email as string) ?? null,
         publishedByName: actorName,
@@ -385,8 +393,8 @@ export async function announceResult(
     await Promise.all([
       publish(keys.festivalAnnounce(festivalId), {
         programmeId,
-        position: programme.resultNumber,
-        resultNumber: programme.resultNumber,
+        position: finalResultNumber,
+        resultNumber: finalResultNumber,
         startedAt: now,
         programmeName: programme.name,
         winnerName,
