@@ -13,7 +13,6 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { useMarkCodeLetterAbsence } from "@/api/client/server-actions";
 import { StatusPill } from "@/components/app/AppSection";
 import {
   AlertDialog,
@@ -55,33 +54,7 @@ import { compareCodeLetters } from "@/features/programmes/services/scratch-code-
 import { toast } from "@/lib/toast";
 import { FloatingLauncher, ScratchpadOverlay } from "./scratchpad";
 
-function AbsentToggle({
-  isAbsent,
-  disabled,
-  onToggle,
-}: {
-  isAbsent: boolean;
-  disabled?: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <Button
-      variant="outline"
-      type="button"
-      onClick={onToggle}
-      disabled={disabled}
-      className={cn(
-        "mt-1 h-auto gap-1.5 px-2 py-1 text-[11px] [&_svg]:size-3.5",
-        isAbsent
-          ? "border-warning/50 bg-warning/10 text-warning hover:bg-warning/20"
-          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      <UserX aria-hidden />
-      {isAbsent ? "Absent — tap to restore" : "Mark absent"}
-    </Button>
-  );
-}
+
 
 export type StagePortalLivePayload = {
   configId: string;
@@ -601,12 +574,6 @@ export function StagePortalScoringClient({
       return out;
     },
   );
-  const markAbsence = useMarkCodeLetterAbsence();
-  const [absentIds, setAbsentIds] = useState<Set<string>>(
-    () =>
-      new Set(payload.codeLetters.filter((c) => c.isAbsent).map((c) => c.id)),
-  );
-
   // Code letters sorted A-Z by their code value so the judge sees them in
   // natural alphabetical order (A..Z, then AA..ZZ) regardless of the order they were issued.
   const sortedCodeLetters = useMemo(
@@ -617,46 +584,13 @@ export function StagePortalScoringClient({
     [payload.codeLetters],
   );
 
-  // Absent code letters (reported but did not perform) are excluded from every
-  // "all filled" / completion / progress check; they still render so a judge
-  // can toggle them back.
   const activeCodeLetters = useMemo(
-    () => sortedCodeLetters.filter((c) => !absentIds.has(c.id)),
-    [sortedCodeLetters, absentIds],
+    () => sortedCodeLetters.filter((c) => !c.isAbsent),
+    [sortedCodeLetters],
   );
 
   // Placeholder text for every score field e.g. "0–100"
   const scorePlaceholder = `0–${payload.scoreLimit}`;
-
-  const onToggleAbsent = (codeLetterId: string, nextAbsent: boolean) => {
-    setAbsentIds((prev) => {
-      const next = new Set(prev);
-      if (nextAbsent) next.add(codeLetterId);
-      else next.delete(codeLetterId);
-      return next;
-    });
-    if (nextAbsent) {
-      setScoresByKey((prev) => {
-        const next = { ...prev };
-        for (const j of payload.judges) delete next[`${j.id}:${codeLetterId}`];
-        return next;
-      });
-    }
-    markAbsence.mutate(
-      { configId: payload.configId, codeLetterId, isAbsent: nextAbsent },
-      {
-        onError: () => {
-          // revert on failure
-          setAbsentIds((prev) => {
-            const next = new Set(prev);
-            if (nextAbsent) next.delete(codeLetterId);
-            else next.add(codeLetterId);
-            return next;
-          });
-        },
-      },
-    );
-  };
 
   const everyCellValidGroup = useMemo(() => {
     return activeCodeLetters.every((c) =>
@@ -1152,7 +1086,7 @@ export function StagePortalScoringClient({
              of the width on an iPad, which is what judges actually hold. */
           <div className="grid gap-2.5 md:grid-cols-2">
             {sortedCodeLetters.map((c) => {
-              const isAbsent = absentIds.has(c.id);
+              const isAbsent = c.isAbsent;
               const effectiveJudgeId =
                 payload.judges.length === 1
                   ? payload.judges[0]!.id
@@ -1200,11 +1134,6 @@ export function StagePortalScoringClient({
                         {others}
                       </p>
                     )}
-                    <AbsentToggle
-                      isAbsent={isAbsent}
-                      disabled={markAbsence.isPending}
-                      onToggle={() => onToggleAbsent(c.id, !isAbsent)}
-                    />
                   </div>
 
                   {isAbsent ? (
@@ -1246,7 +1175,7 @@ export function StagePortalScoringClient({
         ) : (
           <div className="space-y-3">
             {sortedCodeLetters.map((c) => {
-              const isAbsent = absentIds.has(c.id);
+              const isAbsent = c.isAbsent;
               return (
                 <div
                   key={c.id}
@@ -1264,11 +1193,6 @@ export function StagePortalScoringClient({
                     >
                       {c.code}
                     </p>
-                    <AbsentToggle
-                      isAbsent={isAbsent}
-                      disabled={markAbsence.isPending}
-                      onToggle={() => onToggleAbsent(c.id, !isAbsent)}
-                    />
                   </div>
 
                   {isAbsent ? (
