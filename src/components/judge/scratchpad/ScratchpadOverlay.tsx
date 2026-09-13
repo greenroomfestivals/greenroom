@@ -34,7 +34,7 @@ export function ScratchpadOverlay({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background lg:static lg:z-auto lg:h-full lg:w-[var(--split-right)] lg:shrink-0 lg:border-l lg:border-border">
+    <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background lg:static lg:z-auto lg:h-full lg:w-[40%] xl:w-[50%] lg:shrink-0 lg:border-l lg:border-border">
       <div className="flex-1 overflow-hidden relative">
         <ExcalidrawBoard {...keyProps} isReadOnly={isReadOnly} />
       </div>

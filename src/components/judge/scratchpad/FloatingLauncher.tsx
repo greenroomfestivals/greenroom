@@ -9,14 +9,16 @@ interface FloatingLauncherProps {
 }
 
 export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
-  const [position, setPosition] = useState({ x: 24, y: 100 });
+  const [position, setPosition] = useState({ x: 24, y: 0 }); // y will be set on mount
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const buttonStartPos = useRef({ x: 0, y: 0 });
   const hasDragged = useRef(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const snapToEdge = (x: number, y: number) => {
       if (typeof window === "undefined") return { x, y };
       const padding = 24;
@@ -37,7 +39,15 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
       return { x: newX, y: newY };
     };
 
-    // Snap to the closest edge on mount or window resize.
+    // Initialize to bottom-left on mount if y is 0
+    setPosition((prev) => {
+      if (prev.y === 0) {
+        return snapToEdge(24, window.innerHeight - 120);
+      }
+      return snapToEdge(prev.x, prev.y);
+    });
+
+    // Snap to the closest edge on window resize.
     const handleResize = () => {
       setPosition((prev) => snapToEdge(prev.x, prev.y));
     };
@@ -95,6 +105,8 @@ export function FloatingLauncher({ isOpen, onClick }: FloatingLauncherProps) {
       onClick();
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <button
