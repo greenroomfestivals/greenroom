@@ -12,6 +12,7 @@ import {
   programmeAssignment,
   programmeAssignmentMember,
   programmeCodeLetter as programmeCodeLetterTable,
+  programmeCodeLetterRecipient as programmeCodeLetterRecipientTable,
   programme as programmeTable,
   programmeTeamLead,
   result as resultTable,
@@ -59,15 +60,11 @@ export async function getCallListAssignmentsAction(
         groupName: groupTable.name,
         participantName: participantTable.name,
         chestNumber: participantTable.chestNumber,
-        codeLetter: programmeCodeLetterTable.code,
+        codeLetter: sql<string>`"codeLetterSq"."code"`,
         isTeamLead: sql<boolean>`CASE WHEN ${programmeTeamLead.participantId} IS NOT NULL THEN true ELSE false END`,
       })
       .from(programmeAssignment)
       .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
-      .leftJoin(
-        programmeCodeLetterTable,
-        eq(programmeAssignment.id, programmeCodeLetterTable.assignmentId),
-      )
       .leftJoin(
         programmeAssignmentMember,
         eq(programmeAssignment.id, programmeAssignmentMember.assignmentId),
@@ -78,6 +75,21 @@ export async function getCallListAssignmentsAction(
           eq(programmeAssignment.participantId, participantTable.id),
           eq(programmeAssignmentMember.participantId, participantTable.id),
         ),
+      )
+      .leftJoin(
+        db
+          .select({
+            participantId: programmeCodeLetterRecipientTable.participantId,
+            code: programmeCodeLetterTable.code,
+          })
+          .from(programmeCodeLetterTable)
+          .innerJoin(
+            programmeCodeLetterRecipientTable,
+            eq(programmeCodeLetterTable.id, programmeCodeLetterRecipientTable.codeLetterId)
+          )
+          .where(eq(programmeCodeLetterTable.programmeId, programmeId))
+          .as("codeLetterSq"),
+        eq(participantTable.id, sql`"codeLetterSq"."participant_id"`),
       )
       .leftJoin(
         programmeTeamLead,
