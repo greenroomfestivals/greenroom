@@ -25,10 +25,14 @@ export default async function AnnouncerPage({
     globalRole: session?.role ?? null,
   });
 
-  if (
-    !context ||
-    !["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role)
-  ) {
+  if (!context) {
+    notFound();
+  }
+  const hasAccess =
+    ["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role) ||
+    context.memberRoles.includes("ANNOUNCER");
+  
+  if (!hasAccess) {
     notFound();
   }
 

@@ -48,10 +48,12 @@ export default async function JudgementPage({
     globalRole: session?.role ?? null,
   });
   if (!context) return notFound();
-  if (
-    !["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(context.role)
-  )
-    return notFound();
+  
+  const hasAccess =
+    ["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(context.role) ||
+    context.memberRoles.includes("STAGE_MANAGER");
+
+  if (!hasAccess) return notFound();
 
   const isStageManager = context.role === "STAGE_MANAGER";
   const [initialDashboardData, stages] = await Promise.all([

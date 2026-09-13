@@ -31,7 +31,7 @@ export default async function GeneralEntriesPage({
     globalRole: session?.role ?? null,
   });
 
-  if (!context || !["ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role)) {
+  if (!context || (!["ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role) && !context.memberRoles.some(r => ["ADMIN", "OWNER", "SUPER_ADMIN"].includes(r)))) {
     notFound();
   }
 

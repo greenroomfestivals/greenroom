@@ -35,7 +35,7 @@ export default async function CheckpointDetailPage({
     notFound();
   }
 
-  if (!["ADMIN", "OWNER", "VOLUNTEER"].includes(context.role)) {
+  if ((!["ADMIN", "OWNER", "VOLUNTEER"].includes(context.role) && !context.memberRoles.some(r => ["ADMIN", "OWNER", "VOLUNTEER"].includes(r)))) {
     redirect(`/dashboard/${slug}`);
   }
 
