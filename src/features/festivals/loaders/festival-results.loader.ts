@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/core/database/client";
 import {
   programmeAssignmentMember as assignmentMemberTable,
@@ -134,8 +134,12 @@ export async function getPublicProgrammeResults(
         programmeTable.name,
         programmeTable.type,
         categoryTable.name,
+        programmeTable.resultNumber,
       )
-      .orderBy(asc(programmeTable.name), asc(programmeTable.id))
+      .orderBy(
+        sql`${programmeTable.resultNumber} DESC NULLS LAST`,
+        desc(programmeTable.id)
+      )
       .limit(pageSize)
       .offset((page - 1) * pageSize),
 
