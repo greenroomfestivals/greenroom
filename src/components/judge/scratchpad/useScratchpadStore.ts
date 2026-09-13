@@ -1,5 +1,5 @@
-import type { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
-import type { AppState } from "@excalidraw/excalidraw/types/types";
+import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
+import type { AppState } from "@excalidraw/excalidraw/types";
 import localforage from "localforage";
 import { useCallback, useEffect, useState } from "react";
 

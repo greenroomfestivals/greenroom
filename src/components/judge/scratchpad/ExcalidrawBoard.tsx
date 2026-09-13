@@ -1,11 +1,11 @@
 "use client";
 
 import { Excalidraw, MainMenu, WelcomeScreen } from "@excalidraw/excalidraw";
-import type { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
+import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type {
   AppState,
   ExcalidrawImperativeAPI,
-} from "@excalidraw/excalidraw/types/types";
+} from "@excalidraw/excalidraw/types";
 import React, { useCallback, useRef } from "react";
 import {
   type ScratchpadKeyProps,
