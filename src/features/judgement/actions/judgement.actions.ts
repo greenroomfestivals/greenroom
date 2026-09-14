@@ -2164,6 +2164,7 @@ export async function previewJudgeSubmissionSummaryAction(input: {
     points: number;
     grade: string | null;
     awardPoints: number;
+    position?: number | null;
   }> = [];
 
   const tempRows: Array<{
