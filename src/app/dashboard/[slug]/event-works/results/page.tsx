@@ -33,7 +33,10 @@ export default async function ResultsConsolePage({
 
   if (
     !context ||
-    (!["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role) && !context.memberRoles.some(r => ["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(r)))
+    (!["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role) &&
+      !context.memberRoles.some((r) =>
+        ["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(r),
+      ))
   ) {
     notFound();
   }

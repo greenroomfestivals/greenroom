@@ -9,18 +9,12 @@ import {
   useState,
   useTransition,
 } from "react";
+import { StandingsPointsWithOpener } from "@/components/dashboard/standings/StandingsPointsWithOpener";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { AnnouncerResultDrawer } from "@/components/dashboard/announcement/AnnouncerResultDrawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
@@ -169,31 +163,16 @@ export function AnnouncerClient({
     });
   }, [queue]);
 
-  function handleAnnounce(programme?: AnnouncerQueueProgramme) {
-    const target = programme ?? activeProgramme;
-    if (!target) return;
-    startTransition(async () => {
-      const res = await announceResult(festivalId, target.id);
-      if (!res.success) {
-        toast.error(res.error);
-        return;
-      }
-      toast.success(
-        `Result #${target.resultNumber} announced — "${target.name}" is now live.`,
-      );
-      setActiveProgramme(null);
-      router.refresh();
-    });
-  }
+
 
   const hasQueue = sorted.length > 0;
   const hasPublished = publishedResults && publishedResults.length > 0;
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Left Column (3/4) */}
-        <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+        {/* Left Column (3/5) */}
+        <div className="md:col-span-3 space-y-8 order-2 md:order-1">
           {!hasQueue && !hasPublished ? (
             <Card className="border-dashed shadow-none">
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -344,8 +323,8 @@ export function AnnouncerClient({
           )}
         </div>
 
-        {/* Right Column (1/4) */}
-        <div className="space-y-6 lg:col-span-1 order-1 lg:order-2">
+        {/* Right Column (2/5) */}
+        <div className="space-y-6 md:col-span-2 order-1 md:order-2">
           <div className="border ring-1 ring-border rounded-xl bg-card overflow-hidden shadow-sm sticky top-6">
             <div className="p-4 border-b flex flex-col gap-3">
               <div className="flex items-center justify-between">
@@ -403,272 +382,95 @@ export function AnnouncerClient({
                   No standings published yet.
                 </p>
               ) : (
-                <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-card border-b shadow-sm">
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-20 pl-4 font-bold text-xs tracking-wider text-muted-foreground uppercase">Rank</TableHead>
-                      <TableHead className="font-bold text-xs tracking-wider text-muted-foreground uppercase">Team</TableHead>
-                      <TableHead className="text-right pr-4 font-bold text-xs tracking-wider text-muted-foreground uppercase">Pts</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <div className="flex-1 overflow-auto">
+                  {/* Desktop Table */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="pl-5 w-20 font-semibold text-foreground text-xs uppercase tracking-wide">
+                            Rank
+                          </TableHead>
+                          <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wide">
+                            Team
+                          </TableHead>
+                          <TableHead className="text-right pr-5 font-semibold text-foreground text-xs uppercase tracking-wide">
+                            Pts
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(standingsContext.queuedTeamStandings.length > 0
+                          ? standingsContext.queuedTeamStandings
+                          : standingsContext.publishedStandings
+                        ).map((s) => (
+                          <TableRow
+                            key={s.name}
+                            className={cn(
+                              "hover:bg-muted/40 transition-colors",
+                              MEDAL_ROWS[s.rank - 1],
+                            )}
+                          >
+                            <TableCell className="pl-5 py-3">
+                              <PlaceLabel rank={s.rank} />
+                            </TableCell>
+                            <TableCell className="font-medium text-sm py-3">
+                              {s.name}
+                            </TableCell>
+                            <TableCell className="text-right pr-5 font-mono font-bold text-sm py-3 whitespace-nowrap">
+                              <StandingsPointsWithOpener
+                                teamName={s.name}
+                                points={s.points}
+                                programmePoints={s.programmePoints}
+                                generalPoints={s.generalPoints}
+                                generalEntries={s.generalEntries}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Cards */}
+                  <div className="sm:hidden divide-y divide-border">
                     {(standingsContext.queuedTeamStandings.length > 0
                       ? standingsContext.queuedTeamStandings
                       : standingsContext.publishedStandings
                     ).map((s) => (
-                      <TableRow
+                      <div
                         key={s.name}
-                        className={cn("hover:bg-muted/50 transition-colors", MEDAL_ROWS[s.rank - 1])}
+                        className={cn(
+                          "px-5 py-3 flex items-center justify-between",
+                          MEDAL_ROWS[s.rank - 1],
+                        )}
                       >
-                        <TableCell className="pl-4 py-3">
+                        <div className="flex items-center gap-3">
                           <PlaceLabel rank={s.rank} />
-                        </TableCell>
-                        <TableCell className="font-semibold py-3 text-[15px]">
-                          {s.name}
-                        </TableCell>
-                        <TableCell className="text-right font-mono font-bold pr-4 py-3 text-[15px]">
-                          {s.points}
-                        </TableCell>
-                      </TableRow>
+                          <span className="font-medium text-sm">{s.name}</span>
+                        </div>
+                        <StandingsPointsWithOpener
+                          teamName={s.name}
+                          points={s.points}
+                          programmePoints={s.programmePoints}
+                          generalPoints={s.generalPoints}
+                          generalEntries={s.generalEntries}
+                        />
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </div>
               )}
             </ScrollArea>
           </div>
         </div>
       </div>
 
-      {/* Announcer drawer */}
-      <Drawer
-        open={!!activeProgramme}
+      <AnnouncerResultDrawer
+        festivalId={festivalId}
+        activeProgramme={activeProgramme}
         onOpenChange={(open) => !open && setActiveProgramme(null)}
-      >
-        <DrawerContent>
-          <div className="mx-auto w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            {activeProgramme && (
-              <>
-                <DrawerHeader>
-                  <DrawerTitle className="flex items-center gap-2">
-                    {activeProgramme.resultNumber != null && (
-                      <span className="inline-flex items-center justify-center rounded-lg bg-violet-500/10 px-2 py-0.5 font-mono text-sm font-bold text-violet-600 dark:text-violet-400">
-                        #{activeProgramme.resultNumber}
-                      </span>
-                    )}
-                    <span className="text-xl">{activeProgramme.name}</span>
-                  </DrawerTitle>
-                  <div className="flex items-center gap-2">
-                    <DrawerDescription>
-                      {activeProgramme.categoryName}
-                    </DrawerDescription>
-                    <Badge variant="outline" className="text-[10px]">
-                      {activeProgramme.type === "GROUP"
-                        ? "Group"
-                        : "Individual"}
-                    </Badge>
-                    <Badge variant="outline" className="text-[10px]">
-                      {activeProgramme.stageType === "NON_STAGE"
-                        ? "Offstage"
-                        : "Stage"}
-                    </Badge>
-                  </div>
-                </DrawerHeader>
-
-                {/* Result roster */}
-                <div className="space-y-2 py-4">
-                  <p className="text-sm font-medium">Result Roster</p>
-                  <div className="border rounded-xl shadow-sm overflow-hidden bg-card">
-                    <div className="hidden sm:block overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-muted/30">
-                          <TableRow>
-                            <TableHead className="w-12">SI</TableHead>
-                            <TableHead className="w-16">Code</TableHead>
-                            <TableHead className="w-20">Prize</TableHead>
-                            <TableHead>Participant</TableHead>
-                            <TableHead>Group</TableHead>
-                            <TableHead className="w-16">Grade</TableHead>
-                            <TableHead className="w-20 text-right">
-                              Award Pts
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {activeProgramme.results
-                            .sort(
-                              (a, b) =>
-                                (a.position ?? 999) - (b.position ?? 999),
-                            )
-                            .map((r, idx) => (
-                              <TableRow
-                                key={r.id}
-                                className={cn(
-                                  r.position != null &&
-                                    MEDAL_ROWS[r.position - 1],
-                                )}
-                              >
-                                <TableCell className="text-muted-foreground font-mono">
-                                  {idx + 1}
-                                </TableCell>
-                                <TableCell className="font-mono">
-                                  {r.codeLetter ?? "—"}
-                                </TableCell>
-                                <TableCell>
-                                  {r.position === 1
-                                    ? "🥇 1st"
-                                    : r.position === 2
-                                      ? "🥈 2nd"
-                                      : r.position === 3
-                                        ? "🥉 3rd"
-                                        : "—"}
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {r.participantName ?? "—"}
-                                  {r.chestNumber && (
-                                    <span className="text-xs text-muted-foreground ml-1">
-                                      ({r.chestNumber})
-                                    </span>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                  {r.groupName ?? "—"}
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {r.grade ?? "—"}
-                                </TableCell>
-                                <TableCell className="text-right font-mono font-bold">
-                                  {r.awardPoints}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                    {/* Mobile Cards View */}
-                    <div className="block sm:hidden divide-y divide-border">
-                      {activeProgramme.results
-                        .sort(
-                          (a, b) => (a.position ?? 999) - (b.position ?? 999),
-                        )
-                        .map((r, idx) => (
-                          <div
-                            key={r.id}
-                            className={cn(
-                              "p-4 flex flex-col gap-3",
-                              r.position != null && MEDAL_ROWS[r.position - 1],
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2">
-                                <span className="text-muted-foreground font-mono text-xs mt-0.5 w-4 shrink-0">
-                                  {idx + 1}.
-                                </span>
-                                <span className="font-semibold text-sm">
-                                  {r.participantName ?? "—"}
-                                  {r.chestNumber && (
-                                    <span className="text-xs text-muted-foreground ml-1 font-normal">
-                                      ({r.chestNumber})
-                                    </span>
-                                  )}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {r.position != null && r.position <= 3 ? (
-                                  <span className="font-bold text-sm flex items-center gap-1">
-                                    {r.position === 1
-                                      ? "🥇"
-                                      : r.position === 2
-                                        ? "🥈"
-                                        : "🥉"}
-                                    <span
-                                      className={
-                                        r.position === 1
-                                          ? "text-amber-600 dark:text-amber-400"
-                                          : r.position === 2
-                                            ? "text-slate-500 dark:text-slate-300"
-                                            : "text-orange-600 dark:text-orange-400"
-                                      }
-                                    >
-                                      {r.position === 1
-                                        ? "1st"
-                                        : r.position === 2
-                                          ? "2nd"
-                                          : "3rd"}
-                                    </span>
-                                  </span>
-                                ) : null}
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-6 text-xs text-muted-foreground">
-                              {r.codeLetter && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Code:</span>
-                                  <span className="font-mono text-foreground font-medium">
-                                    {r.codeLetter}
-                                  </span>
-                                </div>
-                              )}
-                              {r.groupName && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Group:</span>
-                                  <span className="font-medium text-foreground">
-                                    {r.groupName}
-                                  </span>
-                                </div>
-                              )}
-                              {r.grade && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Grade:</span>
-                                  <span className="font-medium text-foreground">
-                                    {r.grade}
-                                  </span>
-                                </div>
-                              )}
-                              {r.awardPoints != null && r.awardPoints > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Points:</span>
-                                  <span className="font-mono font-bold text-foreground">
-                                    {r.awardPoints}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-
-                <DrawerFooter className="flex-col sm:flex-row gap-2 px-4 pb-8 pt-4">
-                  <p className="text-xs text-muted-foreground flex-1">
-                    {activeProgramme.resultNumber != null
-                      ? `This publishes result #${activeProgramme.resultNumber} to the public site and generates the poster.`
-                      : "Assign a result number first."}
-                  </p>
-                  <Button
-                    onClick={() => handleAnnounce()}
-                    size="lg"
-                    disabled={isPending || activeProgramme.resultNumber == null}
-                    className="relative overflow-hidden font-bold bg-violet-600 hover:bg-violet-700 text-white"
-                  >
-                    {isPending ? (
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    ) : (
-                      <Megaphone className="h-5 w-5 mr-2" />
-                    )}
-                    Mark as Announced
-                  </Button>
-                </DrawerFooter>
-                {activeProgramme.resultNumber == null && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 px-4 pb-6">
-                    No result number assigned.
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+      />
     </>
   );
 }

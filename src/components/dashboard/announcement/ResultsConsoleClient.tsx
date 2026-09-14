@@ -200,14 +200,12 @@ function SortableProgrammeRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "transition-colors bg-background",
-        p.status === "ANNOUNCED" ? "opacity-50 pointer-events-none" : "hover:bg-muted/50 cursor-pointer",
+        "transition-colors bg-background hover:bg-muted/50 cursor-pointer",
+        p.status === "ANNOUNCED" && "opacity-50",
         isDragging && "opacity-80 shadow-md relative",
       )}
       onClick={() => {
-        if (p.status !== "ANNOUNCED") {
-          setActiveProgramme(p);
-        }
+        setActiveProgramme(p);
       }}
     >
       <TableCell
@@ -274,13 +272,11 @@ function MobileProgrammeCard({
   return (
     <Card
       className={cn(
-        "flex flex-col gap-3 p-4 bg-card transition-colors",
-        p.status === "ANNOUNCED" ? "opacity-50 pointer-events-none" : "cursor-pointer hover:border-primary/40 active:bg-muted/30"
+        "flex flex-col gap-3 p-4 bg-card transition-colors cursor-pointer hover:border-primary/40 active:bg-muted/30",
+        p.status === "ANNOUNCED" && "opacity-50",
       )}
       onClick={() => {
-        if (p.status !== "ANNOUNCED") {
-          setActiveProgramme(p);
-        }
+        setActiveProgramme(p);
       }}
     >
       <div className="flex items-start justify-between">
@@ -337,7 +333,9 @@ export function ResultsConsoleClient({
   const [activeProgramme, setActiveProgramme] =
     useState<AnnouncerQueueProgramme | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING_PUBLICATION" | "PUBLISHED" | "ANNOUNCED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PENDING_PUBLICATION" | "PUBLISHED" | "ANNOUNCED"
+  >("ALL");
 
   // Section 2 filters
   const [standingsScope, setStandingsScope] = useState<"published" | "all">(
@@ -648,7 +646,9 @@ export function ResultsConsoleClient({
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ring-1 whitespace-nowrap cursor-pointer transition-opacity",
                   "bg-muted/50 text-foreground ring-border hover:bg-muted",
-                  statusFilter === "ALL" ? "opacity-100 ring-primary/30" : "opacity-50"
+                  statusFilter === "ALL"
+                    ? "opacity-100 ring-primary/30"
+                    : "opacity-50",
                 )}
               >
                 <span>All</span>
@@ -661,12 +661,14 @@ export function ResultsConsoleClient({
                 <div
                   key={pill.label}
                   onClick={() => setStatusFilter(pill.key)}
-                  onKeyDown={(e) => e.key === "Enter" && setStatusFilter(pill.key)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && setStatusFilter(pill.key)
+                  }
                   tabIndex={0}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ring-1 whitespace-nowrap cursor-pointer transition-opacity hover:opacity-100",
                     pill.active,
-                    statusFilter === pill.key ? "opacity-100" : "opacity-50"
+                    statusFilter === pill.key ? "opacity-100" : "opacity-50",
                   )}
                 >
                   <span className={cn("h-2 w-2 rounded-full", pill.dot)} />
@@ -678,11 +680,13 @@ export function ResultsConsoleClient({
               ))}
               <div
                 onClick={() => setStatusFilter("PUBLISHED")}
-                onKeyDown={(e) => e.key === "Enter" && setStatusFilter("PUBLISHED")}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && setStatusFilter("PUBLISHED")
+                }
                 tabIndex={0}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-green-500/10 text-green-600 dark:text-green-400 ring-green-500/25 cursor-pointer transition-opacity hover:opacity-100",
-                  statusFilter === "PUBLISHED" ? "opacity-100" : "opacity-50"
+                  statusFilter === "PUBLISHED" ? "opacity-100" : "opacity-50",
                 )}
               >
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -694,11 +698,13 @@ export function ResultsConsoleClient({
               </div>
               <div
                 onClick={() => setStatusFilter("ANNOUNCED")}
-                onKeyDown={(e) => e.key === "Enter" && setStatusFilter("ANNOUNCED")}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && setStatusFilter("ANNOUNCED")
+                }
                 tabIndex={0}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1 whitespace-nowrap bg-sky-500/10 text-sky-600 dark:text-sky-400 ring-sky-500/25 cursor-pointer transition-opacity hover:opacity-100",
-                  statusFilter === "ANNOUNCED" ? "opacity-100" : "opacity-50"
+                  statusFilter === "ANNOUNCED" ? "opacity-100" : "opacity-50",
                 )}
               >
                 <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />

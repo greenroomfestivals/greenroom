@@ -43,7 +43,12 @@ export default async function ProgrammeReportingPage({
   });
   if (!context) notFound();
   if (
-    (!["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(context.role) && !context.memberRoles.some(r => ["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(r)))
+    !["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(
+      context.role,
+    ) &&
+    !context.memberRoles.some((r) =>
+      ["OWNER", "ADMIN", "STAGE_MANAGER", "SUPER_ADMIN"].includes(r),
+    )
   ) {
     notFound();
   }

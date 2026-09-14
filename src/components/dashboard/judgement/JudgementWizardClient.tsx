@@ -183,78 +183,72 @@ export function JudgementWizardClient({
   }, [judgeProgrammes, rejudgeProgrammes]);
 
   // ----------------------------------------------------- derived lists ----
-  const filteredJudgeProgrammes = useMemo(
-    () => {
-      const filtered = judgementFilters.filterProgrammes(judgeProgrammes, {
-        search: filters.searchQuery,
-        filterType: filters.filterType,
-        filterCategory: filters.filterCategory,
-        matchesStageFilter: filters.matchesStageFilter,
-        matchesScheduleAndDate: filters.matchesScheduleAndDate,
-      });
-      return filtered.sort((a, b) => {
-        const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
-        const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
-        return bActive - aActive;
-      });
-    },
-    [
-      judgeProgrammes,
-      filters.searchQuery,
-      filters.filterType,
-      filters.filterCategory,
-      filters.matchesStageFilter,
-      filters.matchesScheduleAndDate,
-      activeByProgrammeId,
-    ],
-  );
+  const filteredJudgeProgrammes = useMemo(() => {
+    const filtered = judgementFilters.filterProgrammes(judgeProgrammes, {
+      search: filters.searchQuery,
+      filterType: filters.filterType,
+      filterCategory: filters.filterCategory,
+      matchesStageFilter: filters.matchesStageFilter,
+      matchesScheduleAndDate: filters.matchesScheduleAndDate,
+    });
+    return filtered.sort((a, b) => {
+      const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
+      const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
+      return bActive - aActive;
+    });
+  }, [
+    judgeProgrammes,
+    filters.searchQuery,
+    filters.filterType,
+    filters.filterCategory,
+    filters.matchesStageFilter,
+    filters.matchesScheduleAndDate,
+    activeByProgrammeId,
+  ]);
 
-  const filteredRejudgeProgrammes = useMemo(
-    () => {
-      const filtered = rejudgeProgrammes.filter((p) => {
-        if (!filters.matchesStageFilter(p.reportingDetails?.stageId ?? null))
-          return false;
-        if (!filters.matchesScheduleAndDate(p.reportingDetails)) return false;
-        if (
-          !judgementFilters.matchesSearch(
-            p.name,
-            p.programmeCategory,
-            filters.rejudgeSearchQuery,
-          )
+  const filteredRejudgeProgrammes = useMemo(() => {
+    const filtered = rejudgeProgrammes.filter((p) => {
+      if (!filters.matchesStageFilter(p.reportingDetails?.stageId ?? null))
+        return false;
+      if (!filters.matchesScheduleAndDate(p.reportingDetails)) return false;
+      if (
+        !judgementFilters.matchesSearch(
+          p.name,
+          p.programmeCategory,
+          filters.rejudgeSearchQuery,
         )
-          return false;
-        if (
-          !judgementFilters.filterCategoryMatches(
-            p.programmeCategory,
-            filters.rejudgeCategoryFilter,
-          )
+      )
+        return false;
+      if (
+        !judgementFilters.filterCategoryMatches(
+          p.programmeCategory,
+          filters.rejudgeCategoryFilter,
         )
-          return false;
-        const judged = judgedByProgrammeId.get(p.id);
-        if (
-          filters.rejudgeJudgingModeFilter !== "ALL" &&
-          judged?.judgingMode !== filters.rejudgeJudgingModeFilter
-        )
-          return false;
-        return true;
-      });
-      return filtered.sort((a, b) => {
-        const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
-        const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
-        return bActive - aActive;
-      });
-    },
-    [
-      rejudgeProgrammes,
-      filters.matchesStageFilter,
-      filters.matchesScheduleAndDate,
-      filters.rejudgeSearchQuery,
-      filters.rejudgeCategoryFilter,
-      filters.rejudgeJudgingModeFilter,
-      judgedByProgrammeId,
-      activeByProgrammeId,
-    ],
-  );
+      )
+        return false;
+      const judged = judgedByProgrammeId.get(p.id);
+      if (
+        filters.rejudgeJudgingModeFilter !== "ALL" &&
+        judged?.judgingMode !== filters.rejudgeJudgingModeFilter
+      )
+        return false;
+      return true;
+    });
+    return filtered.sort((a, b) => {
+      const aActive = activeByProgrammeId.has(a.id) ? 1 : 0;
+      const bActive = activeByProgrammeId.has(b.id) ? 1 : 0;
+      return bActive - aActive;
+    });
+  }, [
+    rejudgeProgrammes,
+    filters.matchesStageFilter,
+    filters.matchesScheduleAndDate,
+    filters.rejudgeSearchQuery,
+    filters.rejudgeCategoryFilter,
+    filters.rejudgeJudgingModeFilter,
+    judgedByProgrammeId,
+    activeByProgrammeId,
+  ]);
 
   const completedJudgements = useMemo(() => {
     return judgedProgrammes

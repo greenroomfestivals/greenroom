@@ -21,7 +21,7 @@ export default async function manifest({
         sizes: "1024x1024",
         type: "image/png",
         purpose: "maskable",
-      }
+      },
     ],
   };
 }

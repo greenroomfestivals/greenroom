@@ -11,7 +11,6 @@ import {
 import { findFestivalBySlugOrId } from "@/features/festivals/repositories/festival.repository";
 import { getFestivalContext } from "@/features/festivals/services/festival-context.service";
 
-
 export default async function AnnouncerPage({
   params,
 }: {
@@ -31,14 +30,13 @@ export default async function AnnouncerPage({
   const hasAccess =
     ["ANNOUNCER", "ADMIN", "OWNER", "SUPER_ADMIN"].includes(context.role) ||
     context.memberRoles.includes("ANNOUNCER");
-  
+
   if (!hasAccess) {
     notFound();
   }
 
   const festival = await findFestivalBySlugOrId(slug);
   if (!festival) notFound();
-
 
   const [queue, nextNumber, publishedResults, standingsContext] =
     await Promise.all([

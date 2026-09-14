@@ -54,8 +54,6 @@ import { compareCodeLetters } from "@/features/programmes/services/scratch-code-
 import { toast } from "@/lib/toast";
 import { FloatingLauncher, ScratchpadOverlay } from "./scratchpad";
 
-
-
 export type StagePortalLivePayload = {
   configId: string;
   scoreLimit: number;
@@ -496,12 +494,20 @@ function SubmissionReviewView({
  * Judges work standing up with one thumb, so the primary action never
  * scrolls out of reach, and it clears the iOS home indicator.
  */
-function StickyBar({ children, isSplit }: { children: React.ReactNode; isSplit?: boolean }) {
+function StickyBar({
+  children,
+  isSplit,
+}: {
+  children: React.ReactNode;
+  isSplit?: boolean;
+}) {
   return (
     <div
       className={cn(
         "fixed bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md",
-        isSplit ? "inset-x-0 lg:inset-x-auto lg:left-0 lg:w-[60%] xl:w-[50%]" : "inset-x-0"
+        isSplit
+          ? "inset-x-0 lg:inset-x-auto lg:left-0 lg:w-[60%] xl:w-[50%]"
+          : "inset-x-0",
       )}
       style={{
         paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
@@ -890,7 +896,9 @@ export function StagePortalScoringClient({
       <div
         className={cn(
           "pb-32 relative transition-all",
-          isScratchpadOpen ? "lg:overflow-y-auto lg:w-[60%] xl:w-[50%] lg:shrink-0" : "flex-1 w-full",
+          isScratchpadOpen
+            ? "lg:overflow-y-auto lg:w-[60%] xl:w-[50%] lg:shrink-0"
+            : "flex-1 w-full",
         )}
       >
         {submissionPhase === "review" ? (
@@ -924,12 +932,14 @@ export function StagePortalScoringClient({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Complete judging?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    All scores will be submitted. Your scratchpad will be locked and
-                    become read-only until you leave this judging session.
+                    All scores will be submitted. Your scratchpad will be locked
+                    and become read-only until you leave this judging session.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isPending}>
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={(e) => {
                       e.preventDefault();
@@ -955,362 +965,384 @@ export function StagePortalScoringClient({
         ) : (
           <>
             <div className="mx-auto w-full max-w-3xl px-4 pt-6 sm:px-6 sm:pt-10">
-        {/* Sticky context bar: the programme, the mode and how far through you
+              {/* Sticky context bar: the programme, the mode and how far through you
           are stay on screen while you scroll a long list of code letters.
           Previously progress was a mobile-only card at the top and a
           desktop-only bar in the footer, so neither width had it while
           actually scoring. */}
-        <header className="sticky top-0 z-30 -mx-4 border-b border-border bg-background/95 px-4 pb-3 pt-4 backdrop-blur-md sm:-mx-6 sm:px-6">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {stageName}
-              {payload.programme.categoryName &&
-                ` · ${payload.programme.categoryName}`}
-            </p>
-            <h1 className="mt-0.5 truncate text-lg font-semibold tracking-tight text-heading sm:text-xl">
-              {payload.programme.name}
-            </h1>
-          </div>
-          <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-            {progress.sub}
-          </span>
-        </div>
-
-        <Progress value={progressPct} className="mt-2.5 h-1.5" />
-
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-          {payload.programme.categoryName && (
-            <StatusPill tone="muted">
-              {payload.programme.categoryName}
-            </StatusPill>
-          )}
-          <StatusPill tone="ready" icon={ModeIcon}>
-            {modeLabel}
-          </StatusPill>
-          <StatusPill tone="muted">Max {payload.scoreLimit} pts</StatusPill>
-          <StatusPill tone="muted">
-            {payload.programme.type === "GROUP" ? "Group" : "Individual"}
-          </StatusPill>
-        </div>
-      </header>
-
-      {/* Judge picker — a grid rather than a scroll strip, so a tablet shows
-          the whole panel at once instead of hiding judges off-screen. */}
-      {payload.judgingMode === "SINGLE" && payload.judges.length > 1 && (
-        <section className="mt-6">
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Who are you?
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Tap your name — only your scores become editable.
-              </p>
-            </div>
-            {judgesDoneCount !== null && (
-              <p className="text-xs tabular-nums text-muted-foreground">
-                {judgesDoneCount}/{payload.judges.length} finished
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {payload.judges.map((j) => {
-              const done = judgeHasAllCodes(
-                j.id,
-                activeCodeLetters,
-                payload.existingScores,
-              );
-              const active = selectedJudgeId === j.id;
-              return (
-                <button
-                  key={j.id}
-                  type="button"
-                  onClick={() => setSelectedJudgeId(j.id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "flex min-h-[3.5rem] flex-col items-start justify-center gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-colors active:scale-[0.99]",
-                    active
-                      ? "border-primary bg-primary/[0.07]"
-                      : "border-border bg-card hover:border-primary/30",
-                  )}
-                >
-                  <span className="flex w-full items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium text-heading">
-                      {j.name}
-                    </span>
-                    {done ? (
-                      <CheckCircle2
-                        className="h-4 w-4 shrink-0 text-success"
-                        aria-label="Submitted"
-                      />
-                    ) : (
-                      <Circle
-                        className="h-4 w-4 shrink-0 text-muted-foreground/40"
-                        aria-hidden
-                      />
-                    )}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {done ? "Submitted" : "Pending"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {payload.judgingMode === "SINGLE" && selectedJudgeAlreadySubmitted && (
-        <div className="mt-6 rounded-2xl border border-success/40 bg-success/[0.08] p-4">
-          <p className="flex items-center gap-2 text-sm font-semibold text-success">
-            <CheckCircle2 className="h-4 w-4" aria-hidden />
-            You&apos;ve already submitted
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Your scores are locked. The programme stays live until the other
-            judges finish — your entries are shown below, read-only.
-          </p>
-        </div>
-      )}
-
-      {/* Scores */}
-      <section className="mt-6">
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {payload.judgingMode === "SINGLE" ? "Scores" : "Panel scores"}
-        </h2>
-
-        {payload.judgingMode === "SINGLE" ? (
-          /* Two columns from tablet up — one code letter per row wasted most
-             of the width on an iPad, which is what judges actually hold. */
-          <div className="grid gap-2.5 md:grid-cols-2">
-            {sortedCodeLetters.map((c) => {
-              const isAbsent = c.isAbsent;
-              const effectiveJudgeId =
-                payload.judges.length === 1
-                  ? payload.judges[0]!.id
-                  : selectedJudgeId;
-              const fieldKey = effectiveJudgeId
-                ? `${effectiveJudgeId}:${c.id}`
-                : "";
-              const others =
-                !isAbsent && effectiveJudgeId && payload.judges.length > 1
-                  ? otherJudgesScoresSummary(
-                      c.id,
-                      effectiveJudgeId,
-                      payload.judges,
-                      scoresByKey,
-                    )
-                  : null;
-              const cellErr =
-                !isAbsent && singleShowSelectedCellHints && effectiveJudgeId
-                  ? scoreCellErrorLabel(
-                      scoresByKey[`${effectiveJudgeId}:${c.id}`],
-                      payload.scoreLimit,
-                    )
-                  : null;
-
-              return (
-                <div
-                  key={c.id}
-                  className={cn(
-                    "flex items-center gap-4 rounded-2xl border border-border p-4",
-                    cellErr && "border-destructive/40",
-                    isAbsent && "bg-muted/40 opacity-70",
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "font-mono text-xl font-semibold tracking-tight text-heading",
-                        isAbsent && "text-muted-foreground line-through",
-                      )}
-                    >
-                      {c.code}
+              <header className="sticky top-0 z-30 -mx-4 border-b border-border bg-background/95 px-4 pb-3 pt-4 backdrop-blur-md sm:-mx-6 sm:px-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {stageName}
+                      {payload.programme.categoryName &&
+                        ` · ${payload.programme.categoryName}`}
                     </p>
-                    {others && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {others}
-                      </p>
-                    )}
+                    <h1 className="mt-0.5 truncate text-lg font-semibold tracking-tight text-heading sm:text-xl">
+                      {payload.programme.name}
+                    </h1>
                   </div>
+                  <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+                    {progress.sub}
+                  </span>
+                </div>
 
-                  {isAbsent ? (
-                    <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                      Excluded
-                    </span>
-                  ) : (
-                    <div className="flex w-24 shrink-0 flex-col items-stretch gap-1">
-                      <ScoreField
-                        value={fieldKey ? (scoresByKey[fieldKey] ?? "") : ""}
-                        placeholder={scorePlaceholder}
-                        onChange={(v) => {
-                          if (!effectiveJudgeId) return;
-                          onScoreFieldChange(
-                            `${effectiveJudgeId}:${c.id}`,
-                            v,
-                            payload.scoreLimit,
-                          );
-                        }}
-                        disabled={
-                          isPending ||
-                          !effectiveJudgeId ||
-                          selectedJudgeAlreadySubmitted
-                        }
-                        max={payload.scoreLimit}
-                        invalid={Boolean(cellErr)}
-                      />
-                      {cellErr && (
-                        <p className="text-center text-[11px] font-medium text-destructive">
-                          {cellErr}
+                <Progress value={progressPct} className="mt-2.5 h-1.5" />
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  {payload.programme.categoryName && (
+                    <StatusPill tone="muted">
+                      {payload.programme.categoryName}
+                    </StatusPill>
+                  )}
+                  <StatusPill tone="ready" icon={ModeIcon}>
+                    {modeLabel}
+                  </StatusPill>
+                  <StatusPill tone="muted">
+                    Max {payload.scoreLimit} pts
+                  </StatusPill>
+                  <StatusPill tone="muted">
+                    {payload.programme.type === "GROUP"
+                      ? "Group"
+                      : "Individual"}
+                  </StatusPill>
+                </div>
+              </header>
+
+              {/* Judge picker — a grid rather than a scroll strip, so a tablet shows
+          the whole panel at once instead of hiding judges off-screen. */}
+              {payload.judgingMode === "SINGLE" &&
+                payload.judges.length > 1 && (
+                  <section className="mt-6">
+                    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          Who are you?
+                        </h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Tap your name — only your scores become editable.
+                        </p>
+                      </div>
+                      {judgesDoneCount !== null && (
+                        <p className="text-xs tabular-nums text-muted-foreground">
+                          {judgesDoneCount}/{payload.judges.length} finished
                         </p>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sortedCodeLetters.map((c) => {
-              const isAbsent = c.isAbsent;
-              return (
-                <div
-                  key={c.id}
-                  className={cn(
-                    "rounded-2xl border border-border p-4",
-                    isAbsent && "bg-muted/40 opacity-70",
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p
-                      className={cn(
-                        "font-mono text-xl font-semibold tracking-tight text-heading",
-                        isAbsent && "text-muted-foreground line-through",
-                      )}
-                    >
-                      {c.code}
-                    </p>
-                  </div>
 
-                  {isAbsent ? (
-                    <p className="mt-3 text-xs font-medium text-muted-foreground">
-                      Excluded from scoring — reported but did not perform.
-                    </p>
-                  ) : (
-                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                       {payload.judges.map((j) => {
-                        const key = `${j.id}:${c.id}`;
-                        const err = groupShowCellHints
-                          ? scoreCellErrorLabel(
-                              scoresByKey[key],
-                              payload.scoreLimit,
-                            )
-                          : null;
+                        const done = judgeHasAllCodes(
+                          j.id,
+                          activeCodeLetters,
+                          payload.existingScores,
+                        );
+                        const active = selectedJudgeId === j.id;
                         return (
-                          <div
+                          <button
                             key={j.id}
+                            type="button"
+                            onClick={() => setSelectedJudgeId(j.id)}
+                            aria-pressed={active}
                             className={cn(
-                              "flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-muted/30 p-2.5",
-                              err && "border-destructive/40",
+                              "flex min-h-[3.5rem] flex-col items-start justify-center gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-colors active:scale-[0.99]",
+                              active
+                                ? "border-primary bg-primary/[0.07]"
+                                : "border-border bg-card hover:border-primary/30",
                             )}
                           >
-                            <span className="truncate text-[11px] font-medium text-muted-foreground">
-                              {j.name}
-                            </span>
-                            <ScoreField
-                              compact
-                              value={scoresByKey[key] ?? ""}
-                              placeholder={scorePlaceholder}
-                              onChange={(v) =>
-                                onScoreFieldChange(key, v, payload.scoreLimit)
-                              }
-                              disabled={isPending}
-                              max={payload.scoreLimit}
-                              invalid={Boolean(err)}
-                            />
-                            {err && (
-                              <span className="text-center text-[10px] font-medium text-destructive">
-                                {err}
+                            <span className="flex w-full items-center justify-between gap-2">
+                              <span className="truncate text-sm font-medium text-heading">
+                                {j.name}
                               </span>
-                            )}
-                          </div>
+                              {done ? (
+                                <CheckCircle2
+                                  className="h-4 w-4 shrink-0 text-success"
+                                  aria-label="Submitted"
+                                />
+                              ) : (
+                                <Circle
+                                  className="h-4 w-4 shrink-0 text-muted-foreground/40"
+                                  aria-hidden
+                                />
+                              )}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {done ? "Submitted" : "Pending"}
+                            </span>
+                          </button>
                         );
                       })}
                     </div>
-                  )}
+                  </section>
+                )}
+
+              {payload.judgingMode === "SINGLE" &&
+                selectedJudgeAlreadySubmitted && (
+                  <div className="mt-6 rounded-2xl border border-success/40 bg-success/[0.08] p-4">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-success">
+                      <CheckCircle2 className="h-4 w-4" aria-hidden />
+                      You&apos;ve already submitted
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Your scores are locked. The programme stays live until the
+                      other judges finish — your entries are shown below,
+                      read-only.
+                    </p>
+                  </div>
+                )}
+
+              {/* Scores */}
+              <section className="mt-6">
+                <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {payload.judgingMode === "SINGLE" ? "Scores" : "Panel scores"}
+                </h2>
+
+                {payload.judgingMode === "SINGLE" ? (
+                  /* Two columns from tablet up — one code letter per row wasted most
+             of the width on an iPad, which is what judges actually hold. */
+                  <div className="grid gap-2.5 md:grid-cols-2">
+                    {sortedCodeLetters.map((c) => {
+                      const isAbsent = c.isAbsent;
+                      const effectiveJudgeId =
+                        payload.judges.length === 1
+                          ? payload.judges[0]!.id
+                          : selectedJudgeId;
+                      const fieldKey = effectiveJudgeId
+                        ? `${effectiveJudgeId}:${c.id}`
+                        : "";
+                      const others =
+                        !isAbsent &&
+                        effectiveJudgeId &&
+                        payload.judges.length > 1
+                          ? otherJudgesScoresSummary(
+                              c.id,
+                              effectiveJudgeId,
+                              payload.judges,
+                              scoresByKey,
+                            )
+                          : null;
+                      const cellErr =
+                        !isAbsent &&
+                        singleShowSelectedCellHints &&
+                        effectiveJudgeId
+                          ? scoreCellErrorLabel(
+                              scoresByKey[`${effectiveJudgeId}:${c.id}`],
+                              payload.scoreLimit,
+                            )
+                          : null;
+
+                      return (
+                        <div
+                          key={c.id}
+                          className={cn(
+                            "flex items-center gap-4 rounded-2xl border border-border p-4",
+                            cellErr && "border-destructive/40",
+                            isAbsent && "bg-muted/40 opacity-70",
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p
+                              className={cn(
+                                "font-mono text-xl font-semibold tracking-tight text-heading",
+                                isAbsent &&
+                                  "text-muted-foreground line-through",
+                              )}
+                            >
+                              {c.code}
+                            </p>
+                            {others && (
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                {others}
+                              </p>
+                            )}
+                          </div>
+
+                          {isAbsent ? (
+                            <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                              Excluded
+                            </span>
+                          ) : (
+                            <div className="flex w-24 shrink-0 flex-col items-stretch gap-1">
+                              <ScoreField
+                                value={
+                                  fieldKey ? (scoresByKey[fieldKey] ?? "") : ""
+                                }
+                                placeholder={scorePlaceholder}
+                                onChange={(v) => {
+                                  if (!effectiveJudgeId) return;
+                                  onScoreFieldChange(
+                                    `${effectiveJudgeId}:${c.id}`,
+                                    v,
+                                    payload.scoreLimit,
+                                  );
+                                }}
+                                disabled={
+                                  isPending ||
+                                  !effectiveJudgeId ||
+                                  selectedJudgeAlreadySubmitted
+                                }
+                                max={payload.scoreLimit}
+                                invalid={Boolean(cellErr)}
+                              />
+                              {cellErr && (
+                                <p className="text-center text-[11px] font-medium text-destructive">
+                                  {cellErr}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {sortedCodeLetters.map((c) => {
+                      const isAbsent = c.isAbsent;
+                      return (
+                        <div
+                          key={c.id}
+                          className={cn(
+                            "rounded-2xl border border-border p-4",
+                            isAbsent && "bg-muted/40 opacity-70",
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <p
+                              className={cn(
+                                "font-mono text-xl font-semibold tracking-tight text-heading",
+                                isAbsent &&
+                                  "text-muted-foreground line-through",
+                              )}
+                            >
+                              {c.code}
+                            </p>
+                          </div>
+
+                          {isAbsent ? (
+                            <p className="mt-3 text-xs font-medium text-muted-foreground">
+                              Excluded from scoring — reported but did not
+                              perform.
+                            </p>
+                          ) : (
+                            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                              {payload.judges.map((j) => {
+                                const key = `${j.id}:${c.id}`;
+                                const err = groupShowCellHints
+                                  ? scoreCellErrorLabel(
+                                      scoresByKey[key],
+                                      payload.scoreLimit,
+                                    )
+                                  : null;
+                                return (
+                                  <div
+                                    key={j.id}
+                                    className={cn(
+                                      "flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-muted/30 p-2.5",
+                                      err && "border-destructive/40",
+                                    )}
+                                  >
+                                    <span className="truncate text-[11px] font-medium text-muted-foreground">
+                                      {j.name}
+                                    </span>
+                                    <ScoreField
+                                      compact
+                                      value={scoresByKey[key] ?? ""}
+                                      placeholder={scorePlaceholder}
+                                      onChange={(v) =>
+                                        onScoreFieldChange(
+                                          key,
+                                          v,
+                                          payload.scoreLimit,
+                                        )
+                                      }
+                                      disabled={isPending}
+                                      max={payload.scoreLimit}
+                                      invalid={Boolean(err)}
+                                    />
+                                    {err && (
+                                      <span className="text-center text-[10px] font-medium text-destructive">
+                                        {err}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <StickyBar isSplit={isScratchpadOpen}>
+              <div className="flex w-full flex-col gap-2">
+                {submitError && (
+                  <p
+                    className="text-xs font-medium leading-tight text-destructive"
+                    role="alert"
+                  >
+                    {submitError}
+                  </p>
+                )}
+                {!submitError && !canSubmit && (
+                  <p className="text-xs font-medium leading-tight text-warning">
+                    {submitValidationMessage ??
+                      "Fill every score to preview the submission."}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-11 w-11 shrink-0 rounded-full"
+                    onClick={toggleFullscreen}
+                    aria-label={
+                      isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                    }
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="h-4 w-4" />
+                    ) : (
+                      <Maximize className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 shrink-0 rounded-full px-5"
+                    onClick={onDone}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="h-11 flex-1 rounded-full font-medium shadow-primary-glow"
+                    onClick={onStartReview}
+                    disabled={
+                      !canSubmit ||
+                      isPending ||
+                      (payload.judgingMode === "SINGLE" &&
+                        payload.judges.length > 1 &&
+                        !selectedJudgeId)
+                    }
+                  >
+                    {isPending
+                      ? "Submitting…"
+                      : isGroup
+                        ? "Preview panel submit"
+                        : "Preview submit"}
+                  </Button>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </StickyBar>
+          </>
         )}
-      </section>
-      </div>
-
-      <StickyBar isSplit={isScratchpadOpen}>
-        <div className="flex w-full flex-col gap-2">
-          {submitError && (
-            <p
-              className="text-xs font-medium leading-tight text-destructive"
-              role="alert"
-            >
-              {submitError}
-            </p>
-          )}
-          {!submitError && !canSubmit && (
-            <p className="text-xs font-medium leading-tight text-warning">
-              {submitValidationMessage ??
-                "Fill every score to preview the submission."}
-            </p>
-          )}
-
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 shrink-0 rounded-full"
-              onClick={toggleFullscreen}
-              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            >
-              {isFullscreen ? (
-                <Minimize className="h-4 w-4" />
-              ) : (
-                <Maximize className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              className="h-11 shrink-0 rounded-full px-5"
-              onClick={onDone}
-            >
-              Back
-            </Button>
-            <Button
-              size="lg"
-              className="h-11 flex-1 rounded-full font-medium shadow-primary-glow"
-              onClick={onStartReview}
-              disabled={
-                !canSubmit ||
-                isPending ||
-                (payload.judgingMode === "SINGLE" &&
-                  payload.judges.length > 1 &&
-                  !selectedJudgeId)
-              }
-            >
-              {isPending
-                ? "Submitting…"
-                : isGroup
-                  ? "Preview panel submit"
-                  : "Preview submit"}
-            </Button>
-          </div>
-        </div>
-      </StickyBar>
-      </>
-      )}
       </div>
 
       <FloatingLauncher

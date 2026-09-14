@@ -1161,6 +1161,7 @@ export const programmeAssignment = pgTable(
     categoryId: text(),
     participantId: text(),
     teamNumber: integer().default(1).notNull(),
+    hasParticipated: boolean("has_participated").default(false).notNull(),
     createdAt: tzTimestamp().default(currentTimestampSql()).notNull(),
     updatedAt: tzTimestamp().default(currentTimestampSql()).notNull(),
     createdByEmail: text(),

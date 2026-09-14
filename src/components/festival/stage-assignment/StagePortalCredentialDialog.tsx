@@ -2,7 +2,10 @@
 
 import { Copy, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useResetStagePortalCredential, useStagePortalPin } from "@/api/client/server-actions";
+import {
+  useResetStagePortalCredential,
+  useStagePortalPin,
+} from "@/api/client/server-actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -109,7 +112,9 @@ export function StagePortalCredentialDialog({
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {pinQuery.isLoading ? "Loading PIN..." : "The PIN is not available."}
+              {pinQuery.isLoading
+                ? "Loading PIN..."
+                : "The PIN is not available."}
             </p>
           )}
           {!isReadOnly && stageId ? (

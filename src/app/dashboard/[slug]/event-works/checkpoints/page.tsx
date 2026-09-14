@@ -32,7 +32,12 @@ export default async function CheckpointsPage({
     notFound();
   }
 
-  if ((!["ADMIN", "OWNER", "VOLUNTEER"].includes(context.role) && !context.memberRoles.some(r => ["ADMIN", "OWNER", "VOLUNTEER"].includes(r)))) {
+  if (
+    !["ADMIN", "OWNER", "VOLUNTEER"].includes(context.role) &&
+    !context.memberRoles.some((r) =>
+      ["ADMIN", "OWNER", "VOLUNTEER"].includes(r),
+    )
+  ) {
     redirect(`/dashboard/${slug}`);
   }
 

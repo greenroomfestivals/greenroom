@@ -52,6 +52,8 @@ export type ActiveReportingProgramme = {
   stageName: string | null;
   categoryName: string | null;
   startedAt: string | null;
+  scheduleEntryId?: string | null;
+  reportingSessionId?: string | null;
 };
 
 export async function getCallListProgrammes(
@@ -85,7 +87,9 @@ export async function getCallListProgrammes(
       type: s.programme!.type,
       stageName: s.stage?.name ?? null,
       categoryName: s.programme!.category?.name ?? null,
-      startedAt: s.callListNotifiedAt as string | null, // string|null type
+      startedAt: s.callListNotifiedAt as string | null,
+      scheduleEntryId: s.id,
+      reportingSessionId: null,
     }));
 
   const inProgressMap = new Map(inProgressSessions.map((s) => [s.id, s]));
@@ -113,6 +117,8 @@ export async function getActiveReportingSessions(
       type: programmeTable.type,
       stageName: stageTable.name,
       startedAt: programmeReportingSession.startedAt,
+      reportingSessionId: programmeReportingSession.id,
+      scheduleEntryId: programmeReportingSession.scheduleEntryId,
     })
     .from(programmeReportingSession)
     .innerJoin(

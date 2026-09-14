@@ -1,18 +1,29 @@
 "use server";
 
-import { and, asc, count, eq, isNotNull, or, sql } from "drizzle-orm";
+import {
+  aliasedTable,
+  and,
+  asc,
+  count,
+  eq,
+  isNotNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { assertFestivalAccess } from "@/core/auth/assert-festival-access";
 import { getSession } from "@/core/auth/session";
 import { db } from "@/core/database/client";
 import {
+  category as categoryTable,
   festival as festivalTable,
   group as groupTable,
   participant as participantTable,
   programmeAssignment,
   programmeAssignmentMember,
-  programmeCodeLetter as programmeCodeLetterTable,
   programmeCodeLetterRecipient as programmeCodeLetterRecipientTable,
+  programmeCodeLetter as programmeCodeLetterTable,
+  programmeReportedParticipant,
   programme as programmeTable,
   programmeTeamLead,
   result as resultTable,
@@ -50,10 +61,18 @@ function revalidateAnnouncerPaths(slug: string) {
 export async function getCallListAssignmentsAction(
   festivalId: string,
   programmeId: string,
+  reportingSessionId?: string | null,
 ) {
   try {
     await assertAnnouncerAccess(festivalId);
-    const assignments = await db
+
+    const participantGroup = aliasedTable(groupTable, "participantGroup");
+    const participantCategory = aliasedTable(
+      categoryTable,
+      "participantCategory",
+    );
+
+    let query = db
       .select({
         id: programmeAssignment.id,
         teamNumber: programmeAssignment.teamNumber,
@@ -62,6 +81,10 @@ export async function getCallListAssignmentsAction(
         chestNumber: participantTable.chestNumber,
         codeLetter: sql<string>`"codeLetterSq"."code"`,
         isTeamLead: sql<boolean>`CASE WHEN ${programmeTeamLead.participantId} IS NOT NULL THEN true ELSE false END`,
+        hasReported: sql<boolean>`CASE WHEN ${programmeReportedParticipant.id} IS NOT NULL THEN true ELSE false END`,
+        hasParticipated: programmeAssignment.hasParticipated,
+        participantGroupName: participantGroup.name,
+        participantCategoryName: participantCategory.name,
       })
       .from(programmeAssignment)
       .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
@@ -77,6 +100,14 @@ export async function getCallListAssignmentsAction(
         ),
       )
       .leftJoin(
+        participantGroup,
+        eq(participantTable.groupId, participantGroup.id),
+      )
+      .leftJoin(
+        participantCategory,
+        eq(participantTable.categoryId, participantCategory.id),
+      )
+      .leftJoin(
         db
           .select({
             participantId: programmeCodeLetterRecipientTable.participantId,
@@ -85,11 +116,14 @@ export async function getCallListAssignmentsAction(
           .from(programmeCodeLetterTable)
           .innerJoin(
             programmeCodeLetterRecipientTable,
-            eq(programmeCodeLetterTable.id, programmeCodeLetterRecipientTable.codeLetterId)
+            eq(
+              programmeCodeLetterTable.id,
+              programmeCodeLetterRecipientTable.codeLetterId,
+            ),
           )
           .where(eq(programmeCodeLetterTable.programmeId, programmeId))
           .as("codeLetterSq"),
-        eq(participantTable.id, sql`"codeLetterSq"."participant_id"`),
+        eq(participantTable.id, sql`"codeLetterSq"."participantId"`),
       )
       .leftJoin(
         programmeTeamLead,
@@ -97,8 +131,35 @@ export async function getCallListAssignmentsAction(
           eq(programmeTeamLead.programmeId, programmeId),
           eq(programmeTeamLead.participantId, participantTable.id),
         ),
-      )
-      .where(eq(programmeAssignment.programmeId, programmeId));
+      );
+
+    if (reportingSessionId) {
+      query = query.leftJoin(
+        programmeReportedParticipant,
+        and(
+          eq(
+            programmeReportedParticipant.reportingSessionId,
+            reportingSessionId,
+          ),
+          eq(programmeReportedParticipant.assignmentId, programmeAssignment.id),
+          or(
+            eq(programmeReportedParticipant.participantId, participantTable.id),
+            // For individuals in groups, participantId is matched. For group programs, member ID might be used if tracking individually, but generally assignmentId + participantId works since participantId is always set for reported individuals
+            eq(
+              programmeReportedParticipant.assignmentMemberId,
+              programmeAssignmentMember.id,
+            ),
+          ),
+        ),
+      ) as any;
+    } else {
+      // Just mock left join to nothing so types match without error
+      query = query.leftJoin(programmeReportedParticipant, sql`1 = 0`) as any;
+    }
+
+    const assignments = await query.where(
+      eq(programmeAssignment.programmeId, programmeId),
+    );
 
     return { success: true, data: assignments };
   } catch (error) {
@@ -821,6 +882,36 @@ export async function publishAllResultsAction(
     );
 
     return { success: true, data: { publishedCount } };
+  } catch (error) {
+    return handleActionError(error);
+  }
+}
+
+export async function toggleParticipantParticipatedAction(
+  festivalId: string,
+  assignmentId: string,
+  hasParticipated: boolean,
+): Promise<ActionResponse<void>> {
+  try {
+    await assertAnnouncerAccess(festivalId);
+    await ensureFestivalWritable(festivalId);
+
+    await db
+      .update(programmeAssignment)
+      .set({ hasParticipated, updatedAt: serverNowIso() })
+      .where(eq(programmeAssignment.id, assignmentId));
+
+    const slug = await getFestivalSlug(festivalId);
+    if (slug) {
+      revalidateAnnouncerPaths(slug);
+    }
+    
+    await pushToLiveChannel(
+      `/api/v1/festivals/${festivalId}/announce/stream`,
+      { event: "participated_toggled", assignmentId, hasParticipated }
+    );
+
+    return { success: true, data: undefined };
   } catch (error) {
     return handleActionError(error);
   }

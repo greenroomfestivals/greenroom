@@ -11,6 +11,7 @@ import { getSession } from "@/core/auth/session";
 import type { TeamStandingRow } from "@/features/announcement/services/announcer.service";
 import {
   getActiveReportingSessions,
+  getAnnouncerQueue,
   getCallListProgrammes,
 } from "@/features/announcement/services/announcer.service";
 import { findFestivalBySlugOrId } from "@/features/festivals/repositories/festival.repository";
@@ -54,12 +55,7 @@ export default async function FestivalDashboardPage({
   const announcerData =
     effectiveRole === "ANNOUNCER"
       ? {
-          queuedStandings:
-            ((festival as any).queuedTeamStandings as
-              | TeamStandingRow[]
-              | null) ?? [],
-          afterCount:
-            (festival as any).standingsPublishedAtResultNumber ?? null,
+          queue: await getAnnouncerQueue(festival.id),
           callList: await getCallListProgrammes(festival.id),
         }
       : null;
@@ -107,8 +103,7 @@ export default async function FestivalDashboardPage({
         <AnnouncerConsoleClient
           festivalId={festival.id}
           festivalSlug={slug}
-          queuedStandings={announcerData.queuedStandings}
-          afterCount={announcerData.afterCount}
+          queue={announcerData.queue}
           callList={announcerData.callList}
           userName={greetingName}
         />
