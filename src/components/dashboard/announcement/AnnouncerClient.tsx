@@ -344,12 +344,12 @@ export function AnnouncerClient({
                   <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono px-2 py-0.5 text-xs shadow-sm">
                     After #{standingsContext.standingsPublishedAtResultNumber}
                   </Badge>
-                ) : standingsContext.highestPublishedResultNumber != null ? (
+                ) : standingsContext.standingsPublishedAtResultNumber != null ? (
                   <Badge
                     variant="outline"
                     className="text-[10px] font-mono bg-background"
                   >
-                    After #{standingsContext.highestPublishedResultNumber}
+                    After #{standingsContext.standingsPublishedAtResultNumber}
                   </Badge>
                 ) : null}
               </div>
