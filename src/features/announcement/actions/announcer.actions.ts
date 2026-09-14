@@ -905,11 +905,6 @@ export async function toggleParticipantParticipatedAction(
     if (slug) {
       revalidateAnnouncerPaths(slug);
     }
-    
-    await pushToLiveChannel(
-      `/api/v1/festivals/${festivalId}/announce/stream`,
-      { event: "participated_toggled", assignmentId, hasParticipated }
-    );
 
     return { success: true, data: undefined };
   } catch (error) {
