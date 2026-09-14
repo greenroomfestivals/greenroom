@@ -1,7 +1,14 @@
 "use client";
 
 import { format, isToday, parseISO } from "date-fns";
-import { Check, ChevronLeft, ChevronRight, Clock, LogOut, RefreshCw } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  LogOut,
+  RefreshCw,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {

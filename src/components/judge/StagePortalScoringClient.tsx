@@ -412,7 +412,9 @@ function SubmissionReviewView({
                       ) : policy?.position === 3 ? (
                         <span className="text-orange-600 font-bold">3rd</span>
                       ) : policy?.position ? (
-                        <span className="text-muted-foreground">{policy.position}th</span>
+                        <span className="text-muted-foreground">
+                          {policy.position}th
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}

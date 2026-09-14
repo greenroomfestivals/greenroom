@@ -134,9 +134,9 @@ export const FEST_ADMIN_FIELDS: FestAdminFieldDef[] = [
   },
   {
     key: "programmeName",
-    label: "Item Title",
+    label: "Programme",
     icon: "🎭",
-    preview: "Folk Dance — Group",
+    preview: "Folk Dance (Group)",
     templateTypes: ["RESULT", "CERTIFICATE"],
   },
   {
@@ -158,7 +158,7 @@ export const FEST_ADMIN_FIELDS: FestAdminFieldDef[] = [
     label: "Winner (1st)",
     icon: "🥇",
     preview: "Team Phoenix",
-    templateTypes: ["RESULT"],
+    templateTypes: ["CERTIFICATE"],
   },
   {
     key: "winner1Name",
@@ -182,11 +182,32 @@ export const FEST_ADMIN_FIELDS: FestAdminFieldDef[] = [
     templateTypes: ["RESULT"],
   },
   {
+    key: "winner1Team",
+    label: "Winner 1 Group",
+    icon: "🏫",
+    preview: "St. Mary's HSS",
+    templateTypes: ["RESULT"],
+  },
+  {
+    key: "winner2Team",
+    label: "Winner 2 Group",
+    icon: "🏫",
+    preview: "Central HS",
+    templateTypes: ["RESULT"],
+  },
+  {
+    key: "winner3Team",
+    label: "Winner 3 Group",
+    icon: "🏫",
+    preview: "North Valley",
+    templateTypes: ["RESULT"],
+  },
+  {
     key: "placeName",
     label: "Place",
     icon: "🏫",
     preview: "St. Mary's School",
-    templateTypes: ["RESULT", "CANDIDATE_CARD", "CERTIFICATE"],
+    templateTypes: ["CANDIDATE_CARD", "CERTIFICATE"],
   },
   {
     key: "chestNumber",

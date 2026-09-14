@@ -9,12 +9,12 @@ import {
   useState,
   useTransition,
 } from "react";
+import { AnnouncerResultDrawer } from "@/components/dashboard/announcement/AnnouncerResultDrawer";
 import { StandingsPointsWithOpener } from "@/components/dashboard/standings/StandingsPointsWithOpener";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import { AnnouncerResultDrawer } from "@/components/dashboard/announcement/AnnouncerResultDrawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
@@ -110,6 +110,7 @@ function PlaceLabel({ rank }: { rank: number }) {
 }
 export function AnnouncerClient({
   festivalId,
+  festivalSlug,
   queue,
   publishedResults,
   standingsContext,
@@ -162,8 +163,6 @@ export function AnnouncerClient({
       return a.resultNumber - b.resultNumber;
     });
   }, [queue]);
-
-
 
   const hasQueue = sorted.length > 0;
   const hasPublished = publishedResults && publishedResults.length > 0;
@@ -344,7 +343,8 @@ export function AnnouncerClient({
                   <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono px-2 py-0.5 text-xs shadow-sm">
                     After #{standingsContext.standingsPublishedAtResultNumber}
                   </Badge>
-                ) : standingsContext.standingsPublishedAtResultNumber != null ? (
+                ) : standingsContext.standingsPublishedAtResultNumber !=
+                  null ? (
                   <Badge
                     variant="outline"
                     className="text-[10px] font-mono bg-background"
@@ -475,6 +475,7 @@ export function AnnouncerClient({
 
       <AnnouncerResultDrawer
         festivalId={festivalId}
+        festivalSlug={festivalSlug}
         activeProgramme={activeProgramme}
         onOpenChange={(open) => !open && setActiveProgramme(null)}
       />

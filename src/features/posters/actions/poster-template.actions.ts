@@ -20,8 +20,45 @@ import { canManageTemplates } from "@/features/posters/auth/poster-access";
 import * as PosterTemplateRepo from "@/features/posters/repositories/poster-template.repository";
 import {
   type EditorPreviewBindingsPayload,
+  type EditorPreviewOption,
   getFestivalEditorPreviewBindings,
+  getFestivalEditorPreviewOptions,
 } from "@/features/posters/services/poster-editor-preview.service";
+
+export async function getEditorPreviewBindingsAction(
+  festivalId: string,
+  templateType: PosterTemplateType,
+  targetId?: string,
+): Promise<ActionResponse<EditorPreviewBindingsPayload>> {
+  try {
+    await assertTemplatesAccess(festivalId);
+    const payload = await getFestivalEditorPreviewBindings(
+      festivalId,
+      templateType,
+      targetId,
+    );
+    return { success: true, data: payload };
+  } catch (error) {
+    return handleActionError(error);
+  }
+}
+
+export async function getEditorPreviewOptionsAction(
+  festivalId: string,
+  templateType: PosterTemplateType,
+): Promise<ActionResponse<EditorPreviewOption[]>> {
+  try {
+    await assertTemplatesAccess(festivalId);
+    const options = await getFestivalEditorPreviewOptions(
+      festivalId,
+      templateType,
+    );
+    return { success: true, data: options };
+  } catch (error) {
+    return handleActionError(error);
+  }
+}
+
 import type {
   PosterTemplateListItem,
   PosterTemplateRecord,
@@ -64,22 +101,6 @@ function revalidatePosterPaths(slug: string) {
   revalidatePath(`/${slug}/editor`);
   revalidatePath(`/${slug}/results`);
   revalidatePath(`/${slug}`);
-}
-
-export async function getEditorPreviewBindingsAction(
-  festivalId: string,
-  templateType: PosterTemplateType,
-): Promise<ActionResponse<EditorPreviewBindingsPayload>> {
-  try {
-    await assertTemplatesAccess(festivalId);
-    const payload = await getFestivalEditorPreviewBindings(
-      festivalId,
-      templateType,
-    );
-    return { success: true, data: payload };
-  } catch (error) {
-    return handleActionError(error);
-  }
 }
 
 export async function listPosterTemplatesAction(

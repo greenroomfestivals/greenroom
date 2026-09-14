@@ -25,12 +25,14 @@ export function ResultPosterActions({
   canSwap,
   publicMode = false,
   initialTemplateCode,
+  variant = "default",
 }: {
   payload: ResultPosterExportPayload;
   festivalSlug: string;
   canSwap: boolean;
   publicMode?: boolean;
   initialTemplateCode?: string;
+  variant?: "default" | "inline";
 }) {
   const stageRef = useRef<Konva.Stage | null>(null);
   const firstCode = payload.publishedTemplateCodes[0] ?? "RESULT-A";
@@ -124,14 +126,28 @@ export function ResultPosterActions({
     posterFilename,
     stageToBlob,
   ]);
+  const view = useCallback(async () => {
+    const blob = await stageToBlob();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  }, [stageToBlob]);
 
   if (!template) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-3">
-      <span className="text-xs font-medium text-muted-foreground">
-        Result poster
-      </span>
+    <div
+      className={
+        variant === "inline"
+          ? "flex items-center gap-2"
+          : "flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-3"
+      }
+    >
+      {variant !== "inline" && (
+        <span className="text-xs font-medium text-muted-foreground">
+          Result poster
+        </span>
+      )}
       {canSwap && payload.publishedTemplateCodes.length > 1 && (
         <Select value={activeCode} onValueChange={setActiveCode}>
           <SelectTrigger className="h-8 w-[130px]">
@@ -149,6 +165,9 @@ export function ResultPosterActions({
       {!canSwap && payload.publishedTemplateCodes.length > 1 && (
         <span className="text-xs text-muted-foreground">{activeCode}</span>
       )}
+      <Button type="button" size="sm" variant="outline" onClick={view}>
+        View
+      </Button>
       <Button type="button" size="sm" variant="outline" onClick={download}>
         <Download className="mr-1 h-3.5 w-3.5" />
         Download

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { assertFestivalAccess } from "@/core/auth/assert-festival-access";
 import { getSession } from "@/core/auth/session";
@@ -16,6 +16,29 @@ import { invalidatePublicFestivalCaches } from "@/features/festivals/services/pu
 import { StorageBackedFieldService } from "@/features/festivals/services/storage-backed-field.service";
 import { isEnabled } from "@/features/plan-features/services/feature-gate";
 import { loadFeatureOverrides } from "@/features/plan-features/services/plan-features.service";
+
+async function generateUniqueSlug(
+  festivalId: string,
+  title: string,
+  excludeId?: string,
+) {
+  const baseSlug = slugify(title) || "news";
+  let currentSlug = baseSlug;
+  let counter = 1;
+  while (true) {
+    const existing = await db.query.festivalNews.findFirst({
+      where: and(
+        eq(festivalNews.festivalId, festivalId),
+        eq(festivalNews.slug, currentSlug),
+        excludeId ? ne(festivalNews.id, excludeId) : undefined,
+      ),
+      columns: { id: true },
+    });
+    if (!existing) return currentSlug;
+    currentSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
 
 export async function getNewsPostsAction(festivalId: string) {
   const session = await getSession();
@@ -50,7 +73,7 @@ export async function createNewsPostAction(
     return { success: false, error: "News is not available on your plan." };
   }
 
-  const generatedSlug = slugify(data.title) || "news";
+  const generatedSlug = await generateUniqueSlug(festivalId, data.title);
 
   await StorageBackedFieldService.mutateUrls({
     festivalId,
@@ -108,7 +131,9 @@ export async function updateNewsPostAction(
   const nextImageUrl =
     data.imageUrl !== undefined ? data.imageUrl : existing.imageUrl;
 
-  const newSlug = data.title ? slugify(data.title) || undefined : undefined;
+  const newSlug = data.title
+    ? await generateUniqueSlug(festivalId, data.title, postId)
+    : undefined;
 
   await StorageBackedFieldService.mutateSingleUrl({
     festivalId,

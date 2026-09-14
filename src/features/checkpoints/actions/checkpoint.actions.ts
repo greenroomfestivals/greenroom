@@ -98,6 +98,7 @@ export async function startSessionAction(data: unknown) {
       session: {
         id: created.id,
         checkpointId: created.checkpointId,
+        categoryId: created.categoryId ?? null,
         name: created.name,
         sessionDate: created.sessionDate,
         windowStartMin: created.windowStartMin,

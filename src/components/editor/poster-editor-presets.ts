@@ -192,11 +192,7 @@ export function createPresetDocument(
 
     if (templateType === "RESULT") {
       const pad = 96;
-      const headerY = 96;
-      const rightColW = 400;
-      const rightX = docWidth - pad - rightColW;
-      const winnersY = 320;
-      const winnerStep = 140;
+      let curY = 96;
       const serif = scheme.titleFontFamily;
       const sans = "Outfit, system-ui, sans-serif";
 
@@ -206,69 +202,100 @@ export function createPresetDocument(
       const mutedFill = scheme.mutedFill;
       const highlightFill = scheme.highlightFill;
 
-      elements.push(
-        fieldText("categoryName", pad, headerY, 22, {
-          text: "Program Category",
-          fill: bodyFill,
-          fontFamily: serif,
-        }),
-        fieldText("programmeName", pad, headerY + 40, 56, {
-          text: "Item Name",
-          fontStyle: "bold",
-          fill: accentFill,
-          fontFamily: sans,
-        }),
-        fieldText("resultLabel", rightX, headerY, 22, {
-          text: "Result",
+      // Result Number
+      const resultGroup = [
+        fieldText("resultLabel", pad, curY, 22, {
+          text: "RESULT NO:",
           fill: accentFill,
           fontFamily: serif,
-          align: "right",
-          width: rightColW,
+          textCase: "upper",
         }),
-        fieldText("resultNo", rightX, headerY + 32, 120, {
+        fieldText("resultNo", pad + 140, curY - 16, 48, {
           text: "34",
           fill: titleFill,
           fontStyle: "bold",
           fontFamily: sans,
-          align: "right",
-          width: rightColW,
         }),
-        fieldText("winner1Name", pad, winnersY, 40, {
-          name: "Winner 1",
+      ];
+      curY += 72;
+
+      // Category
+      const categoryGroup = [
+        fieldText("categoryName", pad, curY, 32, {
+          text: "Category A — Junior",
           fill: bodyFill,
-          fontStyle: "bold",
-          fontFamily: sans,
-          textCase: "upper",
-        }),
-        fieldText("winner1Team", pad, winnersY + 52, 22, {
-          name: "Place 1",
-          fill: mutedFill,
           fontFamily: serif,
         }),
-        fieldText("winner2Name", pad, winnersY + winnerStep, 40, {
-          name: "Winner 2",
-          fill: bodyFill,
+      ];
+      curY += 48;
+
+      // Programme Name
+      const programmeGroup = [
+        fieldText("programmeName", pad, curY, 56, {
+          text: "Folk Dance (Group)",
           fontStyle: "bold",
+          fill: accentFill,
           fontFamily: sans,
-          textCase: "upper",
         }),
-        fieldText("winner2Team", pad, winnersY + winnerStep + 52, 22, {
-          name: "Place 2",
-          fill: mutedFill,
-          fontFamily: serif,
-        }),
-        fieldText("winner3Name", pad, winnersY + winnerStep * 2, 40, {
-          name: "Winner 3",
-          fill: bodyFill,
-          fontStyle: "bold",
-          fontFamily: sans,
-          textCase: "upper",
-        }),
-        fieldText("winner3Team", pad, winnersY + winnerStep * 2 + 52, 22, {
-          name: "Place 3",
-          fill: mutedFill,
-          fontFamily: serif,
-        }),
+      ];
+      curY += 96;
+
+      const divider1 = accentBar(curY, 2, mutedFill, docWidth - pad * 2);
+      divider1.x = pad;
+      curY += 48;
+
+      const winnersY = curY;
+      const winnerStep = 180;
+
+      const winnerPositionNames = [
+        "🥇 FIRST PLACE",
+        "🥈 SECOND PLACE",
+        "🥉 THIRD PLACE",
+      ];
+
+      const winnerGroups = [];
+      for (let i = 1; i <= 3; i++) {
+        const wy = winnersY + (i - 1) * winnerStep;
+        winnerGroups.push(
+          staticText(
+            `Place ${i} Label`,
+            winnerPositionNames[i - 1],
+            pad,
+            wy,
+            28,
+            {
+              fill: highlightFill,
+              fontFamily: sans,
+              fontStyle: "bold",
+            },
+          ),
+          fieldText(`winner${i}Name`, pad, wy + 40, 40, {
+            name: `Winner ${i}`,
+            text: "John Doe & Party",
+            fill: bodyFill,
+            fontStyle: "bold",
+            fontFamily: sans,
+          }),
+          fieldText(`winner${i}Team`, pad, wy + 90, 24, {
+            name: `Place ${i} Team`,
+            text: "Team Phoenix - St. Mary's HSS",
+            fill: mutedFill,
+            fontFamily: serif,
+          }),
+        );
+      }
+
+      curY = winnersY + winnerStep * 3 + 48;
+      const divider2 = accentBar(curY, 2, mutedFill, docWidth - pad * 2);
+      divider2.x = pad;
+
+      elements.push(
+        ...resultGroup,
+        ...categoryGroup,
+        ...programmeGroup,
+        divider1,
+        ...winnerGroups.flat(),
+        divider2,
       );
 
       if (useColorBg) {

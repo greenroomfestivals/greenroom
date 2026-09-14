@@ -36,6 +36,8 @@ export const startSessionSchema = z
   .object({
     festivalId: z.string().uuid(),
     checkpointId: z.string().uuid(),
+    /** When set, this session is scoped to a single category. */
+    categoryId: z.string().uuid().optional(),
     name: z.string().max(80).optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     windowStartMin: z.number().int().min(0).max(1439).nullish(),

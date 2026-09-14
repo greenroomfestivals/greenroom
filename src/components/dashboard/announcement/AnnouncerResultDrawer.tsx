@@ -1,10 +1,11 @@
 "use client";
 
 import { Loader2, Megaphone } from "lucide-react";
-import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/lib/toast";
-import { announceResult } from "@/features/announcement/actions/announcer.actions";
+import { useTransition } from "react";
+import { InternalResultPosterSection } from "@/components/festival/posters/InternalResultPosterSection";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -13,7 +14,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,9 +22,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/core/utils/cn";
+import { announceResult } from "@/features/announcement/actions/announcer.actions";
 import type { AnnouncerQueueProgramme } from "@/features/announcement/services/announcer.service";
+import { toast } from "@/lib/toast";
 
 const MEDAL_ROWS = [
   "bg-amber-500/10",
@@ -34,6 +35,7 @@ const MEDAL_ROWS = [
 
 interface AnnouncerResultDrawerProps {
   festivalId: string;
+  festivalSlug: string;
   activeProgramme: AnnouncerQueueProgramme | null;
   onOpenChange: (open: boolean) => void;
   onAnnounceSuccess?: () => void;
@@ -41,6 +43,7 @@ interface AnnouncerResultDrawerProps {
 
 export function AnnouncerResultDrawer({
   festivalId,
+  festivalSlug,
   activeProgramme,
   onOpenChange,
   onAnnounceSuccess,
@@ -85,9 +88,7 @@ export function AnnouncerResultDrawer({
                     {activeProgramme.categoryName}
                   </DrawerDescription>
                   <Badge variant="outline" className="text-[10px]">
-                    {activeProgramme.type === "GROUP"
-                      ? "Group"
-                      : "Individual"}
+                    {activeProgramme.type === "GROUP" ? "Group" : "Individual"}
                   </Badge>
                   <Badge variant="outline" className="text-[10px]">
                     {activeProgramme.stageType === "NON_STAGE"
@@ -119,8 +120,7 @@ export function AnnouncerResultDrawer({
                       <TableBody>
                         {activeProgramme.results
                           .sort(
-                            (a, b) =>
-                              (a.position ?? 999) - (b.position ?? 999),
+                            (a, b) => (a.position ?? 999) - (b.position ?? 999),
                           )
                           .map((r, idx) => (
                             <TableRow
@@ -170,9 +170,7 @@ export function AnnouncerResultDrawer({
                   {/* Mobile Cards View */}
                   <div className="block sm:hidden divide-y divide-border">
                     {activeProgramme.results
-                      .sort(
-                        (a, b) => (a.position ?? 999) - (b.position ?? 999),
-                      )
+                      .sort((a, b) => (a.position ?? 999) - (b.position ?? 999))
                       .map((r, idx) => (
                         <div
                           key={r.id}
@@ -262,12 +260,18 @@ export function AnnouncerResultDrawer({
                 </div>
               </div>
 
-              <DrawerFooter className="flex-col sm:flex-row gap-2 px-4 pb-8 pt-4">
-                <p className="text-xs text-muted-foreground flex-1">
-                  {activeProgramme.resultNumber != null
-                    ? `This publishes result #${activeProgramme.resultNumber} to the public site and generates the poster.`
-                    : "Assign a result number first."}
-                </p>
+              <DrawerFooter className="flex-col sm:flex-row items-center justify-between gap-2 px-4 pb-8 pt-4">
+                <div className="flex-1 flex flex-col gap-1 items-start">
+                  <p className="text-xs text-muted-foreground">
+                    {activeProgramme.resultNumber != null
+                      ? `This publishes result #${activeProgramme.resultNumber} to the public site and generates the poster.`
+                      : "Assign a result number first."}
+                  </p>
+                  <InternalResultPosterSection
+                    programmeId={activeProgramme.id}
+                    festivalSlug={festivalSlug}
+                  />
+                </div>
                 <Button
                   onClick={handleAnnounce}
                   size="lg"

@@ -41,7 +41,7 @@ export default async function CheckpointsPage({
     redirect(`/dashboard/${slug}`);
   }
 
-  const { checkpoints, todayString } = await getCheckpointsPageData(
+  const { checkpoints, todayString, categories } = await getCheckpointsPageData(
     context.festival.id,
     { name: session.name, email: session.email },
   );
@@ -53,6 +53,7 @@ export default async function CheckpointsPage({
         basePath={`/dashboard/${slug}/event-works/checkpoints`}
         todayString={todayString}
         checkpoints={checkpoints}
+        categories={categories}
       />
     </div>
   );

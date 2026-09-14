@@ -27,7 +27,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TimePicker } from "@/components/ui/time-picker";
+
 import {
   createCheckpointAction,
   startSessionAction,
@@ -36,6 +44,7 @@ import {
 export interface StartedSession {
   id: string;
   checkpointId: string;
+  categoryId: string | null;
   name: string;
   sessionDate: string;
   windowStartMin: number | null;
@@ -55,6 +64,8 @@ interface StartSessionDialogProps {
   basePath: string;
   checkpoints: CheckpointOption[];
   todayString: string;
+  /** All categories available for this festival (for the optional scope picker). */
+  categories?: { id: string; name: string }[];
   /** When set, the checkpoint is locked (nested page) and the picker hidden. */
   fixedCheckpointId?: string;
   /**
@@ -82,6 +93,7 @@ export function StartSessionDialog({
   basePath,
   checkpoints: initialCheckpoints,
   todayString,
+  categories = [],
   fixedCheckpointId,
   onStarted,
   triggerLabel = "Start session",
@@ -97,6 +109,7 @@ export function StartSessionDialog({
   const [query, setQuery] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("all");
   const [creating, setCreating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +130,7 @@ export function StartSessionDialog({
     setSelectedId(fixedCheckpointId ?? initialCheckpoints[0]?.id ?? "");
     setStartTime("");
     setEndTime("");
+    setCategoryId("all");
     setQuery("");
     setError(null);
   };
@@ -181,6 +195,7 @@ export function StartSessionDialog({
     const res = await startSessionAction({
       festivalId,
       checkpointId: selectedId,
+      categoryId: categoryId !== "all" ? categoryId : undefined,
       date: todayString,
       windowStartMin,
       windowEndMin,
@@ -283,7 +298,7 @@ export function StartSessionDialog({
                             ) : (
                               <Plus className="mr-2 h-4 w-4" />
                             )}
-                            Add “{query.trim()}”
+                            Add "{query.trim()}"
                           </CommandItem>
                         </CommandGroup>
                       )}
@@ -291,6 +306,32 @@ export function StartSessionDialog({
                   </Command>
                 </PopoverContent>
               </Popover>
+            </div>
+          )}
+
+          {/* Category scope — available for all checkpoint types */}
+          {categories.length > 0 && (
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {categoryId !== "all" && (
+                <p className="text-xs text-muted-foreground">
+                  Only participants in this category can be scanned in this
+                  session.
+                </p>
+              )}
             </div>
           )}
 

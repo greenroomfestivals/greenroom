@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { assertFestivalAccess } from "@/core/auth/assert-festival-access";
 import { getSession } from "@/core/auth/session";
 import { db } from "@/core/database/client";
@@ -42,6 +42,7 @@ export interface ResultPosterExportPayload {
 
 export async function getResultPosterExportPayloadAction(
   programmeId: string,
+  includeUnpublished: boolean = false,
 ): Promise<ActionResponse<ResultPosterExportPayload | null>> {
   try {
     const session = await getSession();
@@ -101,12 +102,17 @@ export async function getResultPosterExportPayloadAction(
         participantTable,
         eq(programmeAssignment.participantId, participantTable.id),
       )
-      .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
+      .leftJoin(
+        groupTable,
+        sql`${programmeAssignment.groupId} = ${groupTable.id} OR ${participantTable.groupId} = ${groupTable.id}`,
+      )
       .where(
-        and(
-          eq(programmeAssignment.programmeId, programmeId),
-          eq(resultTable.isPublished, true),
-        ),
+        includeUnpublished
+          ? eq(programmeAssignment.programmeId, programmeId)
+          : and(
+              eq(programmeAssignment.programmeId, programmeId),
+              eq(resultTable.isPublished, true),
+            ),
       )
       .orderBy(asc(resultTable.position));
 

@@ -5,6 +5,7 @@ import { Megaphone, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnnouncerCallListDrawer } from "@/components/dashboard/announcement/AnnouncerCallListDrawer";
+import { AnnouncerResultDrawer } from "@/components/dashboard/announcement/AnnouncerResultDrawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/core/utils/cn";
@@ -13,8 +14,6 @@ import type {
   AnnouncerQueueProgramme,
 } from "@/features/announcement/services/announcer.service";
 import { useLiveChannel } from "@/hooks/use-live-channel";
-
-import { AnnouncerResultDrawer } from "@/components/dashboard/announcement/AnnouncerResultDrawer";
 
 interface Props {
   festivalId: string;
@@ -134,7 +133,9 @@ export function AnnouncerConsoleClient({
                   <div className="flex items-start gap-3 min-w-0 flex-1">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-500/10 shadow-inner">
                       <span className="font-mono text-xs font-bold text-violet-600 dark:text-violet-400">
-                        {item.resultNumber != null ? `#${item.resultNumber}` : "—"}
+                        {item.resultNumber != null
+                          ? `#${item.resultNumber}`
+                          : "—"}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -263,6 +264,7 @@ export function AnnouncerConsoleClient({
 
       <AnnouncerResultDrawer
         festivalId={festivalId}
+        festivalSlug={festivalSlug}
         activeProgramme={selectedQueueItem}
         onOpenChange={(open) => !open && setSelectedQueueItem(null)}
         onAnnounceSuccess={() => setSelectedQueueItem(null)}

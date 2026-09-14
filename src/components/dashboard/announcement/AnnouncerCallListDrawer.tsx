@@ -5,7 +5,7 @@ import { Crown, Loader2, Users, X } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/core/utils/cn";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
   DrawerClose,
@@ -15,6 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { cn } from "@/core/utils/cn";
 import {
   getCallListAssignmentsAction,
   toggleParticipantParticipatedAction,
@@ -22,7 +23,6 @@ import {
 import type { ActiveReportingProgramme } from "@/features/announcement/services/announcer.service";
 import { cancelCallListNotification } from "@/features/schedule/actions/schedule.actions";
 import { toast } from "@/lib/toast";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   open: boolean;
@@ -123,16 +123,19 @@ export function AnnouncerCallListDrawer({
     >,
   );
 
-  const handleToggleParticipated = async (assignmentId: string, newValue: boolean) => {
+  const handleToggleParticipated = async (
+    assignmentId: string,
+    newValue: boolean,
+  ) => {
     // Optimistic update
     setAssignments((prev) =>
       prev.map((a) =>
         a.id === assignmentId ? { ...a, hasParticipated: newValue } : a,
       ),
     );
-    
+
     setUpdatingId(assignmentId);
-    
+
     try {
       const res = await toggleParticipantParticipatedAction(
         festivalId,
@@ -263,16 +266,18 @@ export function AnnouncerCallListDrawer({
                     return a.teamNumber - b.teamNumber;
                   }
 
-                  return (a.groupName || a.members[0]?.name || "").localeCompare(
-                    b.groupName || b.members[0]?.name || ""
-                  );
+                  return (
+                    a.groupName ||
+                    a.members[0]?.name ||
+                    ""
+                  ).localeCompare(b.groupName || b.members[0]?.name || "");
                 })
                 .map((assignment, index) => (
                   <div
                     key={assignment.id}
                     className={cn(
                       "border rounded-lg p-4 bg-muted/20 transition-all",
-                      assignment.hasParticipated && "opacity-60"
+                      assignment.hasParticipated && "opacity-60",
                     )}
                   >
                     {item?.type === "GROUP" ? (
@@ -358,7 +363,7 @@ export function AnnouncerCallListDrawer({
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className="mt-3 pt-3 border-t flex items-center justify-end">
                       <div className="flex items-center space-x-2">
                         {updatingId === assignment.id && (

@@ -76,8 +76,20 @@ export async function generateMetadata({
       template: `%s | ${festival.name}`,
     },
     icons: {
-      icon: [{ url: favicon32, sizes: "32x32", type: rawLogo ? "image/png" : "image/svg+xml" }],
-      apple: [{ url: favicon180, sizes: "180x180", type: rawLogo ? "image/png" : "image/svg+xml" }],
+      icon: [
+        {
+          url: favicon32,
+          sizes: "32x32",
+          type: rawLogo ? "image/png" : "image/svg+xml",
+        },
+      ],
+      apple: [
+        {
+          url: favicon180,
+          sizes: "180x180",
+          type: rawLogo ? "image/png" : "image/svg+xml",
+        },
+      ],
       shortcut: favicon32,
     },
     openGraph: {
@@ -87,7 +99,9 @@ export async function generateMetadata({
       siteName: "Greenroom",
       images: [
         {
-          url: rawLogo ? social512 : "https://greenroomfestivals.in/icons/icon-512.png",
+          url: rawLogo
+            ? social512
+            : "https://greenroomfestivals.in/icons/icon-512.png",
           width: 512,
           height: 512,
           alt: `${festival.name} Dashboard`,
@@ -98,7 +112,11 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: `Dashboard | ${festival.name}`,
       description: `Manage ${festival.name} on Greenroom`,
-      images: [rawLogo ? social512 : "https://greenroomfestivals.in/icons/icon-512.png"],
+      images: [
+        rawLogo
+          ? social512
+          : "https://greenroomfestivals.in/icons/icon-512.png",
+      ],
     },
   };
 }

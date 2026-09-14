@@ -69,12 +69,17 @@ export async function getCheckpointsPageData(
   await seedBuiltInCheckpoints(festivalId, actor);
   const checkpoints = await repo.getCheckpoints(festivalId);
   const todayString = format(new Date(), "yyyy-MM-dd");
-  const [todaySessions, sessionCounts] = await Promise.all([
+  const [todaySessions, sessionCounts, categories] = await Promise.all([
     repo.getSessionsWithStats(festivalId, {
       fromDate: todayString,
       toDate: todayString,
     }),
     repo.getSessionCountsByCheckpoint(festivalId),
+    db.query.category.findMany({
+      where: eq(category.festivalId, festivalId),
+      columns: { id: true, name: true },
+      orderBy: category.name,
+    }),
   ]);
 
   const statsByCheckpoint = new Map<
@@ -102,6 +107,7 @@ export async function getCheckpointsPageData(
       sessionCount: sessionCounts.get(c.id) ?? 0,
     })),
     todayString,
+    categories,
   };
 }
 
@@ -155,6 +161,7 @@ export async function startCheckpointSession(
     id: crypto.randomUUID(),
     festivalId: input.festivalId,
     checkpointId: cp.id,
+    categoryId: input.categoryId ?? null,
     name:
       input.name?.trim() || defaultSessionName(windowStartMin, windowEndMin),
     sessionDate: input.date,
@@ -185,6 +192,7 @@ export async function recordCheckpointScan(
       chestNumber: participant.chestNumber,
       groupName: group.name,
       categoryName: category.name,
+      categoryId: participant.categoryId,
     })
     .from(participant)
     .leftJoin(group, eq(participant.groupId, group.id))
@@ -201,6 +209,14 @@ export async function recordCheckpointScan(
     throw new AppError(
       `No participant found with chest number ${chestNumber}.`,
       "NOT_FOUND",
+    );
+  }
+
+  // Enforce category restriction when the session is scoped to one category.
+  if (session.categoryId && p.categoryId !== session.categoryId) {
+    throw new AppError(
+      "This participant is not in the category for this session.",
+      "PRECONDITION_FAILED",
     );
   }
 

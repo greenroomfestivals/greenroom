@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/core/database/client";
 import {
   category as categoryTable,
@@ -159,24 +159,25 @@ async function loadResultPreview(
   festivalName: string,
   festDate: string,
   festLocation: string,
+  targetProgrammeId?: string,
 ): Promise<EditorPreviewBindingsPayload> {
-  const programmeRow = await db
-    .select({ programmeId: programmeTable.id })
-    .from(resultTable)
-    .innerJoin(
-      programmeAssignment,
-      eq(resultTable.assignmentId, programmeAssignment.id),
-    )
-    .where(
-      and(
-        eq(resultTable.festivalId, festivalId),
-        eq(resultTable.isPublished, true),
-      ),
-    )
-    .orderBy(desc(resultTable.updatedAt))
-    .limit(1);
+  let programmeId = targetProgrammeId;
 
-  const programmeId = programmeRow[0]?.programmeId;
+  if (!programmeId) {
+    const programmeRow = await db
+      .select({ programmeId: programmeTable.id })
+      .from(resultTable)
+      .innerJoin(
+        programmeAssignment,
+        eq(resultTable.assignmentId, programmeAssignment.id),
+      )
+      .where(eq(resultTable.festivalId, festivalId))
+      .orderBy(asc(programmeTable.resultNumber))
+      .limit(1);
+
+    programmeId = programmeRow[0]?.programmeId;
+  }
+
   if (!programmeId) {
     const sample = await firstProgrammeSample(festivalId);
     return buildResultPlaceholderBindings(
@@ -236,13 +237,11 @@ async function loadResultPreview(
       participantTable,
       eq(programmeAssignment.participantId, participantTable.id),
     )
-    .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
-    .where(
-      and(
-        eq(programmeAssignment.programmeId, programmeId),
-        eq(resultTable.isPublished, true),
-      ),
+    .leftJoin(
+      groupTable,
+      sql`${programmeAssignment.groupId} = ${groupTable.id} OR ${participantTable.groupId} = ${groupTable.id}`,
     )
+    .where(eq(programmeAssignment.programmeId, programmeId))
     .orderBy(asc(resultTable.position));
 
   const programmeType = requireProgrammeType(
@@ -280,12 +279,15 @@ async function loadCandidatePreview(
   festivalName: string,
   festDate: string,
   festLocation: string,
+  targetParticipantId?: string,
 ): Promise<EditorPreviewBindingsPayload> {
   const participant = await db.query.participant.findFirst({
-    where: and(
-      eq(participantTable.festivalId, festivalId),
-      isNotNull(participantTable.chestNumber),
-    ),
+    where: targetParticipantId
+      ? eq(participantTable.id, targetParticipantId)
+      : and(
+          eq(participantTable.festivalId, festivalId),
+          isNotNull(participantTable.chestNumber),
+        ),
     columns: { id: true, name: true, chestNumber: true },
     with: { group: { columns: { name: true } } },
     orderBy: [asc(participantTable.chestNumber)],
@@ -380,8 +382,9 @@ async function loadCertificatePreview(
   festivalName: string,
   festDate: string,
   festLocation: string,
+  targetId?: string,
 ): Promise<EditorPreviewBindingsPayload> {
-  const resultRow = await db
+  const resultQuery = db
     .select({
       position: resultTable.position,
       grade: resultTable.grade,
@@ -399,13 +402,20 @@ async function loadCertificatePreview(
       participantTable,
       eq(programmeAssignment.participantId, participantTable.id),
     )
-    .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
-    .where(
-      and(
+    .leftJoin(
+      groupTable,
+      sql`${programmeAssignment.groupId} = ${groupTable.id} OR ${participantTable.groupId} = ${groupTable.id}`,
+    );
+
+  const whereClause = targetId
+    ? and(
         eq(resultTable.festivalId, festivalId),
-        eq(resultTable.isPublished, true),
-      ),
-    )
+        eq(programmeAssignment.programmeId, targetId),
+      )
+    : eq(resultTable.festivalId, festivalId);
+
+  const resultRow = await resultQuery
+    .where(whereClause)
     .orderBy(desc(resultTable.updatedAt))
     .limit(1);
 
@@ -443,10 +453,77 @@ async function loadCertificatePreview(
   return buildRealPreviewPayload({ ...bindings, festDate, festLocation });
 }
 
+export interface EditorPreviewOption {
+  id: string;
+  label: string;
+  sublabel?: string;
+}
+
+export async function getFestivalEditorPreviewOptions(
+  festivalId: string,
+  templateType: PosterTemplateType,
+): Promise<EditorPreviewOption[]> {
+  switch (templateType) {
+    case "RESULT":
+    case "CERTIFICATE": {
+      const rows = await db
+        .select({
+          programmeId: programmeTable.id,
+          programmeName: programmeTable.name,
+          resultNumber: programmeTable.resultNumber,
+        })
+        .from(resultTable)
+        .innerJoin(
+          programmeAssignment,
+          eq(resultTable.assignmentId, programmeAssignment.id),
+        )
+        .innerJoin(
+          programmeTable,
+          eq(programmeAssignment.programmeId, programmeTable.id),
+        )
+        .where(eq(resultTable.festivalId, festivalId))
+        .groupBy(
+          programmeTable.id,
+          programmeTable.name,
+          programmeTable.resultNumber,
+        )
+        .orderBy(asc(programmeTable.resultNumber), asc(programmeTable.name));
+
+      return rows.map((r) => ({
+        id: r.programmeId,
+        label: r.resultNumber
+          ? `Result #${r.resultNumber} - ${r.programmeName}`
+          : r.programmeName,
+      }));
+    }
+    case "CANDIDATE_CARD": {
+      const rows = await db.query.participant.findMany({
+        where: and(
+          eq(participantTable.festivalId, festivalId),
+          isNotNull(participantTable.chestNumber),
+        ),
+        columns: { id: true, name: true, chestNumber: true },
+        with: { group: { columns: { name: true } } },
+        orderBy: [asc(participantTable.chestNumber)],
+        limit: 50,
+      });
+
+      return rows.map((p) => ({
+        id: p.id,
+        label: `${p.chestNumber} - ${p.name}`,
+        sublabel: p.group?.name ?? undefined,
+      }));
+    }
+    default:
+      return [];
+  }
+}
+
 /** Festival editor preview: real data when available, honest placeholders otherwise. */
 export async function getFestivalEditorPreviewBindings(
   festivalId: string,
   templateType: PosterTemplateType,
+  targetId?: string,
 ): Promise<EditorPreviewBindingsPayload> {
   const festival = await db.query.festival.findFirst({
     where: eq(festivalTable.id, festivalId),
@@ -470,6 +547,7 @@ export async function getFestivalEditorPreviewBindings(
         festivalName,
         festDate,
         festLocation,
+        targetId,
       );
     case "CANDIDATE_CARD":
       return loadCandidatePreview(
@@ -477,6 +555,7 @@ export async function getFestivalEditorPreviewBindings(
         festivalName,
         festDate,
         festLocation,
+        targetId,
       );
     case "CERTIFICATE":
       return loadCertificatePreview(
@@ -484,6 +563,7 @@ export async function getFestivalEditorPreviewBindings(
         festivalName,
         festDate,
         festLocation,
+        targetId,
       );
     case "TEAM_POINTS":
       return loadTeamPointsPreview(

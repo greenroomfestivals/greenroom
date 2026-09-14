@@ -1896,6 +1896,11 @@ export const festivalNews = pgTable(
     createdByEmail: text("created_by_email"),
   },
   (table) => [
+    uniqueIndex("festival_news_festivalId_slug_key").using(
+      "btree",
+      table.festivalId.asc().nullsLast(),
+      table.slug.asc().nullsLast(),
+    ),
     foreignKey({
       columns: [table.festivalId],
       foreignColumns: [festival.id],
@@ -2718,6 +2723,12 @@ export const checkpointSession = pgTable(
     checkpointId: text("checkpoint_id")
       .notNull()
       .references(() => checkpoint.id, { onDelete: "cascade" }),
+    // Optional: when set, this session is scoped to a single category.
+    // Only participants in that category may be scanned, and the roster
+    // shows only that category.
+    categoryId: text("category_id").references(() => category.id, {
+      onDelete: "set null",
+    }),
     name: text("name").notNull(),
     sessionDate: text("session_date").notNull(),
     // Minutes-from-midnight window. Null when the checkpoint doesn't require a

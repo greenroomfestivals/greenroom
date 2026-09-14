@@ -56,6 +56,20 @@ export default function ExcalidrawBoard(props: ExcalidrawBoardProps) {
 
   return (
     <div className="h-full w-full excalidraw-wrapper relative">
+      <style>{`
+        /* Hide unwanted toolbar items via aria-labels and specific class names */
+        .excalidraw-wrapper label[aria-label*="Diamond"],
+        .excalidraw-wrapper label[aria-label*="Ellipse"],
+        .excalidraw-wrapper label[aria-label*="Arrow"],
+        .excalidraw-wrapper label[aria-label*="Line"],
+        .excalidraw-wrapper label[aria-label*="Laser"],
+        .excalidraw-wrapper label[aria-label*="Web embed"],
+        .excalidraw-wrapper label[aria-label*="Frame"],
+        .excalidraw-wrapper label[aria-label*="Magic frame"],
+        .excalidraw-wrapper .layer-ui__library {
+          display: none !important;
+        }
+      `}</style>
       {props.isReadOnly && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive backdrop-blur-md">
           Read-Only Mode
@@ -67,22 +81,28 @@ export default function ExcalidrawBoard(props: ExcalidrawBoardProps) {
         }}
         initialData={{
           elements: initialData?.elements,
-          appState: initialData?.appState,
+          appState: {
+            ...initialData?.appState,
+            activeTool: {
+              type: "freedraw",
+              customType: null,
+              locked: false,
+              lastActiveTool: null,
+            },
+          },
           scrollToContent: true,
+        }}
+        UIOptions={{
+          tools: {
+            image: false,
+          },
         }}
         onChange={onChange}
         viewModeEnabled={props.isReadOnly}
         theme="light"
       >
-        <WelcomeScreen>
-          <WelcomeScreen.Hints.ToolbarHint />
-          <WelcomeScreen.Hints.MenuHint />
-        </WelcomeScreen>
         <MainMenu>
           <MainMenu.DefaultItems.ClearCanvas />
-          <MainMenu.DefaultItems.SaveAsImage />
-          <MainMenu.DefaultItems.Export />
-          <MainMenu.DefaultItems.ChangeCanvasBackground />
         </MainMenu>
       </Excalidraw>
     </div>

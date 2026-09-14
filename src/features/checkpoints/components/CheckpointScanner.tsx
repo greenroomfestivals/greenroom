@@ -54,6 +54,10 @@ export interface CheckpointSessionView {
   windowEndMin: number | null;
   status: "OPEN" | "CLOSED";
   scannedCount: number;
+  /** When set, this session is scoped to one category only. */
+  categoryId: string | null;
+  /** Resolved name of the locked category, for display in the header. */
+  categoryName: string | null;
 }
 
 interface Filters {
@@ -116,7 +120,11 @@ export function CheckpointScanner({
   const [roster, setRoster] = useState<RosterRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [groupId, setGroupId] = useState<string>("all");
-  const [categoryId, setCategoryId] = useState<string>("all");
+  // If the session is category-scoped, pre-seed and lock the filter.
+  const lockedCategoryId = session.categoryId ?? null;
+  const [categoryId, setCategoryId] = useState<string>(
+    lockedCategoryId ?? "all",
+  );
   const [status, setStatus] = useState<"OPEN" | "CLOSED">(session.status);
   const [cameraOpen, setCameraOpen] = useState(false);
 
@@ -312,26 +320,29 @@ export function CheckpointScanner({
           ))}
         </SelectContent>
       </Select>
-      <Select value={categoryId} onValueChange={setCategoryId}>
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="All categories" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {filters.categories.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {(groupId !== "all" || categoryId !== "all") && (
+      {/* Hide the category dropdown when the session is scoped to one category */}
+      {!lockedCategoryId && (
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="All categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All categories</SelectItem>
+            {filters.categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      {(groupId !== "all" || (!lockedCategoryId && categoryId !== "all")) && (
         <Button
           variant="ghost"
           size="sm"
           onClick={() => {
             setGroupId("all");
-            setCategoryId("all");
+            if (!lockedCategoryId) setCategoryId("all");
           }}
         >
           Clear
@@ -395,6 +406,12 @@ export function CheckpointScanner({
           >
             {status}
           </Badge>
+          {lockedCategoryId && session.categoryName && (
+            <Badge variant="outline" className="text-[10px] gap-1 font-normal">
+              <Lock className="h-3 w-3" />
+              Category: {session.categoryName}
+            </Badge>
+          )}
         </DrawerDescription>
       </DrawerHeader>
 

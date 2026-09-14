@@ -36,6 +36,7 @@ import {
   useTransition,
 } from "react";
 import { StandingsPointsWithOpener } from "@/components/dashboard/standings/StandingsPointsWithOpener";
+import { InternalResultPosterSection } from "@/components/festival/posters/InternalResultPosterSection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1192,67 +1193,75 @@ export function ResultsConsoleClient({
                   </div>
                 </div>
 
-                <DrawerFooter className="mt-4 px-0 pb-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    disabled={
-                      isPending ||
-                      activeProgramme.status === "PUBLISHED" ||
-                      activeProgramme.status === "ANNOUNCED"
-                    }
-                    onClick={() => {
-                      setSwapTarget(null);
-                      setIsSwapDialogOpen(true);
-                    }}
-                    title={
-                      activeProgramme.status === "PUBLISHED" ||
-                      activeProgramme.status === "ANNOUNCED"
-                        ? "Swap disabled for published results"
-                        : undefined
-                    }
-                    className="w-full sm:w-auto font-medium"
-                  >
-                    <ArrowDownUp className="h-4 w-4 mr-2" />
-                    Swap Result #
-                  </Button>
+                <DrawerFooter className="mt-4 px-0 pb-0 flex flex-col items-stretch gap-4">
+                  <div className="w-full flex items-center justify-between bg-muted/20 border rounded-lg p-3">
+                    <InternalResultPosterSection
+                      programmeId={activeProgramme.id}
+                      festivalSlug={_festivalSlug}
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      disabled={
+                        isPending ||
+                        activeProgramme.status === "PUBLISHED" ||
+                        activeProgramme.status === "ANNOUNCED"
+                      }
+                      onClick={() => {
+                        setSwapTarget(null);
+                        setIsSwapDialogOpen(true);
+                      }}
+                      title={
+                        activeProgramme.status === "PUBLISHED" ||
+                        activeProgramme.status === "ANNOUNCED"
+                          ? "Swap disabled for published results"
+                          : undefined
+                      }
+                      className="w-full sm:w-auto font-medium"
+                    >
+                      <ArrowDownUp className="h-4 w-4 mr-2" />
+                      Swap Result #
+                    </Button>
 
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {activeProgramme.status !== "PUBLISHED" &&
-                      activeProgramme.status !== "ANNOUNCED" && (
-                        <Button
-                          size="lg"
-                          disabled={isPending}
-                          onClick={() => handlePublish(activeProgramme.id)}
-                          className="w-full sm:w-auto"
-                        >
-                          {isPending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                          ) : (
-                            <Megaphone className="h-3.5 w-3.5 mr-1" />
-                          )}
-                          Publish
-                        </Button>
-                      )}
-                    {canUnpublish &&
-                      (activeProgramme.status === "PUBLISHED" ||
-                        activeProgramme.status === "ANNOUNCED") && (
-                        <Button
-                          variant="destructive"
-                          size="lg"
-                          disabled={isPending}
-                          onClick={() => handleUnpublish(activeProgramme.id)}
-                          className="w-full sm:w-auto"
-                        >
-                          {isPending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                          ) : (
-                            <Undo2 className="h-3.5 w-3.5 mr-1" />
-                          )}
-                          Unpublish
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      {activeProgramme.status !== "PUBLISHED" &&
+                        activeProgramme.status !== "ANNOUNCED" && (
+                          <Button
+                            size="lg"
+                            disabled={isPending}
+                            onClick={() => handlePublish(activeProgramme.id)}
+                            className="w-full sm:w-auto"
+                          >
+                            {isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                            ) : (
+                              <Megaphone className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Publish
+                          </Button>
+                        )}
+                      {canUnpublish &&
+                        (activeProgramme.status === "PUBLISHED" ||
+                          activeProgramme.status === "ANNOUNCED") && (
+                          <Button
+                            variant="destructive"
+                            size="lg"
+                            disabled={isPending}
+                            onClick={() => handleUnpublish(activeProgramme.id)}
+                            className="w-full sm:w-auto"
+                          >
+                            {isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                            ) : (
+                              <Undo2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Unpublish
+                          </Button>
+                        )}
+                    </div>
                   </div>
                 </DrawerFooter>
               </>

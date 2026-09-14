@@ -23,6 +23,8 @@ interface CheckpointsLandingProps {
   basePath: string;
   todayString: string;
   checkpoints: CheckpointCard[];
+  /** All festival categories, available to scope a new session. */
+  categories?: { id: string; name: string }[];
 }
 
 function iconFor(name: string) {
@@ -37,6 +39,7 @@ export function CheckpointsLanding({
   basePath,
   todayString,
   checkpoints,
+  categories = [],
 }: CheckpointsLandingProps) {
   return (
     <div className="space-y-6">
@@ -51,6 +54,7 @@ export function CheckpointsLanding({
             name: c.name,
             requiresWindow: c.requiresWindow,
           }))}
+          categories={categories}
         />
       </div>
 

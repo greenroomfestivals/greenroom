@@ -17,7 +17,10 @@ import type { PosterBindings } from "@/features/posters/services/poster-bindings
 import { EditorCanvasRulers } from "./EditorCanvasRulers";
 import { EditorContextToolbar } from "./EditorContextToolbar";
 import { EditorDraftTabsBar } from "./EditorDraftTabsBar";
-import { EditorHeaderActions } from "./EditorHeaderActions";
+import {
+  EditorHeaderActions,
+  type PreviewSelectorProps,
+} from "./EditorHeaderActions";
 import { EditorMobileGate } from "./EditorMobileGate";
 import { EditorPresentButton } from "./EditorPresentButton";
 import { EditorPresentOverlay } from "./EditorPresentOverlay";
@@ -75,6 +78,7 @@ export default function PosterEditorPlayground({
   publishTemplate,
   previewBindings,
   previewDataHint,
+  previewSelectorProps,
   resetTemplate,
   saveNowLabel,
   dbTemplates,
@@ -96,6 +100,7 @@ export default function PosterEditorPlayground({
   publishTemplate?: PublishTemplateConfig;
   previewBindings?: PosterBindings | null;
   previewDataHint?: string | null;
+  previewSelectorProps?: PreviewSelectorProps | null;
   resetTemplate?: ResetTemplateConfig;
   /** Custom label for the Save / Save now button */
   saveNowLabel?: string;
@@ -400,6 +405,7 @@ export default function PosterEditorPlayground({
                 editor={editor}
                 previewDataHint={previewDataHint}
                 resetTemplate={resetTemplate}
+                previewSelectorProps={previewSelectorProps}
               />
               {publishTemplate && doc && !publishTemplate.isPublished && (
                 <Button

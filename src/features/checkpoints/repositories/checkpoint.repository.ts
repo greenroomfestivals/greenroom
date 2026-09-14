@@ -113,6 +113,8 @@ export async function getSessionsWithStats(
       id: checkpointSession.id,
       festivalId: checkpointSession.festivalId,
       checkpointId: checkpointSession.checkpointId,
+      categoryId: checkpointSession.categoryId,
+      categoryName: category.name,
       name: checkpointSession.name,
       sessionDate: checkpointSession.sessionDate,
       windowStartMin: checkpointSession.windowStartMin,
@@ -126,12 +128,13 @@ export async function getSessionsWithStats(
     })
     .from(checkpointSession)
     .innerJoin(checkpoint, eq(checkpointSession.checkpointId, checkpoint.id))
+    .leftJoin(category, eq(checkpointSession.categoryId, category.id))
     .leftJoin(
       checkpointScan,
       eq(checkpointSession.id, checkpointScan.sessionId),
     )
     .where(and(...conditions))
-    .groupBy(checkpointSession.id, checkpoint.id)
+    .groupBy(checkpointSession.id, checkpoint.id, category.name)
     .orderBy(
       desc(checkpointSession.sessionDate),
       desc(checkpointSession.startedAt),

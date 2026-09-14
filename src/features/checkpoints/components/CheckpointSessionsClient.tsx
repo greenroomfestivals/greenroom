@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CircleStop, Loader2 } from "lucide-react";
+import { CircleStop, Filter, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,8 @@ interface SessionRow {
   status: "OPEN" | "CLOSED";
   scannedCount: number;
   checkpointName: string;
+  categoryId: string | null;
+  categoryName: string | null;
 }
 
 interface CheckpointSessionsClientProps {
@@ -111,10 +113,16 @@ export function CheckpointSessionsClient({
         windowEndMin: selectedSession.windowEndMin,
         status: selectedSession.status,
         scannedCount: selectedSession.scannedCount,
+        categoryId: selectedSession.categoryId,
+        categoryName: selectedSession.categoryName,
       }
     : null;
 
   const handleStarted = (started: StartedSession) => {
+    const categoryName = started.categoryId
+      ? (filters.categories.find((c) => c.id === started.categoryId)?.name ??
+        null)
+      : null;
     const row: SessionRow = {
       id: started.id,
       name: started.name,
@@ -124,6 +132,8 @@ export function CheckpointSessionsClient({
       status: started.status,
       scannedCount: started.scannedCount,
       checkpointName: checkpoint.name,
+      categoryId: started.categoryId,
+      categoryName,
     };
     setSessions((prev) => [row, ...prev.filter((s) => s.id !== row.id)]);
     setSelectedSessionId(started.id);
@@ -166,6 +176,7 @@ export function CheckpointSessionsClient({
             basePath={basePath}
             todayString={todayString}
             fixedCheckpointId={checkpoint.id}
+            categories={filters.categories}
             checkpoints={[
               {
                 id: checkpoint.id,
@@ -201,6 +212,15 @@ export function CheckpointSessionsClient({
                     {formatWindow(s.windowStartMin, s.windowEndMin)} ·{" "}
                     {labelForDate(s.sessionDate)}
                   </p>
+                  {s.categoryId && s.categoryName && (
+                    <Badge
+                      variant="outline"
+                      className="mt-1 text-[10px] gap-1 font-normal"
+                    >
+                      <Filter className="h-3 w-3" />
+                      Category: {s.categoryName}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm text-muted-foreground hidden sm:inline">

@@ -100,10 +100,24 @@ export async function generateMetadata({
     },
     icons: {
       icon: [
-        { url: favicon32, sizes: "32x32", type: rawLogo ? "image/png" : "image/svg+xml" },
-        { url: social512, sizes: "512x512", type: rawLogo ? "image/png" : "image/svg+xml" },
+        {
+          url: favicon32,
+          sizes: "32x32",
+          type: rawLogo ? "image/png" : "image/svg+xml",
+        },
+        {
+          url: social512,
+          sizes: "512x512",
+          type: rawLogo ? "image/png" : "image/svg+xml",
+        },
       ],
-      apple: [{ url: favicon180, sizes: "180x180", type: rawLogo ? "image/png" : "image/svg+xml" }],
+      apple: [
+        {
+          url: favicon180,
+          sizes: "180x180",
+          type: rawLogo ? "image/png" : "image/svg+xml",
+        },
+      ],
       shortcut: favicon32,
     },
     openGraph: {
@@ -115,7 +129,11 @@ export async function generateMetadata({
       locale: "en_IN",
       images: [
         {
-          url: rawLogo ? social512 : (customDomain ? `https://${customDomain}/icons/icon-512.png` : `https://greenroomfestivals.in/icons/icon-512.png`),
+          url: rawLogo
+            ? social512
+            : customDomain
+              ? `https://${customDomain}/icons/icon-512.png`
+              : `https://greenroomfestivals.in/icons/icon-512.png`,
           width: 512,
           height: 512,
           alt: `${festival.name} logo`,
@@ -126,7 +144,13 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: festival.name,
       description,
-      images: [rawLogo ? social512 : (customDomain ? `https://${customDomain}/icons/icon-512.png` : `https://greenroomfestivals.in/icons/icon-512.png`)],
+      images: [
+        rawLogo
+          ? social512
+          : customDomain
+            ? `https://${customDomain}/icons/icon-512.png`
+            : `https://greenroomfestivals.in/icons/icon-512.png`,
+      ],
     },
   };
 }

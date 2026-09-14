@@ -2,7 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { useCloudinaryUpload } from "@/api/client/upload";
 import { sanitizeDocumentForSave } from "@/components/editor/editor-utils";
 import type { PosterEditorAutosaveConfig } from "@/components/editor/PosterEditorPlayground";
@@ -16,6 +22,7 @@ import {
 import { getMediaImagesAction } from "@/features/media/actions/media.actions";
 import {
   getEditorPreviewBindingsAction,
+  getEditorPreviewOptionsAction,
   getPosterTemplateAction,
   listPosterTemplatesAction,
   publishPosterTemplateAction,
@@ -23,6 +30,7 @@ import {
   unpublishPosterTemplateAction,
 } from "@/features/posters/actions/poster-template.actions";
 import type { PosterBindings } from "@/features/posters/services/poster-bindings.service";
+import type { EditorPreviewOption } from "@/features/posters/services/poster-editor-preview.service";
 import type { PosterTemplateStatus } from "@/features/posters/types/poster-template.types";
 import {
   festivalEditorPath,
@@ -85,6 +93,11 @@ export function FestivalPosterEditor({
     null,
   );
   const [previewDataHint, setPreviewDataHint] = useState<string | null>(null);
+  const [previewOptions, setPreviewOptions] = useState<EditorPreviewOption[]>(
+    [],
+  );
+  const [selectedPreviewTargetId, setSelectedPreviewTargetId] =
+    useState<string>("");
 
   const [dbTemplates, setDbTemplates] = useState<any[]>([]);
   const [festivalImages, setFestivalImages] = useState<
@@ -153,20 +166,31 @@ export function FestivalPosterEditor({
     });
   }, [codeParam, festivalId]);
 
-  const refreshPreviewBindings = useCallback(async () => {
-    if (!templateCode) return;
-    const type =
-      templateTypeFromCode(templateCode) ?? ("RESULT" as PosterTemplateType);
-    const res = await getEditorPreviewBindingsAction(festivalId, type);
-    if (res.success) {
-      setPreviewBindings(res.data.bindings);
-      setPreviewDataHint(res.data.hint);
-    }
-  }, [festivalId, templateCode]);
+  const refreshPreviewBindings = useCallback(
+    async (targetId?: string) => {
+      if (!templateCode) return;
+      const type =
+        templateTypeFromCode(templateCode) ?? ("RESULT" as PosterTemplateType);
+
+      const [bindingsRes, optionsRes] = await Promise.all([
+        getEditorPreviewBindingsAction(festivalId, type, targetId),
+        getEditorPreviewOptionsAction(festivalId, type),
+      ]);
+
+      if (optionsRes.success) {
+        setPreviewOptions(optionsRes.data);
+      }
+      if (bindingsRes.success) {
+        setPreviewBindings(bindingsRes.data.bindings);
+        setPreviewDataHint(bindingsRes.data.hint);
+      }
+    },
+    [festivalId, templateCode],
+  );
 
   useEffect(() => {
-    void refreshPreviewBindings();
-  }, [refreshPreviewBindings]);
+    void refreshPreviewBindings(selectedPreviewTargetId || undefined);
+  }, [refreshPreviewBindings, selectedPreviewTargetId]);
 
   const saveDraftSilent = useCallback(
     async (doc: PosterEditorDocument): Promise<boolean> => {
@@ -322,6 +346,23 @@ export function FestivalPosterEditor({
   }, [festivalId, festivalSlug, templateCode]);
 
   // ── Render: loading ──────────────────────────────────────────────────────
+  const previewSelectorProps = useMemo(() => {
+    if (previewOptions.length === 0) return null;
+    const currentType = templateCode
+      ? templateTypeFromCode(templateCode)
+      : null;
+    const placeholder =
+      currentType === "CANDIDATE_CARD"
+        ? "Select candidate..."
+        : "Select result...";
+    return {
+      options: previewOptions,
+      selectedId: selectedPreviewTargetId || previewOptions[0]?.id || "",
+      onSelect: (id: string) => setSelectedPreviewTargetId(id),
+      placeholder,
+    };
+  }, [previewOptions, selectedPreviewTargetId, templateCode]);
+
   if (!ready) {
     return (
       <div className="flex h-dvh items-center justify-center">Loading…</div>
@@ -355,6 +396,7 @@ export function FestivalPosterEditor({
           autosave={autosave}
           previewBindings={previewBindings}
           previewDataHint={previewDataHint}
+          previewSelectorProps={previewSelectorProps}
           festivalImages={festivalImages}
           publishTemplate={
             templateCode

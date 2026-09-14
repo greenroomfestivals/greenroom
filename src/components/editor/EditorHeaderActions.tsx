@@ -16,6 +16,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -49,14 +56,23 @@ function ResetButton({
   );
 }
 
+export interface PreviewSelectorProps {
+  options: { id: string; label: string; sublabel?: string }[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+  placeholder?: string;
+}
+
 export function EditorHeaderActions({
   editor,
   previewDataHint,
   resetTemplate,
+  previewSelectorProps,
 }: {
   editor: PosterEditorState;
   previewDataHint?: string | null;
   resetTemplate?: ResetTemplateConfig;
+  previewSelectorProps?: PreviewSelectorProps | null;
 }) {
   const { doc, previewMode, setPreviewMode, resetDocument } = editor;
   const [resetOpen, setResetOpen] = useState(false);
@@ -76,7 +92,7 @@ export function EditorHeaderActions({
   return (
     <TooltipProvider delayDuration={300}>
       <div className="hidden items-center gap-2 lg:flex">
-        <div className="flex max-w-[220px] flex-col gap-0.5">
+        <div className="flex max-w-[260px] flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
             <Switch
               id="preview-data"
@@ -113,6 +129,39 @@ export function EditorHeaderActions({
             </p>
           )}
         </div>
+
+        {previewMode &&
+          previewSelectorProps &&
+          previewSelectorProps.options.length > 0 && (
+            <Select
+              value={previewSelectorProps.selectedId}
+              onValueChange={previewSelectorProps.onSelect}
+            >
+              <SelectTrigger className="h-7 text-xs w-[180px] shrink-0 bg-background">
+                <SelectValue
+                  placeholder={
+                    previewSelectorProps.placeholder ?? "Select item..."
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent
+                side="bottom"
+                align="end"
+                className="max-h-[240px]"
+              >
+                {previewSelectorProps.options.map((opt) => (
+                  <SelectItem key={opt.id} value={opt.id} className="text-xs">
+                    <span>{opt.label}</span>
+                    {opt.sublabel && (
+                      <span className="ml-1 text-[10px] text-muted-foreground">
+                        ({opt.sublabel})
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
         {resetTemplate ? (
           <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>

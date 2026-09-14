@@ -23,13 +23,16 @@ export async function generateMetadata({
       icon: [
         { url: "/icons/stage-icon.png", type: "image/png", sizes: "512x512" },
       ],
-      apple: [{ url: "/icons/stage-icon.png", type: "image/png", sizes: "512x512" }],
+      apple: [
+        { url: "/icons/stage-icon.png", type: "image/png", sizes: "512x512" },
+      ],
       shortcut: "/icons/stage-icon.png",
     },
     openGraph: {
       type: "website",
       title: "Stage Judge Portal | Greenroom",
-      description: "Dedicated stage and judging portal for Greenroom festivals.",
+      description:
+        "Dedicated stage and judging portal for Greenroom festivals.",
       siteName: "Greenroom",
       images: [
         {
@@ -43,7 +46,8 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: "Stage Judge Portal | Greenroom",
-      description: "Dedicated stage and judging portal for Greenroom festivals.",
+      description:
+        "Dedicated stage and judging portal for Greenroom festivals.",
       images: ["https://greenroomfestivals.in/icons/stage-icon.png"],
     },
   };
