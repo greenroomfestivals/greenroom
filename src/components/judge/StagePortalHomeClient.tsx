@@ -1,7 +1,7 @@
 "use client";
 
 import { format, isToday, parseISO } from "date-fns";
-import { Check, ChevronLeft, ChevronRight, Clock, LogOut } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Clock, LogOut, RefreshCw } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
@@ -175,17 +175,28 @@ export function StagePortalHomeClient() {
             </p>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-          onClick={() =>
-            logout.mutate(undefined, { onSuccess: () => router.refresh() })
-          }
-        >
-          <LogOut className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-          Log out
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+            onClick={() => router.refresh()}
+            title="Refresh"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+            onClick={() =>
+              logout.mutate(undefined, { onSuccess: () => router.refresh() })
+            }
+          >
+            <LogOut className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+            Log out
+          </Button>
+        </div>
       </header>
 
       {/* Day switcher — hidden for off-stage */}

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AnnouncerClient } from "@/components/dashboard/announcement/AnnouncerClient";
+import { RefreshButton } from "@/components/dashboard/announcement/RefreshButton";
 import { getSession } from "@/core/auth/session";
 import type { Tier } from "@/core/types/app-enums";
 import {
@@ -48,13 +49,16 @@ export default async function AnnouncerPage({
 
   return (
     <div className="pt-4 sm:pt-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-          Announcer
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Assign result numbers and announce results to the public site.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Announcer
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Assign result numbers and announce results to the public site.
+          </p>
+        </div>
+        <RefreshButton />
       </div>
       <AnnouncerClient
         festivalId={festival.id}

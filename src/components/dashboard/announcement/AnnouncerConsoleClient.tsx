@@ -1,11 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import { Megaphone } from "lucide-react";
+import { Megaphone, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnnouncerCallListDrawer } from "@/components/dashboard/announcement/AnnouncerCallListDrawer";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/core/utils/cn";
 import type {
   ActiveReportingProgramme,
@@ -75,13 +76,24 @@ export function AnnouncerConsoleClient({
             It&apos;s {dateStr}. Let&apos;s get ready for event day.
           </p>
         </div>
-        <a
-          href={`/dashboard/${festivalSlug}/event-works/announcement`}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2.5 px-4 transition-colors w-full sm:w-auto"
-        >
-          <Megaphone className="h-4 w-4" />
-          Go to Announcement Page
-        </a>
+        <div className="flex items-center gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm hover:bg-muted text-muted-foreground hover:text-foreground border-input"
+            onClick={() => router.refresh()}
+            title="Refresh"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <a
+            href={`/dashboard/${festivalSlug}/event-works/announcement`}
+            className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium h-10 px-4 transition-colors shadow-sm"
+          >
+            <Megaphone className="h-4 w-4" />
+            Go to Announcement Page
+          </a>
+        </div>
       </div>
 
       {/* Two-column layout */}
