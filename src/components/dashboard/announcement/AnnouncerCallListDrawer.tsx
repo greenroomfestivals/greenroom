@@ -52,6 +52,7 @@ export function AnnouncerCallListDrawer({
   festivalId,
 }: Props) {
   const [isPending, startTransition] = useTransition();
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
 
   useEffect(() => {
@@ -122,14 +123,17 @@ export function AnnouncerCallListDrawer({
     >,
   );
 
-  const handleToggleParticipated = (assignmentId: string, newValue: boolean) => {
+  const handleToggleParticipated = async (assignmentId: string, newValue: boolean) => {
     // Optimistic update
     setAssignments((prev) =>
       prev.map((a) =>
         a.id === assignmentId ? { ...a, hasParticipated: newValue } : a,
       ),
     );
-    startTransition(async () => {
+    
+    setUpdatingId(assignmentId);
+    
+    try {
       const res = await toggleParticipantParticipatedAction(
         festivalId,
         assignmentId,
@@ -144,7 +148,16 @@ export function AnnouncerCallListDrawer({
           ),
         );
       }
-    });
+    } catch (error) {
+      toast.error("An error occurred");
+      setAssignments((prev) =>
+        prev.map((a) =>
+          a.id === assignmentId ? { ...a, hasParticipated: !newValue } : a,
+        ),
+      );
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const handleManualClose = () => {
@@ -348,13 +361,16 @@ export function AnnouncerCallListDrawer({
                     
                     <div className="mt-3 pt-3 border-t flex items-center justify-end">
                       <div className="flex items-center space-x-2">
+                        {updatingId === assignment.id && (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
                         <Checkbox
                           id={`participated-${assignment.id}`}
                           checked={assignment.hasParticipated}
                           onCheckedChange={(checked) =>
                             handleToggleParticipated(assignment.id, !!checked)
                           }
-                          disabled={isPending}
+                          disabled={updatingId === assignment.id}
                         />
                         <label
                           htmlFor={`participated-${assignment.id}`}
