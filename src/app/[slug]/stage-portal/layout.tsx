@@ -24,6 +24,26 @@ export async function generateMetadata({
       apple: [{ url: "/icons/stage-icon.png", type: "image/png" }],
       shortcut: "/icons/stage-icon.png",
     },
+    openGraph: {
+      type: "website",
+      title: "Stage Judge Portal | Greenroom",
+      description: "Dedicated stage and judging portal for Greenroom festivals.",
+      siteName: "Greenroom",
+      images: [
+        {
+          url: "https://greenroomfestivals.in/icons/stage-icon.png",
+          width: 512,
+          height: 512,
+          alt: "Stage Portal",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Stage Judge Portal | Greenroom",
+      description: "Dedicated stage and judging portal for Greenroom festivals.",
+      images: ["https://greenroomfestivals.in/icons/stage-icon.png"],
+    },
   };
 }
 

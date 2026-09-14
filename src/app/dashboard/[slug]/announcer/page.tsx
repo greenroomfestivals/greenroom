@@ -5,8 +5,10 @@ import { AnnouncerConsoleClient } from "@/components/dashboard/announcement/Anno
 import { getSession } from "@/core/auth/session";
 import { db } from "@/core/database/client";
 import { festival as festivalTable } from "@/core/database/schema";
-import type { TeamStandingRow } from "@/features/announcement/services/announcer.service";
-import { getCallListProgrammes } from "@/features/announcement/services/announcer.service";
+import {
+  getAnnouncerQueue,
+  getCallListProgrammes,
+} from "@/features/announcement/services/announcer.service";
 import { getFestivalContext } from "@/features/festivals/services/festival-context.service";
 
 export const metadata: Metadata = {
@@ -44,9 +46,7 @@ export default async function AnnouncerPage({
   });
   if (!festival) notFound();
 
-  const queuedStandings =
-    (festival.queuedTeamStandings as TeamStandingRow[] | null) ?? [];
-
+  const queue = await getAnnouncerQueue(festival.id);
   const callList = await getCallListProgrammes(festival.id);
 
   return (
@@ -54,8 +54,7 @@ export default async function AnnouncerPage({
       <AnnouncerConsoleClient
         festivalId={festival.id}
         festivalSlug={slug}
-        queuedStandings={queuedStandings}
-        afterCount={festival.standingsPublishedAtResultNumber}
+        queue={queue}
         callList={callList}
         userName={session?.name ?? undefined}
       />

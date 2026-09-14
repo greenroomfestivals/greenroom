@@ -88,11 +88,20 @@ export const metadata: Metadata = {
     siteName: "Greenroom",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: "https://greenroomfestivals.in/icons/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "Greenroom Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Greenroom | Paperless Festival Management",
     description: "Run your next large-scale festival without the paperwork.",
+    images: ["https://greenroomfestivals.in/icons/icon-512.png"],
   },
   appleWebApp: {
     capable: true,
