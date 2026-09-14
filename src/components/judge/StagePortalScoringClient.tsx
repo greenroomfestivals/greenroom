@@ -83,6 +83,7 @@ type PolicyResultRow = {
   points: number;
   grade: string | null;
   awardPoints: number;
+  position?: number | null;
 };
 
 function scoreCellErrorLabel(
@@ -373,6 +374,9 @@ function SubmissionReviewView({
                 Grade
               </TableHead>
               <TableHead className="font-semibold text-heading">
+                Prize
+              </TableHead>
+              <TableHead className="font-semibold text-heading">
                 Award Points
               </TableHead>
             </TableRow>
@@ -398,6 +402,19 @@ function SubmissionReviewView({
                         <span className="text-xs font-medium text-muted-foreground">
                           No grade
                         </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-semibold text-heading">
+                      {policy?.position === 1 ? (
+                        <span className="text-amber-600 font-bold">1st</span>
+                      ) : policy?.position === 2 ? (
+                        <span className="text-slate-500 font-bold">2nd</span>
+                      ) : policy?.position === 3 ? (
+                        <span className="text-orange-600 font-bold">3rd</span>
+                      ) : policy?.position ? (
+                        <span className="text-muted-foreground">{policy.position}th</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell className="font-semibold tabular-nums text-heading">

@@ -2259,6 +2259,7 @@ export async function previewJudgeSubmissionSummaryAction(input: {
       points: r.points,
       grade: r.grade,
       awardPoints: finalAwardPoints,
+      position,
     });
   }
 
