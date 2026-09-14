@@ -5,6 +5,7 @@ import { Crown, Loader2, Users, X } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/core/utils/cn";
 import {
   Drawer,
   DrawerClose,
