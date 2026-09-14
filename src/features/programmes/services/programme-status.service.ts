@@ -274,7 +274,7 @@ export async function updateProgrammeStatus(
 
     let finalResultNumber = programme.resultNumber;
     if (
-      ["PUBLISHED", "ANNOUNCED"].includes(status) &&
+      ["PENDING_PUBLICATION", "PUBLISHED", "ANNOUNCED"].includes(status) &&
       finalResultNumber === null
     ) {
       const nextNumRes = await exec
@@ -397,7 +397,7 @@ export async function updateProgrammeStatus(
 
   let finalResultNumber = programme.resultNumber;
   if (
-    ["PUBLISHED", "ANNOUNCED"].includes(status) &&
+    ["PENDING_PUBLICATION", "PUBLISHED", "ANNOUNCED"].includes(status) &&
     finalResultNumber === null
   ) {
     const nextNumRes = await exec

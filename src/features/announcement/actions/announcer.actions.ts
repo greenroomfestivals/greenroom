@@ -6,6 +6,7 @@ import {
   asc,
   count,
   eq,
+  inArray,
   isNotNull,
   or,
   sql,
@@ -283,7 +284,40 @@ export async function publishResult(
 
     let finalResultNumber = programme.resultNumber;
 
-    if (finalResultNumber == null) {
+    const maxPublishedRes = await db
+      .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
+      .from(programmeTable)
+      .where(
+        and(
+          eq(programmeTable.festivalId, festivalId),
+          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"])
+        )
+      );
+    const expectedResultNumber = (maxPublishedRes[0]?.maxNum ?? 0) + 1;
+
+    if (finalResultNumber !== null && finalResultNumber > expectedResultNumber) {
+      const holder = await db.query.programme.findFirst({
+        where: and(
+          eq(programmeTable.festivalId, festivalId),
+          eq(programmeTable.resultNumber, expectedResultNumber)
+        ),
+        columns: { id: true, status: true },
+      });
+
+      if (holder && holder.status !== "PUBLISHED" && holder.status !== "ANNOUNCED") {
+        await db
+          .update(programmeTable)
+          .set({ resultNumber: -1000000 - finalResultNumber })
+          .where(eq(programmeTable.id, programmeId));
+
+        await db
+          .update(programmeTable)
+          .set({ resultNumber: finalResultNumber })
+          .where(eq(programmeTable.id, holder.id));
+
+        finalResultNumber = expectedResultNumber;
+      }
+    } else if (finalResultNumber == null) {
       const maxResult = await db
         .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
         .from(programmeTable)
@@ -357,7 +391,40 @@ export async function announceResult(
 
     let finalResultNumber = programme.resultNumber;
 
-    if (finalResultNumber == null) {
+    const maxPublishedRes = await db
+      .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
+      .from(programmeTable)
+      .where(
+        and(
+          eq(programmeTable.festivalId, festivalId),
+          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"])
+        )
+      );
+    const expectedResultNumber = (maxPublishedRes[0]?.maxNum ?? 0) + 1;
+
+    if (finalResultNumber !== null && finalResultNumber > expectedResultNumber) {
+      const holder = await db.query.programme.findFirst({
+        where: and(
+          eq(programmeTable.festivalId, festivalId),
+          eq(programmeTable.resultNumber, expectedResultNumber)
+        ),
+        columns: { id: true, status: true },
+      });
+
+      if (holder && holder.status !== "PUBLISHED" && holder.status !== "ANNOUNCED") {
+        await db
+          .update(programmeTable)
+          .set({ resultNumber: -1000000 - finalResultNumber })
+          .where(eq(programmeTable.id, programmeId));
+
+        await db
+          .update(programmeTable)
+          .set({ resultNumber: finalResultNumber })
+          .where(eq(programmeTable.id, holder.id));
+
+        finalResultNumber = expectedResultNumber;
+      }
+    } else if (finalResultNumber == null) {
       const maxResult = await db
         .select({ maxNum: sql<number>`MAX(${programmeTable.resultNumber})` })
         .from(programmeTable)
