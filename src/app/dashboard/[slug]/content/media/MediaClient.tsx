@@ -366,10 +366,10 @@ export function MediaClient({
   return (
     <div className="space-y-6">
       <div className="flex flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-row items-center gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Media
-          </h1>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+          Media
+        </h1>
+        <div className="flex flex-row items-center gap-2">
           <Button
             size="sm"
             onClick={() => setUploadModalOpen(true)}
@@ -378,21 +378,21 @@ export function MediaClient({
             <Plus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Upload</span>
           </Button>
+          <HowItWorksButton
+            title="How Media works"
+            description="Photos and YouTube videos appear together on your festival's public media page."
+          >
+            <p className="text-sm text-muted-foreground">
+              Upload images to show on your festival&apos;s public media. You can
+              upload multiple photos at once, reorder them, and remove single or
+              multiple images.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Paste YouTube links in the Videos tab to feature highlight reels and
+              coverage alongside your photos.
+            </p>
+          </HowItWorksButton>
         </div>
-        <HowItWorksButton
-          title="How Media works"
-          description="Photos and YouTube videos appear together on your festival's public media page."
-        >
-          <p className="text-sm text-muted-foreground">
-            Upload images to show on your festival&apos;s public media. You can
-            upload multiple photos at once, reorder them, and remove single or
-            multiple images.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Paste YouTube links in the Videos tab to feature highlight reels and
-            coverage alongside your photos.
-          </p>
-        </HowItWorksButton>
       </div>
 
       <Tabs defaultValue="photos">
