@@ -40,9 +40,7 @@ export async function invalidateCustomDomainCache(
     const redis = getRedis();
     let cursor = "0";
     do {
-      const [nextCursor, keysBatch] = await redis.scan(cursor, {
-        match: `${keys.domainHost("")}*`,
-      });
+      const [nextCursor, keysBatch] = await redis.scan(cursor, { match: `${keys.domainHost("")}*` });
       cursor = nextCursor;
       if (keysBatch.length > 0) {
         const p = redis.pipeline();

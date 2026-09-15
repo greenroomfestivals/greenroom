@@ -611,16 +611,13 @@ export function StagePortalScoringClient({
     [payload.codeLetters],
   );
 
-  const [optimisticAbsent, setOptimisticAbsent] = useState<
-    Record<string, boolean>
-  >({});
+  const [optimisticAbsent, setOptimisticAbsent] = useState<Record<string, boolean>>({});
 
   const activeCodeLetters = useMemo(
-    () =>
-      sortedCodeLetters.map((c) => {
-        const local = optimisticAbsent[c.id];
-        return { ...c, isAbsent: local !== undefined ? local : c.isAbsent };
-      }),
+    () => sortedCodeLetters.map(c => {
+      const local = optimisticAbsent[c.id];
+      return { ...c, isAbsent: local !== undefined ? local : c.isAbsent };
+    }),
     [sortedCodeLetters, optimisticAbsent],
   );
 
@@ -684,7 +681,7 @@ export function StagePortalScoringClient({
   ]);
 
   const submitValidationMessage = useMemo(() => {
-    const presentCodeLetters = activeCodeLetters.filter((c) => !c.isAbsent);
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     if (payload.judgingMode === "SINGLE") {
       if (!selectedJudgeId) return "Select your judge name to continue.";
       const total = presentCodeLetters.length;
@@ -726,7 +723,7 @@ export function StagePortalScoringClient({
   const judgesDoneCount = useMemo(() => {
     if (payload.judgingMode !== "SINGLE" || payload.judges.length <= 1)
       return null;
-    const presentCodeLetters = activeCodeLetters.filter((c) => !c.isAbsent);
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     let n = 0;
     for (const j of payload.judges) {
       if (judgeHasAllCodes(j.id, presentCodeLetters, payload.existingScores))
@@ -742,7 +739,7 @@ export function StagePortalScoringClient({
 
   const progress = useMemo(() => {
     const limit = payload.scoreLimit;
-    const presentCodeLetters = activeCodeLetters.filter((c) => !c.isAbsent);
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     if (payload.judgingMode === "SINGLE") {
       const jid =
         payload.judges.length === 1 ? payload.judges[0]!.id : selectedJudgeId;
@@ -828,7 +825,7 @@ export function StagePortalScoringClient({
     startTransition(async () => {
       try {
         const scoresByJudgeId: Record<string, Record<string, number>> = {};
-        const presentCodeLetters = activeCodeLetters.filter((c) => !c.isAbsent);
+        const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
         if (payload.judgingMode === "SINGLE") {
           scoresByJudgeId[selectedJudgeId] = {};
           for (const c of presentCodeLetters) {
@@ -865,7 +862,7 @@ export function StagePortalScoringClient({
     if (submissionPhase !== "review") return;
     startTransition(async () => {
       try {
-        const presentCodeLetters = activeCodeLetters.filter((c) => !c.isAbsent);
+        const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
         if (payload.judgingMode === "SINGLE") {
           const scoresByCodeLetterId: Record<string, number> = {};
           const remarksByCodeLetterId: Record<string, string> = {};
@@ -1192,25 +1189,11 @@ export function StagePortalScoringClient({
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className={cn(
-                                    "h-7 px-2.5 text-[11px] font-medium transition-colors",
-                                    isAbsent
-                                      ? "text-muted-foreground border-dashed"
-                                      : "text-destructive border-destructive/30 hover:bg-destructive/10",
-                                  )}
-                                  disabled={
-                                    isPending || markAbsentMutation.isPending
-                                  }
+                                  className={cn("h-7 px-2.5 text-[11px] font-medium transition-colors", isAbsent ? "text-muted-foreground border-dashed" : "text-destructive border-destructive/30 hover:bg-destructive/10")}
+                                  disabled={isPending || markAbsentMutation.isPending}
                                   onClick={() => {
-                                    setOptimisticAbsent((prev) => ({
-                                      ...prev,
-                                      [c.id]: !isAbsent,
-                                    }));
-                                    markAbsentMutation.mutate({
-                                      configId: payload.configId,
-                                      codeLetterId: c.id,
-                                      isAbsent: !isAbsent,
-                                    });
+                                    setOptimisticAbsent(prev => ({ ...prev, [c.id]: !isAbsent }));
+                                    markAbsentMutation.mutate({ configId: payload.configId, codeLetterId: c.id, isAbsent: !isAbsent });
                                   }}
                                 >
                                   {isAbsent ? "Undo Absent" : "Mark Absent"}
@@ -1288,25 +1271,11 @@ export function StagePortalScoringClient({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className={cn(
-                                  "h-7 px-2.5 text-[11px] font-medium transition-colors",
-                                  isAbsent
-                                    ? "text-muted-foreground border-dashed"
-                                    : "text-destructive border-destructive/30 hover:bg-destructive/10",
-                                )}
-                                disabled={
-                                  isPending || markAbsentMutation.isPending
-                                }
+                                className={cn("h-7 px-2.5 text-[11px] font-medium transition-colors", isAbsent ? "text-muted-foreground border-dashed" : "text-destructive border-destructive/30 hover:bg-destructive/10")}
+                                disabled={isPending || markAbsentMutation.isPending}
                                 onClick={() => {
-                                  setOptimisticAbsent((prev) => ({
-                                    ...prev,
-                                    [c.id]: !isAbsent,
-                                  }));
-                                  markAbsentMutation.mutate({
-                                    configId: payload.configId,
-                                    codeLetterId: c.id,
-                                    isAbsent: !isAbsent,
-                                  });
+                                  setOptimisticAbsent(prev => ({ ...prev, [c.id]: !isAbsent }));
+                                  markAbsentMutation.mutate({ configId: payload.configId, codeLetterId: c.id, isAbsent: !isAbsent });
                                 }}
                               >
                                 {isAbsent ? "Undo Absent" : "Mark Absent"}
@@ -1466,9 +1435,7 @@ export function StagePortalScoringClient({
             programmeId={payload.programme.id}
             judgeMode={payload.judgingMode}
             judgeId={selectedJudgeId}
-            codeLetters={payload.codeLetters
-              .filter((c) => !c.isAbsent)
-              .map((c) => c.code)}
+            codeLetters={payload.codeLetters.filter((c) => !c.isAbsent).map((c) => c.code)}
             isReadOnly={selectedJudgeAlreadySubmitted}
             onClose={() => setIsScratchpadOpen(false)}
           />

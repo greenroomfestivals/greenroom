@@ -263,8 +263,8 @@ async function loadResultPreview(
       programmeType === "GROUP"
         ? r.participantName
           ? `${r.participantName} & Party`
-          : (r.groupName ?? "Party")
-        : (r.participantName ?? r.groupName ?? "—"),
+          : r.groupName ?? "Party"
+        : r.participantName ?? r.groupName ?? "—",
     team: r.groupName ?? "—",
     grade: r.grade,
     points: r.points ?? 0,

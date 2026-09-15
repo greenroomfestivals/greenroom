@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
 
@@ -40,6 +40,6 @@ export async function GET(
       headers: {
         "Content-Type": "application/manifest+json",
       },
-    },
+    }
   );
 }

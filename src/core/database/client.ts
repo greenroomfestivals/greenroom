@@ -54,10 +54,7 @@ export function getPool(): Pool {
   const rawConnectionString = process.env.DATABASE_URL;
   if (!rawConnectionString) throw new Error("DATABASE_URL is not defined");
   const poolConfig = buildPoolConfig(rawConnectionString);
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ...poolConfig,
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ...poolConfig });
   pool.on("error", handlePoolError);
   if (process.env.NODE_ENV === "production") {
     registerShutdown(pool);

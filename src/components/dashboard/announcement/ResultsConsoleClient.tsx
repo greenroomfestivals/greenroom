@@ -187,7 +187,7 @@ function SortableProgrammeRow({
     isDragging,
   } = useSortable({
     id: p.id,
-    disabled: false,
+    disabled: p.status === "PUBLISHED" || p.status === "ANNOUNCED",
   });
 
   const style = {
@@ -210,7 +210,12 @@ function SortableProgrammeRow({
       }}
     >
       <TableCell
-        className={cn("text-center", "cursor-move text-muted-foreground")}
+        className={cn(
+          "text-center",
+          p.status === "PUBLISHED" || p.status === "ANNOUNCED"
+            ? "text-muted-foreground/30 cursor-not-allowed"
+            : "cursor-move text-muted-foreground",
+        )}
         {...attributes}
         {...listeners}
         onClick={(e) => e.stopPropagation()}
@@ -354,7 +359,10 @@ export function ResultsConsoleClient({
   const eligibleSwapProgrammes = useMemo(() => {
     if (!activeProgramme) return [];
     return programmes.filter(
-      (p) => p.id !== activeProgramme.id && p.resultNumber != null,
+      (p) =>
+        p.id !== activeProgramme.id &&
+        p.status !== "PUBLISHED" &&
+        p.status !== "ANNOUNCED",
     );
   }, [programmes, activeProgramme]);
 
@@ -1108,10 +1116,8 @@ export function ResultsConsoleClient({
                               className={cn(
                                 "flex items-center gap-3 p-4 bg-background relative overflow-hidden",
                                 isGold && "bg-amber-50/40 dark:bg-amber-900/10",
-                                isSilver &&
-                                  "bg-slate-50/50 dark:bg-slate-800/20",
-                                isBronze &&
-                                  "bg-orange-50/40 dark:bg-orange-900/10",
+                                isSilver && "bg-slate-50/50 dark:bg-slate-800/20",
+                                isBronze && "bg-orange-50/40 dark:bg-orange-900/10"
                               )}
                             >
                               {hasPodium && (
@@ -1120,31 +1126,22 @@ export function ResultsConsoleClient({
                                     "absolute left-0 top-0 bottom-0 w-1",
                                     isGold && "bg-amber-400",
                                     isSilver && "bg-slate-400",
-                                    isBronze && "bg-orange-400",
+                                    isBronze && "bg-orange-400"
                                   )}
                                 />
                               )}
-
+                              
                               {/* Rank */}
                               <div
                                 className={cn(
                                   "flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm border shadow-sm",
-                                  isGold
-                                    ? "bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/40 dark:border-amber-900/30"
-                                    : isSilver
-                                      ? "bg-slate-200 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800"
-                                      : isBronze
-                                        ? "bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-900/30"
-                                        : "bg-muted text-muted-foreground border-transparent shadow-none",
+                                  isGold ? "bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/40 dark:border-amber-900/30" :
+                                  isSilver ? "bg-slate-200 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800" :
+                                  isBronze ? "bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-900/30" :
+                                  "bg-muted text-muted-foreground border-transparent shadow-none"
                                 )}
                               >
-                                {isGold
-                                  ? "🥇"
-                                  : isSilver
-                                    ? "🥈"
-                                    : isBronze
-                                      ? "🥉"
-                                      : idx + 1}
+                                {isGold ? "🥇" : isSilver ? "🥈" : isBronze ? "🥉" : idx + 1}
                               </div>
 
                               {/* Content */}
@@ -1157,7 +1154,7 @@ export function ResultsConsoleClient({
                                     ID: {r.chestNumber}
                                   </div>
                                 )}
-
+                                
                                 {/* Badges */}
                                 <div className="flex flex-wrap gap-1.5 mt-2">
                                   {r.groupName && (
@@ -1181,32 +1178,22 @@ export function ResultsConsoleClient({
                               {/* Points */}
                               {r.awardPoints != null && r.awardPoints > 0 && (
                                 <div className="flex-shrink-0 text-right ml-1">
-                                  <div
-                                    className={cn(
-                                      "text-xl font-black leading-none",
-                                      isGold
-                                        ? "text-amber-600 dark:text-amber-500"
-                                        : isSilver
-                                          ? "text-slate-600 dark:text-slate-400"
-                                          : isBronze
-                                            ? "text-orange-600 dark:text-orange-500"
-                                            : "text-muted-foreground",
-                                    )}
-                                  >
+                                  <div className={cn(
+                                    "text-xl font-black leading-none",
+                                    isGold ? "text-amber-600 dark:text-amber-500" :
+                                    isSilver ? "text-slate-600 dark:text-slate-400" :
+                                    isBronze ? "text-orange-600 dark:text-orange-500" :
+                                    "text-muted-foreground"
+                                  )}>
                                     {r.awardPoints}
                                   </div>
-                                  <div
-                                    className={cn(
-                                      "text-[9px] font-bold uppercase tracking-wider mt-1",
-                                      isGold
-                                        ? "text-amber-500 dark:text-amber-600/70"
-                                        : isSilver
-                                          ? "text-slate-500 dark:text-slate-500"
-                                          : isBronze
-                                            ? "text-orange-500 dark:text-orange-600/70"
-                                            : "text-muted-foreground/70",
-                                    )}
-                                  >
+                                  <div className={cn(
+                                    "text-[9px] font-bold uppercase tracking-wider mt-1",
+                                    isGold ? "text-amber-500 dark:text-amber-600/70" :
+                                    isSilver ? "text-slate-500 dark:text-slate-500" :
+                                    isBronze ? "text-orange-500 dark:text-orange-600/70" :
+                                    "text-muted-foreground/70"
+                                  )}>
                                     Pts
                                   </div>
                                 </div>
@@ -1230,11 +1217,21 @@ export function ResultsConsoleClient({
                       type="button"
                       variant="outline"
                       size="lg"
-                      disabled={isPending}
+                      disabled={
+                        isPending ||
+                        activeProgramme.status === "PUBLISHED" ||
+                        activeProgramme.status === "ANNOUNCED"
+                      }
                       onClick={() => {
                         setSwapTarget(null);
                         setIsSwapDialogOpen(true);
                       }}
+                      title={
+                        activeProgramme.status === "PUBLISHED" ||
+                        activeProgramme.status === "ANNOUNCED"
+                          ? "Swap disabled for published results"
+                          : undefined
+                      }
                       className="w-full sm:w-auto font-medium"
                     >
                       <ArrowDownUp className="h-4 w-4 mr-2" />
@@ -1350,7 +1347,7 @@ export function ResultsConsoleClient({
                 </Label>
                 {eligibleSwapProgrammes.length === 0 ? (
                   <p className="text-xs text-muted-foreground p-3 rounded-md border border-dashed bg-muted/20">
-                    No other programmes available to swap with.
+                    No other unpublished programmes available to swap with.
                   </p>
                 ) : (
                   <Select

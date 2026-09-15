@@ -200,9 +200,7 @@ export async function verifyPairing(
  */
 export async function retirePairing(festivalId: string): Promise<void> {
   const redis = getRedis();
-  const existingToken = await redis.get<string>(
-    keys.launchPairingActive(festivalId),
-  );
+  const existingToken = await redis.get<string>(keys.launchPairingActive(festivalId));
   if (!existingToken) return;
   const record = await readPairing(existingToken);
   await Promise.all([
@@ -230,10 +228,11 @@ export async function rotatePairing(input: {
  * succeeded.
  */
 export async function claimLaunchTrigger(festivalId: string): Promise<boolean> {
-  const res = await getRedis().set(keys.launchTriggerGuard(festivalId), "1", {
-    px: TRIGGER_GUARD_TTL_MS,
-    nx: true,
-  });
+  const res = await getRedis().set(
+    keys.launchTriggerGuard(festivalId),
+    "1",
+    { px: TRIGGER_GUARD_TTL_MS, nx: true },
+  );
   return res === "OK";
 }
 
