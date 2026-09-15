@@ -233,8 +233,10 @@ export async function resolveCertificatePayload(
     for (const r of rows) {
       const name =
         r.programmeType === "GROUP"
-          ? (r.teamName ?? "Team")
-          : (r.participantName ?? r.teamName ?? "");
+          ? r.participantName
+            ? `${r.participantName} & Party`
+            : r.teamName ?? "Team"
+          : r.participantName ?? r.teamName ?? "";
       const wonPlacement = wantPlacements.find(
         (t) => placementPositions[t] === r.position,
       );
