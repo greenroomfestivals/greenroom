@@ -1104,91 +1104,103 @@ export function ResultsConsoleClient({
                         .sort(
                           (a, b) => (a.position ?? 999) - (b.position ?? 999),
                         )
-                        .map((r, idx) => (
-                          <div
-                            key={r.id}
-                            className={cn(
-                              "p-4 flex flex-col gap-3",
-                              r.position != null && MEDAL_ROWS[r.position - 1],
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2">
-                                <span className="text-muted-foreground font-mono text-xs mt-0.5 w-4 shrink-0">
-                                  {idx + 1}.
-                                </span>
-                                <span className="font-semibold text-sm">
+                        .map((r, idx) => {
+                          const isGold = r.position === 1;
+                          const isSilver = r.position === 2;
+                          const isBronze = r.position === 3;
+                          const hasPodium = isGold || isSilver || isBronze;
+
+                          return (
+                            <div
+                              key={r.id}
+                              className={cn(
+                                "flex items-center gap-3 p-4 bg-background relative overflow-hidden",
+                                isGold && "bg-amber-50/40 dark:bg-amber-900/10",
+                                isSilver && "bg-slate-50/50 dark:bg-slate-800/20",
+                                isBronze && "bg-orange-50/40 dark:bg-orange-900/10"
+                              )}
+                            >
+                              {hasPodium && (
+                                <div
+                                  className={cn(
+                                    "absolute left-0 top-0 bottom-0 w-1",
+                                    isGold && "bg-amber-400",
+                                    isSilver && "bg-slate-400",
+                                    isBronze && "bg-orange-400"
+                                  )}
+                                />
+                              )}
+                              
+                              {/* Rank */}
+                              <div
+                                className={cn(
+                                  "flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm border shadow-sm",
+                                  isGold ? "bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/40 dark:border-amber-900/30" :
+                                  isSilver ? "bg-slate-200 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-800" :
+                                  isBronze ? "bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-900/30" :
+                                  "bg-muted text-muted-foreground border-transparent shadow-none"
+                                )}
+                              >
+                                {isGold ? "🥇" : isSilver ? "🥈" : isBronze ? "🥉" : idx + 1}
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 min-w-0 py-0.5">
+                                <h3 className="text-[13px] sm:text-sm font-bold text-foreground truncate">
                                   {r.participantName ?? "—"}
-                                  {r.chestNumber && (
-                                    <span className="text-xs text-muted-foreground ml-1 font-normal">
-                                      ({r.chestNumber})
+                                </h3>
+                                {r.chestNumber && (
+                                  <div className="text-[11px] font-medium text-muted-foreground mt-0.5 truncate">
+                                    ID: {r.chestNumber}
+                                  </div>
+                                )}
+                                
+                                {/* Badges */}
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {r.groupName && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                                      {r.groupName}
                                     </span>
                                   )}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {r.position != null && r.position <= 3 ? (
-                                  <span className="font-bold text-sm flex items-center gap-1">
-                                    {r.position === 1
-                                      ? "🥇"
-                                      : r.position === 2
-                                        ? "🥈"
-                                        : "🥉"}
-                                    <span
-                                      className={
-                                        r.position === 1
-                                          ? "text-amber-600 dark:text-amber-400"
-                                          : r.position === 2
-                                            ? "text-slate-500 dark:text-slate-300"
-                                            : "text-orange-600 dark:text-orange-400"
-                                      }
-                                    >
-                                      {r.position === 1
-                                        ? "1st"
-                                        : r.position === 2
-                                          ? "2nd"
-                                          : "3rd"}
+                                  {r.grade && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                      Grade {r.grade}
                                     </span>
-                                  </span>
-                                ) : null}
+                                  )}
+                                  {r.codeLetter && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                                      Code {r.codeLetter}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-6 text-xs text-muted-foreground">
-                              {r.codeLetter && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Code:</span>
-                                  <span className="font-mono text-foreground font-medium">
-                                    {r.codeLetter}
-                                  </span>
-                                </div>
-                              )}
-                              {r.groupName && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Group:</span>
-                                  <span className="font-medium text-foreground">
-                                    {r.groupName}
-                                  </span>
-                                </div>
-                              )}
-                              {r.grade && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Grade:</span>
-                                  <span className="font-medium text-foreground">
-                                    {r.grade}
-                                  </span>
-                                </div>
-                              )}
+
+                              {/* Points */}
                               {r.awardPoints != null && r.awardPoints > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <span className="opacity-70">Points:</span>
-                                  <span className="font-mono font-bold text-foreground">
+                                <div className="flex-shrink-0 text-right ml-1">
+                                  <div className={cn(
+                                    "text-xl font-black leading-none",
+                                    isGold ? "text-amber-600 dark:text-amber-500" :
+                                    isSilver ? "text-slate-600 dark:text-slate-400" :
+                                    isBronze ? "text-orange-600 dark:text-orange-500" :
+                                    "text-muted-foreground"
+                                  )}>
                                     {r.awardPoints}
-                                  </span>
+                                  </div>
+                                  <div className={cn(
+                                    "text-[9px] font-bold uppercase tracking-wider mt-1",
+                                    isGold ? "text-amber-500 dark:text-amber-600/70" :
+                                    isSilver ? "text-slate-500 dark:text-slate-500" :
+                                    isBronze ? "text-orange-500 dark:text-orange-600/70" :
+                                    "text-muted-foreground/70"
+                                  )}>
+                                    Pts
+                                  </div>
                                 </div>
                               )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   </div>
                 </div>
