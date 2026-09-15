@@ -8,6 +8,7 @@ export type ScratchpadKeyProps = {
   programmeId: string;
   judgeMode: "SINGLE" | "GROUP";
   judgeId?: string;
+  codeLetters?: string[];
 };
 
 export function getScratchpadKey(props: ScratchpadKeyProps) {

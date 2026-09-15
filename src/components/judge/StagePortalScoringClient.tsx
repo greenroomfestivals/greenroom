@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMarkCodeLetterAbsence } from "@/api/client/server-actions";
 import { StatusPill } from "@/components/app/AppSection";
 import {
   AlertDialog,
@@ -549,6 +550,7 @@ export function StagePortalScoringClient({
   onSubmitted?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const markAbsentMutation = useMarkCodeLetterAbsence();
   const [submissionPhase, setSubmissionPhase] =
     useState<SubmissionPhase>("idle");
   const [summaryVariant, setSummaryVariant] = useState<"complete" | "partial">(
@@ -610,7 +612,7 @@ export function StagePortalScoringClient({
   );
 
   const activeCodeLetters = useMemo(
-    () => sortedCodeLetters.filter((c) => !c.isAbsent),
+    () => sortedCodeLetters,
     [sortedCodeLetters],
   );
 
@@ -618,19 +620,21 @@ export function StagePortalScoringClient({
   const scorePlaceholder = `0–${payload.scoreLimit}`;
 
   const everyCellValidGroup = useMemo(() => {
-    return activeCodeLetters.every((c) =>
-      payload.judges.every((j) => {
+    return activeCodeLetters.every((c) => {
+      if (c.isAbsent) return true;
+      return payload.judges.every((j) => {
         const raw = scoresByKey[`${j.id}:${c.id}`];
         if (!isFieldFilled(raw)) return false;
         const v = Number(raw);
         return Number.isFinite(v) && v >= 0 && v <= payload.scoreLimit;
-      }),
-    );
+      });
+    });
   }, [payload.judges, activeCodeLetters, payload.scoreLimit, scoresByKey]);
 
   const selectedJudgeRowComplete = useMemo(() => {
     if (payload.judgingMode !== "SINGLE" || !selectedJudgeId) return false;
     return activeCodeLetters.every((c) => {
+      if (c.isAbsent) return true;
       const raw = scoresByKey[`${selectedJudgeId}:${c.id}`];
       if (!isFieldFilled(raw)) return false;
       const v = Number(raw);
@@ -672,10 +676,11 @@ export function StagePortalScoringClient({
   ]);
 
   const submitValidationMessage = useMemo(() => {
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     if (payload.judgingMode === "SINGLE") {
       if (!selectedJudgeId) return "Select your judge name to continue.";
-      const total = activeCodeLetters.length;
-      const filled = activeCodeLetters.filter((c) =>
+      const total = presentCodeLetters.length;
+      const filled = presentCodeLetters.filter((c) =>
         isFieldFilled(scoresByKey[`${selectedJudgeId}:${c.id}`]),
       ).length;
       if (filled < total) {
@@ -685,7 +690,7 @@ export function StagePortalScoringClient({
     }
     let total = 0;
     let filled = 0;
-    for (const c of activeCodeLetters) {
+    for (const c of presentCodeLetters) {
       for (const j of payload.judges) {
         total += 1;
         if (isFieldFilled(scoresByKey[`${j.id}:${c.id}`])) filled += 1;
@@ -713,9 +718,10 @@ export function StagePortalScoringClient({
   const judgesDoneCount = useMemo(() => {
     if (payload.judgingMode !== "SINGLE" || payload.judges.length <= 1)
       return null;
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     let n = 0;
     for (const j of payload.judges) {
-      if (judgeHasAllCodes(j.id, activeCodeLetters, payload.existingScores))
+      if (judgeHasAllCodes(j.id, presentCodeLetters, payload.existingScores))
         n += 1;
     }
     return n;
@@ -728,22 +734,23 @@ export function StagePortalScoringClient({
 
   const progress = useMemo(() => {
     const limit = payload.scoreLimit;
+    const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
     if (payload.judgingMode === "SINGLE") {
       const jid =
         payload.judges.length === 1 ? payload.judges[0]!.id : selectedJudgeId;
       if (!jid) {
         return {
           pct: 0,
-          sub: `0 / ${activeCodeLetters.length} codes — pick your name`,
+          sub: `0 / ${presentCodeLetters.length} codes — pick your name`,
         };
       }
-      const valid = activeCodeLetters.filter((c) => {
+      const valid = presentCodeLetters.filter((c) => {
         const raw = scoresByKey[`${jid}:${c.id}`];
         if (!isFieldFilled(raw)) return false;
         const v = Number(raw);
         return Number.isFinite(v) && v >= 0 && v <= limit;
       }).length;
-      const total = activeCodeLetters.length;
+      const total = presentCodeLetters.length;
       return {
         pct: total ? Math.round((valid / total) * 100) : 0,
         sub: `${valid} / ${total} fields valid`,
@@ -751,7 +758,7 @@ export function StagePortalScoringClient({
     }
     let valid = 0;
     let total = 0;
-    for (const c of activeCodeLetters) {
+    for (const c of presentCodeLetters) {
       for (const j of payload.judges) {
         total += 1;
         const raw = scoresByKey[`${j.id}:${c.id}`];
@@ -813,9 +820,10 @@ export function StagePortalScoringClient({
     startTransition(async () => {
       try {
         const scoresByJudgeId: Record<string, Record<string, number>> = {};
+        const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
         if (payload.judgingMode === "SINGLE") {
           scoresByJudgeId[selectedJudgeId] = {};
-          for (const c of activeCodeLetters) {
+          for (const c of presentCodeLetters) {
             scoresByJudgeId[selectedJudgeId]![c.id] = Number(
               scoresByKey[`${selectedJudgeId}:${c.id}`],
             );
@@ -823,7 +831,7 @@ export function StagePortalScoringClient({
         } else {
           for (const j of payload.judges) {
             scoresByJudgeId[j.id] = {};
-            for (const c of activeCodeLetters) {
+            for (const c of presentCodeLetters) {
               scoresByJudgeId[j.id]![c.id] = Number(
                 scoresByKey[`${j.id}:${c.id}`],
               );
@@ -849,10 +857,11 @@ export function StagePortalScoringClient({
     if (submissionPhase !== "review") return;
     startTransition(async () => {
       try {
+        const presentCodeLetters = activeCodeLetters.filter(c => !c.isAbsent);
         if (payload.judgingMode === "SINGLE") {
           const scoresByCodeLetterId: Record<string, number> = {};
           const remarksByCodeLetterId: Record<string, string> = {};
-          for (const c of activeCodeLetters) {
+          for (const c of presentCodeLetters) {
             scoresByCodeLetterId[c.id] = Number(
               scoresByKey[`${selectedJudgeId}:${c.id}`],
             );
@@ -874,7 +883,7 @@ export function StagePortalScoringClient({
           for (const j of payload.judges) {
             scoresByJudgeId[j.id] = {};
             remarksByJudgeId[j.id] = {};
-            for (const c of activeCodeLetters) {
+            for (const c of presentCodeLetters) {
               scoresByJudgeId[j.id]![c.id] = Number(
                 scoresByKey[`${j.id}:${c.id}`],
               );
@@ -1161,15 +1170,28 @@ export function StagePortalScoringClient({
                           )}
                         >
                           <div className="min-w-0 flex-1">
-                            <p
-                              className={cn(
-                                "font-mono text-xl font-semibold tracking-tight text-heading",
-                                isAbsent &&
-                                  "text-muted-foreground line-through",
+                            <div className="flex items-center gap-2">
+                              <p
+                                className={cn(
+                                  "font-mono text-xl font-semibold tracking-tight text-heading",
+                                  isAbsent &&
+                                    "text-muted-foreground line-through",
+                                )}
+                              >
+                                {c.code}
+                              </p>
+                              {!selectedJudgeAlreadySubmitted && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn("h-7 px-2 text-[11px]", isAbsent ? "text-muted-foreground" : "text-destructive opacity-50 hover:opacity-100")}
+                                  disabled={isPending || markAbsentMutation.isPending}
+                                  onClick={() => markAbsentMutation.mutate({ configId: payload.configId, codeLetterId: c.id, isAbsent: !isAbsent })}
+                                >
+                                  {isAbsent ? "Undo Absent" : "Mark Absent"}
+                                </Button>
                               )}
-                            >
-                              {c.code}
-                            </p>
+                            </div>
                             {others && (
                               <p className="mt-0.5 truncate text-xs text-muted-foreground">
                                 {others}
@@ -1228,15 +1250,26 @@ export function StagePortalScoringClient({
                           )}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <p
-                              className={cn(
-                                "font-mono text-xl font-semibold tracking-tight text-heading",
-                                isAbsent &&
-                                  "text-muted-foreground line-through",
-                              )}
-                            >
-                              {c.code}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p
+                                className={cn(
+                                  "font-mono text-xl font-semibold tracking-tight text-heading",
+                                  isAbsent &&
+                                    "text-muted-foreground line-through",
+                                )}
+                              >
+                                {c.code}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn("h-7 px-2 text-[11px]", isAbsent ? "text-muted-foreground" : "text-destructive opacity-50 hover:opacity-100")}
+                                disabled={isPending || markAbsentMutation.isPending}
+                                onClick={() => markAbsentMutation.mutate({ configId: payload.configId, codeLetterId: c.id, isAbsent: !isAbsent })}
+                              >
+                                {isAbsent ? "Undo Absent" : "Mark Absent"}
+                              </Button>
+                            </div>
                           </div>
 
                           {isAbsent ? (
@@ -1391,6 +1424,7 @@ export function StagePortalScoringClient({
             programmeId={payload.programme.id}
             judgeMode={payload.judgingMode}
             judgeId={selectedJudgeId}
+            codeLetters={payload.codeLetters.filter((c) => !c.isAbsent).map((c) => c.code)}
             isReadOnly={selectedJudgeAlreadySubmitted}
             onClose={() => setIsScratchpadOpen(false)}
           />
