@@ -48,6 +48,11 @@ export const SUPER_ADMIN_SIDEBAR_ITEMS = [
     icon: LayoutDashboard,
   },
   {
+    title: "Platform Stack",
+    url: "/super-admin/platform-stack",
+    icon: Layers,
+  },
+  {
     title: "Analytics",
     url: "/super-admin/analytics",
     icon: BarChart3,
@@ -209,13 +214,13 @@ export const getFestivalDashboardSidebarConfig = (
           title: "Media",
           href: `${basePath}/content/media`,
           icon: Image,
-          allowedRoles: ["ADMIN", "OWNER"],
+          allowedRoles: ["ADMIN", "OWNER", "MEDIA"],
         },
         {
           title: "Updates",
           href: `${basePath}/content/updates`,
           icon: Newspaper,
-          allowedRoles: ["ADMIN", "OWNER"],
+          allowedRoles: ["ADMIN", "OWNER", "MEDIA"],
         },
         {
           title: "Downloads",
