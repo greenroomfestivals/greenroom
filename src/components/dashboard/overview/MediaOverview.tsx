@@ -1,5 +1,5 @@
 import { count, eq } from "drizzle-orm";
-import { FileDown, Image, LayoutTemplate } from "lucide-react";
+import { FileDown, Image, LayoutTemplate, Newspaper } from "lucide-react";
 import Link from "next/link";
 import {
   Card,
@@ -108,6 +108,24 @@ export async function MediaOverview({ festivalSlug }: MediaOverviewProps) {
                   <CardTitle>Media Gallery</CardTitle>
                   <CardDescription>
                     Upload and manage photos and media assets.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href={`${basePath}/content/updates`}>
+          <Card className="h-full transition-colors hover:bg-muted/50">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Newspaper className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Updates</CardTitle>
+                  <CardDescription>
+                    Post and manage live news and updates.
                   </CardDescription>
                 </div>
               </div>

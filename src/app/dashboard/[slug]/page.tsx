@@ -66,7 +66,7 @@ export default async function FestivalDashboardPage({
         <DashboardGreeting name={greetingName} />
       )}
 
-      {activeReportingSessions.length > 0 && (
+      {effectiveRole !== "MEDIA" && activeReportingSessions.length > 0 && (
         <div className="space-y-3">
           {activeReportingSessions.map((session) => (
             <div
