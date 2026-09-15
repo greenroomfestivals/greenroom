@@ -8,8 +8,8 @@ import {
   group as groupTable,
   participant as participantTable,
   programmeAssignment,
-  programmeTeamLead,
   programme as programmeTable,
+  programmeTeamLead,
   result as resultTable,
 } from "@/core/database/schema";
 import {
@@ -244,8 +244,8 @@ export async function resolveCertificatePayload(
         r.programmeType === "GROUP"
           ? r.participantName
             ? `${r.participantName} & Party`
-            : r.teamName ?? "Team"
-          : r.participantName ?? r.teamName ?? "";
+            : (r.teamName ?? "Team")
+          : (r.participantName ?? r.teamName ?? "");
       const wonPlacement = wantPlacements.find(
         (t) => placementPositions[t] === r.position,
       );

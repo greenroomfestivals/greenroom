@@ -18,26 +18,34 @@ export type InfraMetrics = {
 
 export async function getInfraMetrics(): Promise<InfraMetrics> {
   const platforms = [];
-  let totalCalculatedCost = 0;
+  const totalCalculatedCost = 0;
 
   // 1. Vercel
   try {
     if (process.env.VERCEL_TOKEN && process.env.VERCEL_TEAM_ID) {
       // Fetch Vercel Usage (using Project API as example, billing API differs by enterprise)
-      const res = await fetch(`https://api.vercel.com/v8/projects/?teamId=${process.env.VERCEL_TEAM_ID}`, {
-        headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` }
-      });
+      const res = await fetch(
+        `https://api.vercel.com/v8/projects/?teamId=${process.env.VERCEL_TEAM_ID}`,
+        {
+          headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` },
+        },
+      );
       const data = await res.json();
-      
+
       platforms.push({
         name: "Vercel",
         role: "Compute & Edge",
         cost: "API Connected",
         plan: data?.plan || "Hobby",
         metrics: [
-          { label: "Edge Function Executions", used: 120000, limit: 1000000, unit: "runs" },
-          { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" }
-        ]
+          {
+            label: "Edge Function Executions",
+            used: 120000,
+            limit: 1000000,
+            unit: "runs",
+          },
+          { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" },
+        ],
       });
     } else {
       throw new Error("Missing Vercel Keys");
@@ -49,26 +57,38 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
       cost: ".00 (Mock)",
       plan: "Pro",
       metrics: [
-        { label: "Edge Function Executions", used: 120000, limit: 1000000, unit: "runs" },
-        { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" }
-      ]
+        {
+          label: "Edge Function Executions",
+          used: 120000,
+          limit: 1000000,
+          unit: "runs",
+        },
+        { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" },
+      ],
     });
   }
 
   // 2. Neon
   try {
     if (process.env.NEON_API_KEY && process.env.NEON_PROJECT_ID) {
-      const res = await fetch(`https://console.neon.tech/api/v2/projects/${process.env.NEON_PROJECT_ID}/consumption`, {
-        headers: { Authorization: `Bearer ${process.env.NEON_API_KEY}`, "Accept": "application/json" }
-      });
+      const res = await fetch(
+        `https://console.neon.tech/api/v2/projects/${process.env.NEON_PROJECT_ID}/consumption`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEON_API_KEY}`,
+            Accept: "application/json",
+          },
+        },
+      );
       const data = await res.json();
-      
+
       const computeSeconds = data.compute_time_seconds || 0;
       const storageBytes = data.logical_size_for_root_bytes || 0;
-      
+
       // Convert to hrs and GB
       const computeHrs = Math.round((computeSeconds / 3600) * 100) / 100;
-      const storageGB = Math.round((storageBytes / (1024 * 1024 * 1024)) * 100) / 100;
+      const storageGB =
+        Math.round((storageBytes / (1024 * 1024 * 1024)) * 100) / 100;
 
       platforms.push({
         name: "Neon",
@@ -76,9 +96,14 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
         cost: "API Connected",
         plan: "Free",
         metrics: [
-          { label: "Active Compute", used: computeHrs, limit: 100, unit: "hrs" },
-          { label: "Storage", used: storageGB, limit: 0.5, unit: "GB" }
-        ]
+          {
+            label: "Active Compute",
+            used: computeHrs,
+            limit: 100,
+            unit: "hrs",
+          },
+          { label: "Storage", used: storageGB, limit: 0.5, unit: "GB" },
+        ],
       });
     } else {
       throw new Error("Missing Neon Keys");
@@ -91,22 +116,24 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
       plan: "Free",
       metrics: [
         { label: "Active Compute", used: 12, limit: 100, unit: "hrs" },
-        { label: "Storage", used: 0.2, limit: 0.5, unit: "GB" }
-      ]
+        { label: "Storage", used: 0.2, limit: 0.5, unit: "GB" },
+      ],
     });
   }
 
   // 3. Upstash
   try {
     if (process.env.UPSTASH_API_KEY) {
-      // NOTE: Upstash Mgmt API uses Basic Auth (email:api_key). 
+      // NOTE: Upstash Mgmt API uses Basic Auth (email:api_key).
       // If we only have API key, we show connected status but mock metrics for now.
       platforms.push({
         name: "Upstash Redis",
         role: "Redis Cache & Pub/Sub",
         cost: "API Connected",
         plan: "Pay-as-you-go",
-        metrics: [{ label: "Commands", used: 2250000, limit: null, unit: "cmds" }]
+        metrics: [
+          { label: "Commands", used: 2250000, limit: null, unit: "cmds" },
+        ],
       });
     } else {
       throw new Error("Missing Upstash Keys");
@@ -117,7 +144,9 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
       role: "Redis Cache & Pub/Sub",
       cost: ".50 (Mock)",
       plan: "Pay-as-you-go",
-      metrics: [{ label: "Commands", used: 2250000, limit: null, unit: "cmds" }]
+      metrics: [
+        { label: "Commands", used: 2250000, limit: null, unit: "cmds" },
+      ],
     });
   }
 
@@ -129,7 +158,9 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
         role: "Background Jobs",
         cost: "API Connected",
         plan: "Free",
-        metrics: [{ label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" }]
+        metrics: [
+          { label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" },
+        ],
       });
     } else {
       throw new Error("Missing Inngest Keys");
@@ -140,7 +171,9 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
       role: "Background Jobs",
       cost: ".00 (Mock)",
       plan: "Free",
-      metrics: [{ label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" }]
+      metrics: [
+        { label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" },
+      ],
     });
   }
 
@@ -148,7 +181,7 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
   try {
     if (process.env.RESEND_API_KEY) {
       const res = await fetch(`https://api.resend.com/emails`, {
-        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` }
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
       });
       const data = await res.json();
       const sentCount = data.data ? data.data.length : 1200;
@@ -158,7 +191,14 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
         role: "Transactional Email",
         cost: "API Connected",
         plan: "Free",
-        metrics: [{ label: "Emails Sent", used: sentCount, limit: 3000, unit: "emails" }]
+        metrics: [
+          {
+            label: "Emails Sent",
+            used: sentCount,
+            limit: 3000,
+            unit: "emails",
+          },
+        ],
       });
     } else {
       throw new Error("Missing Resend Keys");
@@ -169,7 +209,9 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
       role: "Transactional Email",
       cost: ".00 (Mock)",
       plan: "Free",
-      metrics: [{ label: "Emails Sent", used: 1200, limit: 3000, unit: "emails" }]
+      metrics: [
+        { label: "Emails Sent", used: 1200, limit: 3000, unit: "emails" },
+      ],
     });
   }
 
@@ -179,7 +221,9 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
     role: "Authentication",
     cost: ".00",
     plan: "Self-Hosted (Free)",
-    metrics: [{ label: "Active Sessions", used: 432, limit: null, unit: "users" }]
+    metrics: [
+      { label: "Active Sessions", used: 432, limit: null, unit: "users" },
+    ],
   });
 
   // 7. Razorpay
@@ -188,11 +232,13 @@ export async function getInfraMetrics(): Promise<InfraMetrics> {
     role: "Payment Gateway",
     cost: "2% per tx",
     plan: "Standard",
-    metrics: [{ label: "Transactions Processed", used: 154, limit: null, unit: "txns" }]
+    metrics: [
+      { label: "Transactions Processed", used: 154, limit: null, unit: "txns" },
+    ],
   });
 
   return {
     totalCost: ".50 (Live / Estimated)",
-    platforms
+    platforms,
   };
 }

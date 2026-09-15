@@ -87,7 +87,10 @@ function generateDefaultTableElements(codeLetters: string[]) {
       strokeColor: "#1e1e1e",
       backgroundColor: "transparent",
       angle: 0,
-      points: [[0, 0], [0, totalHeight]],
+      points: [
+        [0, 0],
+        [0, totalHeight],
+      ],
     });
   }
 
@@ -106,11 +109,20 @@ function generateDefaultTableElements(codeLetters: string[]) {
       strokeColor: "#1e1e1e",
       backgroundColor: "transparent",
       angle: 0,
-      points: [[0, 0], [totalWidth, 0]],
+      points: [
+        [0, 0],
+        [totalWidth, 0],
+      ],
     });
   }
 
-  const createText = (text: string, x: number, y: number, w: number, h: number) => {
+  const createText = (
+    text: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ) => {
     const estWidth = text.length * 12;
     const estHeight = 24;
     return {
@@ -134,8 +146,18 @@ function generateDefaultTableElements(codeLetters: string[]) {
   };
 
   // Header Texts
-  elements.push(createText("CODE LETTER", startX, startY, colWidths[0], rowHeight));
-  elements.push(createText("Total Scores", startX + totalWidth - colWidths[colWidths.length - 1], startY, colWidths[colWidths.length - 1], rowHeight));
+  elements.push(
+    createText("CODE LETTER", startX, startY, colWidths[0], rowHeight),
+  );
+  elements.push(
+    createText(
+      "Total Scores",
+      startX + totalWidth - colWidths[colWidths.length - 1],
+      startY,
+      colWidths[colWidths.length - 1],
+      rowHeight,
+    ),
+  );
 
   // Row Texts
   currentY = startY + rowHeight;
@@ -179,7 +201,7 @@ export default function ExcalidrawBoard(props: ExcalidrawBoardProps) {
     );
   }
 
-  const initialElements = 
+  const initialElements =
     initialData?.elements && initialData.elements.length > 0
       ? initialData.elements
       : generateDefaultTableElements(props.codeLetters || []);
@@ -213,7 +235,12 @@ export default function ExcalidrawBoard(props: ExcalidrawBoardProps) {
           elements: initialElements,
           appState: {
             ...initialData?.appState,
-            activeTool: { type: "freedraw", customType: null, locked: false, lastActiveTool: null },
+            activeTool: {
+              type: "freedraw",
+              customType: null,
+              locked: false,
+              lastActiveTool: null,
+            },
           },
           scrollToContent: true,
         }}

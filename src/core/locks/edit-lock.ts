@@ -20,11 +20,10 @@ export async function acquireEditLock(
   actorId: string,
 ): Promise<{ acquired: true } | { acquired: false; heldBy: string }> {
   const key = keys.editLock(entityType, entityId);
-  const result = await getRedis().set(
-    key,
-    actorId,
-    { ex: EDIT_LOCK_TTL_SECONDS, nx: true },
-  );
+  const result = await getRedis().set(key, actorId, {
+    ex: EDIT_LOCK_TTL_SECONDS,
+    nx: true,
+  });
   if (result === "OK") return { acquired: true };
 
   const heldBy = await getRedis().get<string>(key);
