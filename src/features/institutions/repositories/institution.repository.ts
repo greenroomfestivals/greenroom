@@ -1,4 +1,5 @@
-import { randomUUID } from "crypto";
+const randomUUID = () => globalThis.crypto.randomUUID();
+
 import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/core/database/client";
 import { institution, type institutionType } from "@/core/database/schema";

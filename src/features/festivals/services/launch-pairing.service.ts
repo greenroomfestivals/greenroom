@@ -124,7 +124,7 @@ export async function mintPairing(input: {
   // Get-or-create path. Only check the active index when the caller
   // didn't explicitly request a rotation.
   if (!input.rotate) {
-    const existingToken = await redis.get(
+    const existingToken = await redis.get<string>(
       keys.launchPairingActive(festival.id),
     );
     if (existingToken) {
@@ -160,22 +160,18 @@ export async function mintPairing(input: {
   // before another fails, the next mint() will re-derive a consistent
   // state because `active:` is the source of truth.
   await Promise.all([
-    redis.set(keys.launchPairing(token), JSON.stringify(record), "PX", ttlMs),
-    redis.set(keys.launchPairingCode(code), token, "PX", ttlMs),
-    redis.set(keys.launchPairingActive(festival.id), token, "PX", ttlMs),
+    redis.set(keys.launchPairing(token), record, { px: ttlMs }),
+    redis.set(keys.launchPairingCode(code), token, { px: ttlMs }),
+    redis.set(keys.launchPairingActive(festival.id), token, { px: ttlMs }),
   ]);
 
   return record;
 }
 
 async function readPairing(token: string): Promise<PairingRecord | null> {
-  const raw = await getRedis().get(keys.launchPairing(token));
+  const raw = await getRedis().get<PairingRecord>(keys.launchPairing(token));
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as PairingRecord;
-  } catch {
-    return null;
-  }
+  return raw;
 }
 
 /**
@@ -188,7 +184,7 @@ export async function verifyPairing(
 ): Promise<PairingRecord | null> {
   const redis = getRedis();
   const canonical = /^\d{6}$/.test(tokenOrCode)
-    ? await redis.get(keys.launchPairingCode(tokenOrCode))
+    ? await redis.get<string>(keys.launchPairingCode(tokenOrCode))
     : tokenOrCode;
   if (!canonical) return null;
 
@@ -204,7 +200,7 @@ export async function verifyPairing(
  */
 export async function retirePairing(festivalId: string): Promise<void> {
   const redis = getRedis();
-  const existingToken = await redis.get(keys.launchPairingActive(festivalId));
+  const existingToken = await redis.get<string>(keys.launchPairingActive(festivalId));
   if (!existingToken) return;
   const record = await readPairing(existingToken);
   await Promise.all([
@@ -235,9 +231,7 @@ export async function claimLaunchTrigger(festivalId: string): Promise<boolean> {
   const res = await getRedis().set(
     keys.launchTriggerGuard(festivalId),
     "1",
-    "PX",
-    TRIGGER_GUARD_TTL_MS,
-    "NX",
+    { px: TRIGGER_GUARD_TTL_MS, nx: true },
   );
   return res === "OK";
 }

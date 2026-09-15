@@ -1,5 +1,5 @@
 import "server-only";
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
 const globalForRedis = globalThis as unknown as { redis?: Redis };
 
@@ -19,48 +19,23 @@ function isBuildPhase(): boolean {
 export function getRedis(): Redis {
   if (globalForRedis.redis) return globalForRedis.redis;
 
-  const url = process.env.REDIS_URL;
-  if (!url) {
+  const url = process.env.REDIS_REST_URL;
+  const token = process.env.REDIS_REST_TOKEN;
+  if (!url || !token) {
     throw new Error(
-      "REDIS_URL is not set. Local dev: `docker compose up -d` or set REDIS_URL in .env.local. Prod: configure in Vercel Environment Variables.",
+      "REDIS_REST_URL or REDIS_REST_TOKEN is not set. Upstash REST API required.",
     );
   }
 
   if (isBuildPhase()) {
     throw new Error(
-      "Redis client accessed during build phase (REDIS_URL likely not set)",
+      "Redis client accessed during build phase (REDIS_REST_URL likely not set)",
     );
   }
 
-  const isTls = url.startsWith("rediss://");
-
-  const client = new Redis(url, {
-    maxRetriesPerRequest: 3,
-    enableReadyCheck: true,
-    lazyConnect: true,
-    connectTimeout: 10_000,
-    commandTimeout: 5_000,
-    tls: isTls ? {} : undefined,
-    reconnectOnError: (err) =>
-      ["READONLY", "ECONNRESET", "ETIMEDOUT"].some((t) =>
-        err.message.includes(t),
-      ),
-  });
-
-  client.on("connect", () => {
-    console.info("[redis] connected");
-  });
-  client.on("ready", () => {
-    console.info("[redis] ready");
-  });
-  client.on("reconnecting", () => {
-    console.warn("[redis] reconnecting");
-  });
-  client.on("error", (err) => {
-    console.error("[redis] error", err.message);
-  });
-  client.on("end", () => {
-    console.warn("[redis] connection ended");
+  const client = new Redis({
+    url,
+    token,
   });
 
   if (process.env.NODE_ENV !== "production") {

@@ -13,8 +13,8 @@ local machine and `greenroomfestivals.in` (Vercel + Neon Postgres).
 | | Local DEV | Vercel PROD (and previews) |
 |---|---|---|
 | App runtime | `next dev` on `localhost:3000` | Vercel serverless functions |
-| Database | Docker Postgres (`:5433`) **or** a Neon dev branch | Neon `main` branch (per env) |
-| ORM / driver | `drizzle-orm/node-postgres` + `pg.Pool` | Same — no serverless HTTP driver |
+| Database | Neon `develop` branch (Edge WebSocket compatible) | Neon `production` branch |
+| ORM / driver | `drizzle-orm/neon-serverless` | Same |
 | Migrations | `drizzle-kit push` against local/Neon branch | Generated SQL files replayed against Neon (target end state) |
 | Cron | n/a | Vercel Cron → `/api/v1/cron` (Bearer `CRON_SECRET`) |
 | Branching model | One DB, optionally per-dev Neon branch | One Neon `main` branch; Vercel previews get auto-branch via Neon integration |
@@ -311,7 +311,8 @@ pnpm db:reset -- --force   # if you pointed .env at a non-local URL
 ### Inspect a DB
 
 ```bash
-pnpm db:studio   # Drizzle Studio, uses DATABASE_URL_UNPOOLED
+npm run db:studio:local   # Drizzle Studio for your development database
+npm run db:studio:prod    # Drizzle Studio for your production database
 ```
 
 Or directly:
@@ -322,10 +323,11 @@ psql "$(neonctl connection-string main --pooled)"
 
 ### Apply a migration to prod
 
-Today the project uses `db:push` (see §4). To apply a schema change to prod:
+Today the project uses `db:push` (see §4). To apply a schema change:
 
 ```bash
-DATABASE_URL_UNPOOLED=<prod-direct-url> pnpm db:push
+npm run db:push:local     # Pushes to your development database
+npm run db:push:prod      # Pushes to your production database
 ```
 
 Against a non-empty prod DB, drizzle-kit tries to interactively resolve table

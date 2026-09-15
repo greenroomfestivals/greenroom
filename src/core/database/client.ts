@@ -1,15 +1,14 @@
 import "server-only";
 
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool, type PoolConfig } from "pg";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle, type NeonDatabase } from "drizzle-orm/neon-serverless";
 import { buildPoolConfig } from "./connection";
 import * as relations from "./relations";
 import * as schema from "./schema";
 
 const dbSchema = { ...schema, ...relations };
 
-type Db = NodePgDatabase<typeof dbSchema>;
+type Db = NeonDatabase<typeof dbSchema>;
 
 let _pool: Pool | undefined;
 let _db: Db | undefined;
@@ -32,8 +31,11 @@ function registerShutdown(pool: Pool): void {
   const shutdown = async () => {
     await pool.end();
   };
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  const p = globalThis.process as any;
+  if (p && p.on) {
+    p.on("SIGINT", shutdown);
+    p.on("SIGTERM", shutdown);
+  }
 }
 
 /**
@@ -51,8 +53,8 @@ export function getPool(): Pool {
   }
   const rawConnectionString = process.env.DATABASE_URL;
   if (!rawConnectionString) throw new Error("DATABASE_URL is not defined");
-  const poolConfig: PoolConfig = buildPoolConfig(rawConnectionString);
-  const pool = new Pool(poolConfig);
+  const poolConfig = buildPoolConfig(rawConnectionString);
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ...poolConfig });
   pool.on("error", handlePoolError);
   if (process.env.NODE_ENV === "production") {
     registerShutdown(pool);

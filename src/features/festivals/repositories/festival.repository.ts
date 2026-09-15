@@ -139,7 +139,7 @@ export async function createFestival(
     updatedAt?: string;
   },
 ) {
-  const { randomUUID } = await import("crypto");
+  const randomUUID = () => globalThis.crypto.randomUUID();
   const result = await db
     .insert(festivals)
     .values({

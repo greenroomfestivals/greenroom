@@ -1,5 +1,5 @@
 import "server-only";
-import { getRedis } from "@/core/redis/client";
+import { getNodeRedis } from "@/core/redis/node-client";
 
 /**
  * Thin wrappers around Redis Pub/Sub for the SSE channels in Issue 46.
@@ -18,7 +18,7 @@ export async function publish(
   payload: unknown,
 ): Promise<void> {
   try {
-    const redis = getRedis();
+    const redis = getNodeRedis();
     await redis.publish(channel, JSON.stringify(payload));
   } catch (err) {
     console.warn(
@@ -40,7 +40,7 @@ export async function subscribe(
   channel: string,
   handler: (payload: unknown) => void | Promise<void>,
 ): Promise<() => Promise<void>> {
-  const sub = getRedis().duplicate();
+  const sub = getNodeRedis().duplicate();
   await sub.subscribe(channel);
   sub.on("message", (_ch: string, msg: string) => {
     let payload: unknown = null;

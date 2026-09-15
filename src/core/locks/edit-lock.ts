@@ -23,13 +23,11 @@ export async function acquireEditLock(
   const result = await getRedis().set(
     key,
     actorId,
-    "EX",
-    EDIT_LOCK_TTL_SECONDS,
-    "NX",
+    { ex: EDIT_LOCK_TTL_SECONDS, nx: true },
   );
   if (result === "OK") return { acquired: true };
 
-  const heldBy = await getRedis().get(key);
+  const heldBy = await getRedis().get<string>(key);
   return { acquired: false, heldBy: heldBy ?? "unknown" };
 }
 
@@ -47,9 +45,8 @@ export async function releaseEditLock(
 ): Promise<void> {
   await getRedis().eval(
     RELEASE_LUA,
-    1,
-    keys.editLock(entityType, entityId),
-    actorId,
+    [keys.editLock(entityType, entityId)],
+    [actorId],
   );
 }
 
@@ -65,10 +62,8 @@ export async function heartbeatEditLock(
   actorId: string,
 ): Promise<boolean> {
   const key = keys.editLock(entityType, entityId);
-  const result = await getRedis().expire(key, EDIT_LOCK_TTL_SECONDS, "XX");
-  // Verify the value matches before extending — `expire XX` succeeds even
-  // when the key belongs to someone else; we want a strict CAS.
-  if (result !== 1) return false;
-  const current = await getRedis().get(key);
-  return current === actorId;
+  const current = await getRedis().get<string>(key);
+  if (current !== actorId) return false;
+  await getRedis().expire(key, EDIT_LOCK_TTL_SECONDS);
+  return true;
 }

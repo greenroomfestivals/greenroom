@@ -290,21 +290,28 @@ export async function publishResult(
       .where(
         and(
           eq(programmeTable.festivalId, festivalId),
-          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"])
-        )
+          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"]),
+        ),
       );
     const expectedResultNumber = (maxPublishedRes[0]?.maxNum ?? 0) + 1;
 
-    if (finalResultNumber !== null && finalResultNumber > expectedResultNumber) {
+    if (
+      finalResultNumber !== null &&
+      finalResultNumber > expectedResultNumber
+    ) {
       const holder = await db.query.programme.findFirst({
         where: and(
           eq(programmeTable.festivalId, festivalId),
-          eq(programmeTable.resultNumber, expectedResultNumber)
+          eq(programmeTable.resultNumber, expectedResultNumber),
         ),
         columns: { id: true, status: true },
       });
 
-      if (holder && holder.status !== "PUBLISHED" && holder.status !== "ANNOUNCED") {
+      if (
+        holder &&
+        holder.status !== "PUBLISHED" &&
+        holder.status !== "ANNOUNCED"
+      ) {
         await db
           .update(programmeTable)
           .set({ resultNumber: -1000000 - finalResultNumber })
@@ -397,21 +404,28 @@ export async function announceResult(
       .where(
         and(
           eq(programmeTable.festivalId, festivalId),
-          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"])
-        )
+          inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"]),
+        ),
       );
     const expectedResultNumber = (maxPublishedRes[0]?.maxNum ?? 0) + 1;
 
-    if (finalResultNumber !== null && finalResultNumber > expectedResultNumber) {
+    if (
+      finalResultNumber !== null &&
+      finalResultNumber > expectedResultNumber
+    ) {
       const holder = await db.query.programme.findFirst({
         where: and(
           eq(programmeTable.festivalId, festivalId),
-          eq(programmeTable.resultNumber, expectedResultNumber)
+          eq(programmeTable.resultNumber, expectedResultNumber),
         ),
         columns: { id: true, status: true },
       });
 
-      if (holder && holder.status !== "PUBLISHED" && holder.status !== "ANNOUNCED") {
+      if (
+        holder &&
+        holder.status !== "PUBLISHED" &&
+        holder.status !== "ANNOUNCED"
+      ) {
         await db
           .update(programmeTable)
           .set({ resultNumber: -1000000 - finalResultNumber })

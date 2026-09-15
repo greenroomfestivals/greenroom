@@ -187,7 +187,7 @@ function shouldCanonicalRedirectToBrandedHost(hostname: string): boolean {
   return process.env.DISABLE_CUSTOM_DOMAIN_CANONICAL_REDIRECT !== "true";
 }
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const hostHeader = request.headers.get("host") || "";
   const appHosts = getAppHosts();
   const hostname = hostHeader.split(":")[0]?.toLowerCase() ?? "";

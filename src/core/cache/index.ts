@@ -1,5 +1,5 @@
 import "server-only";
-import type Redis from "ioredis";
+import type { Redis } from "@upstash/redis";
 
 export interface Cache {
   get<T>(key: string): Promise<T | undefined>;
@@ -28,15 +28,15 @@ export function createCache(deps: { redis: Redis }): Cache {
   const { redis } = deps;
   return {
     async get<T>(key: string): Promise<T | undefined> {
-      const raw = await redis.get(key);
-      return raw !== null ? (JSON.parse(raw) as T) : undefined;
+      const raw = await redis.get<T>(key);
+      return raw !== null ? raw : undefined;
     },
     async set<T>(
       key: string,
       value: T,
       { ttlMs }: { ttlMs: number },
     ): Promise<void> {
-      await redis.set(key, JSON.stringify(value), "PX", ttlMs);
+      await redis.set(key, value, { px: ttlMs });
     },
     async del(key: string): Promise<void> {
       await redis.del(key);
@@ -47,14 +47,14 @@ export function createCache(deps: { redis: Redis }): Cache {
       loader: () => Promise<T>,
       opts?: { negativeTtlMs?: number },
     ): Promise<T> {
-      const hit = await redis.get(key);
-      if (hit !== null) return JSON.parse(hit) as T;
+      const hit = await redis.get<T>(key);
+      if (hit !== null) return hit;
       const value = await loader();
       const effectiveTtl =
         value === null && opts?.negativeTtlMs !== undefined
           ? opts.negativeTtlMs
           : ttlMs;
-      await redis.set(key, JSON.stringify(value), "PX", effectiveTtl);
+      await redis.set(key, value, { px: effectiveTtl });
       return value;
     },
   };

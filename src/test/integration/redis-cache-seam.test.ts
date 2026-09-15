@@ -17,7 +17,7 @@ let redis: ReturnType<typeof getRedis>;
 
 beforeAll(() => {
   redis = getRedis();
-  cache = createCache({ redis });
+  cache = createCache({ redis: redis as any });
 });
 
 afterEach(async () => {

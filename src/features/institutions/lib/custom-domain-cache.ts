@@ -37,20 +37,17 @@ export async function invalidateCustomDomainCache(
   customDomain?: string | null,
 ): Promise<void> {
   if (!customDomain) {
-    // Pattern-delete is the only way to clear every cached apex without
-    // tracking membership. Bounded: keys live under one prefix and the set
-    // is small (one entry per verified institution).
     const redis = getRedis();
-    const stream = redis.scanStream({ match: `${keys.domainHost("")}*` });
-    const pipeline = redis.pipeline();
-    let buffered = 0;
-    for await (const keysBatch of stream) {
-      for (const k of keysBatch) {
-        pipeline.del(k);
-        buffered += 1;
+    let cursor = "0";
+    do {
+      const [nextCursor, keysBatch] = await redis.scan(cursor, { match: `${keys.domainHost("")}*` });
+      cursor = nextCursor;
+      if (keysBatch.length > 0) {
+        const p = redis.pipeline();
+        for (const k of keysBatch) p.del(k);
+        await p.exec();
       }
-    }
-    if (buffered > 0) await pipeline.exec();
+    } while (cursor !== "0");
     return;
   }
   await cache.del(keys.domainHost(customDomain.toLowerCase()));

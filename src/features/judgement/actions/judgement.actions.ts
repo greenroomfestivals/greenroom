@@ -1951,7 +1951,7 @@ export async function submitJudgeScoresAction(
   // unique constraint on (configId, judgeId, codeLetterId) is the safety net.
   const judgeLockKey = keys.judgeScoreDedup(input.judgeId, input.configId);
   try {
-    const acquired = await getRedis().set(judgeLockKey, "1", "EX", 30, "NX");
+    const acquired = await getRedis().set(judgeLockKey, "1", { ex: 30, nx: true });
     if (acquired !== "OK") {
       return { success: true as const, judgementComplete: false };
     }
