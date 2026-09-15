@@ -442,20 +442,7 @@ export function EditorSidePanel({
                     try {
                       const uploadedUrl = await editor.uploadImage(f);
                       applyImageAsBackground(uploadedUrl);
-                      const result = await addMediaImageAction(
-                        festivalId,
-                        uploadedUrl,
-                      );
-                      if (result.success) {
-                        toast.success(
-                          "Background set and saved to media library",
-                        );
-                        await onMediaChanged?.();
-                      } else {
-                        toast.error(
-                          `Saved to storage but not to library: ${result.error ?? "unknown error"}`,
-                        );
-                      }
+                      toast.success("Background set");
                     } catch (err) {
                       const message =
                         err instanceof Error ? err.message : undefined;
