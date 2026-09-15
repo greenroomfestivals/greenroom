@@ -20,12 +20,8 @@ export async function generateMetadata({
       title: "Stage Portal",
     },
     icons: {
-      icon: [
-        { url: "/icons/stage-icon.png", type: "image/png", sizes: "512x512" },
-      ],
-      apple: [
-        { url: "/icons/stage-icon.png", type: "image/png", sizes: "512x512" },
-      ],
+      icon: "/icons/stage-icon.png",
+      apple: "/icons/stage-icon.png",
       shortcut: "/icons/stage-icon.png",
     },
     openGraph: {
