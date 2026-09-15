@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import type { PosterEditorDocument } from "@/components/editor/poster-editor-types";
 import { db } from "@/core/database/client";
 import {
@@ -8,6 +8,7 @@ import {
   group as groupTable,
   participant as participantTable,
   programmeAssignment,
+  programmeTeamLead,
   programme as programmeTable,
   result as resultTable,
 } from "@/core/database/schema";
@@ -224,8 +225,16 @@ export async function resolveCertificatePayload(
       )
       .innerJoin(categoryTable, eq(programmeTable.categoryId, categoryTable.id))
       .leftJoin(
+        programmeTeamLead,
+        and(
+          eq(programmeAssignment.programmeId, programmeTeamLead.programmeId),
+          eq(programmeAssignment.groupId, programmeTeamLead.groupId),
+          eq(programmeAssignment.teamNumber, programmeTeamLead.teamNumber),
+        ),
+      )
+      .leftJoin(
         participantTable,
-        eq(programmeAssignment.participantId, participantTable.id),
+        sql`${programmeAssignment.participantId} = ${participantTable.id} OR ${programmeTeamLead.participantId} = ${participantTable.id}`,
       )
       .leftJoin(groupTable, eq(programmeAssignment.groupId, groupTable.id))
       .where(and(...conditions));

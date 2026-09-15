@@ -12,6 +12,7 @@ import {
   programmeAssignment,
   programmeCodeLetter,
   programme as programmeTable,
+  programmeTeamLead,
   result as resultTable,
 } from "@/core/database/schema";
 import {
@@ -99,8 +100,16 @@ export async function getResultPosterExportPayloadAction(
         eq(programmeAssignment.programmeId, programmeTable.id),
       )
       .leftJoin(
+        programmeTeamLead,
+        and(
+          eq(programmeAssignment.programmeId, programmeTeamLead.programmeId),
+          eq(programmeAssignment.groupId, programmeTeamLead.groupId),
+          eq(programmeAssignment.teamNumber, programmeTeamLead.teamNumber),
+        ),
+      )
+      .leftJoin(
         participantTable,
-        eq(programmeAssignment.participantId, participantTable.id),
+        sql`${programmeAssignment.participantId} = ${participantTable.id} OR ${programmeTeamLead.participantId} = ${participantTable.id}`,
       )
       .leftJoin(
         groupTable,
