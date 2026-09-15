@@ -33,6 +33,15 @@ export function buildResultPosterBindings(
           String(input.winners[0]?.position ?? ""),
   };
 
+  // Pre-fill all 3 slots with empty strings so missing winners don't show placeholder text
+  for (let n = 1; n <= 3; n++) {
+    bindings[`winner${n}Name`] = "";
+    bindings[`winner${n}Team`] = "";
+  }
+  bindings.winnerName = "";
+  bindings.placeName = "";
+  bindings.teamName = "";
+
   const sorted = [...input.winners]
     .sort((a, b) => a.position - b.position)
     .slice(0, 3);
