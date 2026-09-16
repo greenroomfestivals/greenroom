@@ -19,8 +19,8 @@ function isBuildPhase(): boolean {
 export function getRedis(): Redis {
   if (globalForRedis.redis) return globalForRedis.redis;
 
-  const url = process.env.REDIS_REST_URL;
-  const token = process.env.REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_REST_TOKEN;
   if (!url || !token) {
     throw new Error(
       "REDIS_REST_URL or REDIS_REST_TOKEN is not set. Upstash REST API required.",
