@@ -141,7 +141,6 @@ function ScoreField({
   invalid,
   compact,
   placeholder,
-  className,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -150,7 +149,6 @@ function ScoreField({
   invalid?: boolean;
   compact?: boolean;
   placeholder?: string;
-  className?: string;
 }) {
   return (
     <Input
@@ -169,10 +167,9 @@ function ScoreField({
         compact
           ? "h-11 w-full min-w-0 max-w-full text-center text-base font-semibold sm:max-w-[5.5rem]"
           : "h-12 w-full min-w-0 max-w-full text-center text-base font-semibold sm:max-w-[6.5rem]",
-        disabled && !className?.includes("border-") &&
+        disabled &&
           "cursor-not-allowed border-transparent bg-muted/50 text-muted-foreground",
         invalid && !disabled && "border-destructive/80 ring-destructive/20",
-        className
       )}
     />
   );
@@ -1172,21 +1169,18 @@ export function StagePortalScoringClient({
                         <div
                           key={c.id}
                           className={cn(
-                            "flex items-center gap-4 rounded-2xl border p-4 transition-all duration-300 backdrop-blur-md",
-                            isAbsent
-                              ? "border-red-500/50 bg-red-500/10 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
-                              : "border-green-400/50 bg-green-500/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]",
-                            cellErr && !isAbsent && "border-destructive/40 bg-destructive/5 shadow-none"
+                            "flex items-center gap-4 rounded-2xl border border-border p-4",
+                            cellErr && "border-destructive/40",
+                            isAbsent && "bg-muted/40 opacity-70",
                           )}
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <p
                                 className={cn(
-                                  "font-mono text-xl font-semibold tracking-tight",
-                                  isAbsent
-                                    ? "text-red-500 line-through opacity-80"
-                                    : "text-green-700 dark:text-green-400"
+                                  "font-mono text-xl font-semibold tracking-tight text-heading",
+                                  isAbsent &&
+                                    "text-muted-foreground line-through",
                                 )}
                               >
                                 {c.code}
@@ -1195,25 +1189,11 @@ export function StagePortalScoringClient({
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className={cn(
-                                    "h-7 px-2.5 text-[11px] font-medium transition-colors",
-                                    isAbsent
-                                      ? "text-red-500 border-red-500/30 bg-red-500/10 hover:bg-red-500/20"
-                                      : "text-destructive border-destructive/30 hover:bg-destructive/10",
-                                  )}
-                                  disabled={
-                                    isPending || markAbsentMutation.isPending
-                                  }
+                                  className={cn("h-7 px-2.5 text-[11px] font-medium transition-colors", isAbsent ? "text-muted-foreground border-dashed" : "text-destructive border-destructive/30 hover:bg-destructive/10")}
+                                  disabled={isPending || markAbsentMutation.isPending}
                                   onClick={() => {
-                                    setOptimisticAbsent((prev) => ({
-                                      ...prev,
-                                      [c.id]: !isAbsent,
-                                    }));
-                                    markAbsentMutation.mutate({
-                                      configId: payload.configId,
-                                      codeLetterId: c.id,
-                                      isAbsent: !isAbsent,
-                                    });
+                                    setOptimisticAbsent(prev => ({ ...prev, [c.id]: !isAbsent }));
+                                    markAbsentMutation.mutate({ configId: payload.configId, codeLetterId: c.id, isAbsent: !isAbsent });
                                   }}
                                 >
                                   {isAbsent ? "Undo Absent" : "Mark Absent"}
@@ -1221,24 +1201,23 @@ export function StagePortalScoringClient({
                               )}
                             </div>
                             {others && (
-                              <p className={cn("mt-0.5 truncate text-xs", isAbsent ? "text-red-500/70" : "text-green-700/70 dark:text-green-400/70")}>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">
                                 {others}
                               </p>
                             )}
                           </div>
 
                           {isAbsent ? (
-                            <div className="flex w-24 shrink-0 flex-col items-stretch gap-1">
+                            <div className="flex w-24 shrink-0 flex-col items-stretch gap-1 rounded-xl border border-red-500/50 p-1.5 bg-red-500/5">
                               <Input
                                 type="text"
                                 value="ABSENT"
                                 disabled
-                                className="h-12 w-full text-center text-xs font-bold border-red-500/50 bg-red-500/10 text-red-600/70 cursor-not-allowed shadow-none"
-                                onChange={() => {}}
+                                className="h-10 w-full text-center text-xs font-bold text-red-600/80 cursor-not-allowed border-none bg-transparent shadow-none px-0"
                               />
                             </div>
                           ) : (
-                            <div className="flex w-24 shrink-0 flex-col items-stretch gap-1">
+                            <div className={cn("flex w-24 shrink-0 flex-col items-stretch gap-1 rounded-xl border p-1.5", cellErr ? "border-transparent" : "border-green-500/50 bg-muted/10")}>
                               <ScoreField
                                 value={
                                   fieldKey ? (scoresByKey[fieldKey] ?? "") : ""
@@ -1259,7 +1238,6 @@ export function StagePortalScoringClient({
                                 }
                                 max={payload.scoreLimit}
                                 invalid={Boolean(cellErr)}
-                                className="border-green-400/50 bg-green-500/5 text-green-800 dark:text-green-100 focus-visible:ring-green-400/30"
                               />
                               {cellErr && (
                                 <p className="text-center text-[11px] font-medium text-destructive">
@@ -1280,20 +1258,17 @@ export function StagePortalScoringClient({
                         <div
                           key={c.id}
                           className={cn(
-                            "rounded-2xl border p-4 transition-all duration-300 backdrop-blur-md",
-                            isAbsent
-                              ? "border-red-500/50 bg-red-500/10 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
-                              : "border-green-400/50 bg-green-500/10 shadow-[0_0_15px_rgba(34,197,94,0.15)]",
+                            "rounded-2xl border border-border p-4",
+                            isAbsent && "bg-muted/40 opacity-70",
                           )}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-2">
                               <p
                                 className={cn(
-                                  "font-mono text-xl font-semibold tracking-tight",
-                                  isAbsent
-                                    ? "text-red-500 line-through opacity-80"
-                                    : "text-green-700 dark:text-green-400"
+                                  "font-mono text-xl font-semibold tracking-tight text-heading",
+                                  isAbsent &&
+                                    "text-muted-foreground line-through",
                                 )}
                               >
                                 {c.code}
@@ -1301,12 +1276,7 @@ export function StagePortalScoringClient({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className={cn(
-                                  "h-7 px-2.5 text-[11px] font-medium transition-colors",
-                                  isAbsent
-                                    ? "text-red-500 border-red-500/30 bg-red-500/10 hover:bg-red-500/20"
-                                    : "text-destructive border-destructive/30 hover:bg-destructive/10",
-                                )}
+                                className={cn("h-7 px-2.5 text-[11px] font-medium transition-colors", isAbsent ? "text-muted-foreground border-dashed" : "text-destructive border-destructive/30 hover:bg-destructive/10")}
                                 disabled={isPending || markAbsentMutation.isPending}
                                 onClick={() => {
                                   setOptimisticAbsent(prev => ({ ...prev, [c.id]: !isAbsent }));
@@ -1323,17 +1293,16 @@ export function StagePortalScoringClient({
                               {payload.judges.map((j) => (
                                 <div
                                   key={j.id}
-                                  className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 p-2.5"
+                                  className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-red-500/50 bg-muted/30 p-2.5"
                                 >
-                                  <span className="truncate text-[11px] font-medium text-red-600/70">
+                                  <span className="truncate text-[11px] font-medium text-red-600/80">
                                     {j.name}
                                   </span>
                                   <Input
                                     type="text"
                                     value="ABSENT"
                                     disabled
-                                    className="h-11 w-full text-center text-xs font-bold border-red-500/50 bg-red-500/10 text-red-600/70 cursor-not-allowed shadow-none"
-                                    onChange={() => {}}
+                                    className="h-11 w-full text-center text-xs font-bold text-red-600/80 cursor-not-allowed border-none bg-transparent shadow-none px-0"
                                   />
                                 </div>
                               ))}
@@ -1352,11 +1321,11 @@ export function StagePortalScoringClient({
                                   <div
                                     key={j.id}
                                     className={cn(
-                                      "flex min-w-0 flex-col gap-1.5 rounded-xl border bg-green-500/5 p-2.5 transition-colors",
-                                      err ? "border-destructive/40 bg-destructive/5" : "border-green-400/30",
+                                      "flex min-w-0 flex-col gap-1.5 rounded-xl border bg-muted/30 p-2.5 transition-colors",
+                                      err ? "border-destructive/40" : "border-green-500/50",
                                     )}
                                   >
-                                    <span className={cn("truncate text-[11px] font-medium", err ? "text-destructive" : "text-green-700/80 dark:text-green-400/80")}>
+                                    <span className="truncate text-[11px] font-medium text-muted-foreground">
                                       {j.name}
                                     </span>
                                     <ScoreField
@@ -1373,7 +1342,6 @@ export function StagePortalScoringClient({
                                       disabled={isPending}
                                       max={payload.scoreLimit}
                                       invalid={Boolean(err)}
-                                      className="border-green-400/50 bg-green-500/5 text-green-800 dark:text-green-100 focus-visible:ring-green-400/30"
                                     />
                                     {err && (
                                       <span className="text-center text-[10px] font-medium text-destructive">
