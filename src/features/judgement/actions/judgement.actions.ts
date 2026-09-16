@@ -1717,7 +1717,7 @@ async function recomputeConfigResults(
   const assignmentPoints = new Map<string, number>();
   const programmeRow = await exec.query.programme.findFirst({
     where: eq(programmeTable.id, config.programmeId),
-    columns: { festivalId: true, categoryId: true, type: true },
+    columns: { festivalId: true, categoryId: true, type: true, maxParticipantsPerTeam: true },
   });
   if (!programmeRow) throw new AppError("Programme not found.");
 
@@ -1763,11 +1763,7 @@ async function recomputeConfigResults(
 
       let participantsCount = 1;
       if (programmeRow.type === "GROUP") {
-        const [memberCount] = await tx
-          .select({ c: count() })
-          .from(assignmentMemberTable)
-          .where(eq(assignmentMemberTable.assignmentId, assignmentId));
-        participantsCount = Math.max(1, memberCount?.c ?? 1);
+        participantsCount = programmeRow.maxParticipantsPerTeam;
       }
 
       const policyResolved = await resolveScoringPolicy({
@@ -1951,10 +1947,7 @@ export async function submitJudgeScoresAction(
   // unique constraint on (configId, judgeId, codeLetterId) is the safety net.
   const judgeLockKey = keys.judgeScoreDedup(input.judgeId, input.configId);
   try {
-    const acquired = await getRedis().set(judgeLockKey, "1", {
-      ex: 30,
-      nx: true,
-    });
+    const acquired = await getRedis().set(judgeLockKey, "1", { ex: 30, nx: true });
     if (acquired !== "OK") {
       return { success: true as const, judgementComplete: false };
     }
@@ -2157,7 +2150,7 @@ export async function previewJudgeSubmissionSummaryAction(input: {
 
   const programmeRow = await db.query.programme.findFirst({
     where: eq(programmeTable.id, config.programmeId),
-    columns: { festivalId: true, categoryId: true, type: true },
+    columns: { festivalId: true, categoryId: true, type: true, maxParticipantsPerTeam: true },
   });
   if (!programmeRow) throw new AppError("Programme not found.");
 
@@ -2205,23 +2198,7 @@ export async function previewJudgeSubmissionSummaryAction(input: {
       });
 
       if (programmeRow.type === "GROUP" && assignmentRow) {
-        const teamMembers = await db
-          .select({ id: assignmentMemberTable.id })
-          .from(assignmentMemberTable)
-          .innerJoin(
-            assignmentTable,
-            eq(assignmentTable.id, assignmentMemberTable.assignmentId),
-          )
-          .where(
-            and(
-              eq(assignmentTable.programmeId, config.programmeId),
-              eq(assignmentTable.teamNumber, assignmentRow.teamNumber ?? 1),
-              assignmentRow.groupId
-                ? eq(assignmentTable.groupId, assignmentRow.groupId)
-                : sql`${assignmentTable.groupId} is null`,
-            ),
-          );
-        participantsCount = Math.max(1, teamMembers.length);
+        participantsCount = programmeRow.maxParticipantsPerTeam;
       }
     }
 

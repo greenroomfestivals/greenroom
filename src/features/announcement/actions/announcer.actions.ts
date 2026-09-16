@@ -198,8 +198,11 @@ export async function setProgrammeResultNumber(
     });
     if (!programme) return { success: false, error: "Programme not found" };
 
-    // Allow setting result number for all statuses
-    // No assertProgrammePrePublishing check here.
+    try {
+      assertProgrammePrePublishing(programme.status);
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
 
     const existing = await db.query.programme.findFirst({
       where: and(
@@ -229,10 +232,7 @@ export async function setProgrammeResultNumber(
         .where(eq(programmeTable.id, programmeId));
 
       const slug = await getFestivalSlug(festivalId);
-      if (slug) {
-        revalidateAnnouncerPaths(slug);
-        await invalidatePublicFestivalCaches({ festivalId, slug });
-      }
+      if (slug) revalidateAnnouncerPaths(slug);
 
       return {
         success: true,
@@ -252,10 +252,7 @@ export async function setProgrammeResultNumber(
       .where(eq(programmeTable.id, programmeId));
 
     const slug = await getFestivalSlug(festivalId);
-    if (slug) {
-      revalidateAnnouncerPaths(slug);
-      await invalidatePublicFestivalCaches({ festivalId, slug });
-    }
+    if (slug) revalidateAnnouncerPaths(slug);
 
     return { success: true, data: {} };
   } catch (error) {
@@ -673,8 +670,12 @@ export async function swapResultNumbers(
     const progA = programmes[activeIndex];
     const progB = programmes[overIndex];
 
-    // Allow swapping for all statuses (PUBLISHED, ANNOUNCED, etc.)
-    // No assertProgrammePrePublishing check here.
+    try {
+      assertProgrammePrePublishing(progA.status);
+      assertProgrammePrePublishing(progB.status);
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
 
     // Perform array move
     const newOrder = programmes.slice();
@@ -721,10 +722,7 @@ export async function swapResultNumbers(
     }
 
     const slug = await getFestivalSlug(festivalId);
-    if (slug) {
-      revalidateAnnouncerPaths(slug);
-      await invalidatePublicFestivalCaches({ festivalId, slug });
-    }
+    if (slug) revalidateAnnouncerPaths(slug);
 
     return { success: true, data: undefined };
   } catch (error) {

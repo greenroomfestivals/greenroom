@@ -7,238 +7,86 @@ export type InfraMetrics = {
     role: string;
     cost: string;
     plan: string;
-    metrics: {
-      label: string;
-      used: number;
-      limit: number | null;
-      unit: string;
-    }[];
+    description: string;
   }[];
 };
 
 export async function getInfraMetrics(): Promise<InfraMetrics> {
-  const platforms = [];
-  const totalCalculatedCost = 0;
-
-  // 1. Vercel
-  try {
-    if (process.env.VERCEL_TOKEN && process.env.VERCEL_TEAM_ID) {
-      // Fetch Vercel Usage (using Project API as example, billing API differs by enterprise)
-      const res = await fetch(
-        `https://api.vercel.com/v8/projects/?teamId=${process.env.VERCEL_TEAM_ID}`,
-        {
-          headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` },
-        },
-      );
-      const data = await res.json();
-
-      platforms.push({
-        name: "Vercel",
-        role: "Compute & Edge",
-        cost: "API Connected",
-        plan: data?.plan || "Hobby",
-        metrics: [
-          {
-            label: "Edge Function Executions",
-            used: 120000,
-            limit: 1000000,
-            unit: "runs",
-          },
-          { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" },
-        ],
-      });
-    } else {
-      throw new Error("Missing Vercel Keys");
-    }
-  } catch (err) {
-    platforms.push({
+  const platforms = [
+    {
+      name: "Next.js 15 (App Router)",
+      role: "Full-Stack Framework",
+      cost: "Free",
+      plan: "Open Source",
+      description: "The core React framework powering both the frontend UI and the backend API routes."
+    },
+    {
       name: "Vercel",
-      role: "Compute & Edge",
-      cost: ".00 (Mock)",
-      plan: "Pro",
-      metrics: [
-        {
-          label: "Edge Function Executions",
-          used: 120000,
-          limit: 1000000,
-          unit: "runs",
-        },
-        { label: "Bandwidth", used: 45, limit: 1000, unit: "GB" },
-      ],
-    });
-  }
-
-  // 2. Neon
-  try {
-    if (process.env.NEON_API_KEY && process.env.NEON_PROJECT_ID) {
-      const res = await fetch(
-        `https://console.neon.tech/api/v2/projects/${process.env.NEON_PROJECT_ID}/consumption`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEON_API_KEY}`,
-            Accept: "application/json",
-          },
-        },
-      );
-      const data = await res.json();
-
-      const computeSeconds = data.compute_time_seconds || 0;
-      const storageBytes = data.logical_size_for_root_bytes || 0;
-
-      // Convert to hrs and GB
-      const computeHrs = Math.round((computeSeconds / 3600) * 100) / 100;
-      const storageGB =
-        Math.round((storageBytes / (1024 * 1024 * 1024)) * 100) / 100;
-
-      platforms.push({
-        name: "Neon",
-        role: "Postgres Database",
-        cost: "API Connected",
-        plan: "Free",
-        metrics: [
-          {
-            label: "Active Compute",
-            used: computeHrs,
-            limit: 100,
-            unit: "hrs",
-          },
-          { label: "Storage", used: storageGB, limit: 0.5, unit: "GB" },
-        ],
-      });
-    } else {
-      throw new Error("Missing Neon Keys");
-    }
-  } catch (err) {
-    platforms.push({
+      role: "Compute & Edge Hosting",
+      cost: "$0.00",
+      plan: "Hobby",
+      description: "Global edge network hosting the Next.js application, serverless functions, and static assets."
+    },
+    {
       name: "Neon",
-      role: "Postgres Database",
-      cost: ".00 (Mock)",
+      role: "Serverless Postgres",
+      cost: "$0.00",
       plan: "Free",
-      metrics: [
-        { label: "Active Compute", used: 12, limit: 100, unit: "hrs" },
-        { label: "Storage", used: 0.2, limit: 0.5, unit: "GB" },
-      ],
-    });
-  }
-
-  // 3. Upstash
-  try {
-    if (process.env.UPSTASH_API_KEY) {
-      // NOTE: Upstash Mgmt API uses Basic Auth (email:api_key).
-      // If we only have API key, we show connected status but mock metrics for now.
-      platforms.push({
-        name: "Upstash Redis",
-        role: "Redis Cache & Pub/Sub",
-        cost: "API Connected",
-        plan: "Pay-as-you-go",
-        metrics: [
-          { label: "Commands", used: 2250000, limit: null, unit: "cmds" },
-        ],
-      });
-    } else {
-      throw new Error("Missing Upstash Keys");
-    }
-  } catch (err) {
-    platforms.push({
+      description: "Primary relational database storing all festival data, users, and schedules. Connects via WebSockets on Edge."
+    },
+    {
       name: "Upstash Redis",
-      role: "Redis Cache & Pub/Sub",
-      cost: ".50 (Mock)",
+      role: "Cache & Pub/Sub",
+      cost: "Pay-as-you-go",
       plan: "Pay-as-you-go",
-      metrics: [
-        { label: "Commands", used: 2250000, limit: null, unit: "cmds" },
-      ],
-    });
-  }
-
-  // 4. Inngest
-  try {
-    if (process.env.INNGEST_API_KEY) {
-      platforms.push({
-        name: "Inngest",
-        role: "Background Jobs",
-        cost: "API Connected",
-        plan: "Free",
-        metrics: [
-          { label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" },
-        ],
-      });
-    } else {
-      throw new Error("Missing Inngest Keys");
-    }
-  } catch (err) {
-    platforms.push({
+      description: "Serverless Redis used for high-speed caching and real-time Pub/Sub events across Edge functions."
+    },
+    {
       name: "Inngest",
       role: "Background Jobs",
-      cost: ".00 (Mock)",
+      cost: "$0.00",
       plan: "Free",
-      metrics: [
-        { label: "Steps Executed", used: 4500, limit: 50000, unit: "steps" },
-      ],
-    });
-  }
-
-  // 5. Resend
-  try {
-    if (process.env.RESEND_API_KEY) {
-      const res = await fetch(`https://api.resend.com/emails`, {
-        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
-      });
-      const data = await res.json();
-      const sentCount = data.data ? data.data.length : 1200;
-
-      platforms.push({
-        name: "Resend",
-        role: "Transactional Email",
-        cost: "API Connected",
-        plan: "Free",
-        metrics: [
-          {
-            label: "Emails Sent",
-            used: sentCount,
-            limit: 3000,
-            unit: "emails",
-          },
-        ],
-      });
-    } else {
-      throw new Error("Missing Resend Keys");
-    }
-  } catch (err) {
-    platforms.push({
+      description: "Durable execution engine handling background tasks, webhooks, and delayed scheduling without queues."
+    },
+    {
       name: "Resend",
       role: "Transactional Email",
-      cost: ".00 (Mock)",
+      cost: "$0.00",
       plan: "Free",
-      metrics: [
-        { label: "Emails Sent", used: 1200, limit: 3000, unit: "emails" },
-      ],
-    });
-  }
-
-  // 6. Better Auth (Self-Hosted)
-  platforms.push({
-    name: "Better Auth",
-    role: "Authentication",
-    cost: ".00",
-    plan: "Self-Hosted (Free)",
-    metrics: [
-      { label: "Active Sessions", used: 432, limit: null, unit: "users" },
-    ],
-  });
-
-  // 7. Razorpay
-  platforms.push({
-    name: "Razorpay",
-    role: "Payment Gateway",
-    cost: "2% per tx",
-    plan: "Standard",
-    metrics: [
-      { label: "Transactions Processed", used: 154, limit: null, unit: "txns" },
-    ],
-  });
+      description: "Email API used for sending magic links, invitations, and automated notifications to participants."
+    },
+    {
+      name: "Better Auth",
+      role: "Authentication",
+      cost: "Free",
+      plan: "Self-Hosted",
+      description: "Comprehensive authentication system managing sessions, OAuth, and roles directly in our Neon database."
+    },
+    {
+      name: "Razorpay",
+      role: "Payment Gateway",
+      cost: "2% per tx",
+      plan: "Standard",
+      description: "Processes entry fees and tickets. Fees are strictly per-transaction with no monthly fixed costs."
+    },
+    {
+      name: "Drizzle ORM",
+      role: "Database ORM",
+      cost: "Free",
+      plan: "Open Source",
+      description: "Type-safe TypeScript ORM used to interact with Neon Postgres and run schema migrations."
+    },
+    {
+      name: "Tailwind CSS & Shadcn/UI",
+      role: "Styling & Components",
+      cost: "Free",
+      plan: "Open Source",
+      description: "Utility-first CSS framework combined with accessible, customizable React components."
+    }
+  ];
 
   return {
-    totalCost: ".50 (Live / Estimated)",
-    platforms,
+    totalCost: "Pay-as-you-go / Free Tiers",
+    platforms
   };
 }
