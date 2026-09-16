@@ -106,6 +106,7 @@ export type ParticipantsViewState = {
   details: ReportingDetails;
   /** Active judgement config snapshot — judges, mode, status, timing. */
   active?: ActiveConfig | null;
+  judged?: JudgedProgrammeCard | null;
   formatDateTime: (value: string | Date) => string;
 };
 

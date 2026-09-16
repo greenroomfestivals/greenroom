@@ -289,41 +289,58 @@ function buildTimeline(
   view: ParticipantsViewState,
   formatDateTime: (value: string | Date) => string,
 ): TimelineEvent[] {
-  const events: TimelineEvent[] = [];
-  const { details, active } = view;
+  const events: Array<{ title: string; detail: string; date: Date }> = [];
+  const { details, active, judged } = view;
 
-  if (details.scheduleStart) {
+  if (details.submittedAt) {
     events.push({
-      title: "Scheduled start",
-      detail: formatDateTime(details.scheduleStart),
+      title: "Programme arrived",
+      detail: formatDateTime(details.submittedAt),
+      date: new Date(details.submittedAt),
     });
   }
   if (active?.startedAt) {
     events.push({
       title: "Judging started",
       detail: formatDateTime(active.startedAt),
+      date: new Date(active.startedAt),
     });
   }
-  if (details.submittedAt) {
-    events.push({
-      title: "Submitted",
-      detail: formatDateTime(details.submittedAt),
-    });
+
+  // Include judge progress if available
+  if (judged) {
+    for (const judge of judged.judges) {
+      if (judge.firstScoredAt) {
+        events.push({
+          title: `${judge.name} started scoring`,
+          detail: formatDateTime(judge.firstScoredAt),
+          date: new Date(judge.firstScoredAt),
+        });
+      }
+      if (judge.submittedAt) {
+        events.push({
+          title: `${judge.name} judged`,
+          detail: formatDateTime(judge.submittedAt),
+          date: new Date(judge.submittedAt),
+        });
+      }
+    }
   }
-  if (details.scheduleEnd) {
-    events.push({
-      title: "Scheduled end",
-      detail: formatDateTime(details.scheduleEnd),
-    });
-  }
+
+  // Sort events chronologically
+  events.sort((a, b) => a.date.getTime() - b.date.getTime());
+
   if (events.length === 0) {
     // Always show at least one row so the section isn't empty.
-    events.push({
-      title: "Awaiting start",
-      detail: "Schedule not set yet.",
-    });
+    return [
+      {
+        title: "Awaiting start",
+        detail: "Judging hasn't started yet.",
+      },
+    ];
   }
-  return events;
+
+  return events.map(({ title, detail }) => ({ title, detail }));
 }
 
 function ParticipantRow({

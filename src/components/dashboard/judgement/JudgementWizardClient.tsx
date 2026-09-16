@@ -383,6 +383,7 @@ export function JudgementWizardClient({
             programmeType: programme.programmeType,
             details: programme.reportingDetails,
             active: activeByProgrammeId.get(programme.id) ?? null,
+            judged: judgedByProgrammeId.get(programme.id) ?? null,
             formatDateTime: formatCardDateTime,
           });
         }}
