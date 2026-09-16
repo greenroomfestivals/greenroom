@@ -154,9 +154,6 @@ export function LeaderboardClient({
   const router = useRouter();
   const [participantFilterCategory, setParticipantFilterCategory] =
     useState<string>(defaultParticipantFilterCategory ?? "all");
-  const [participantFilterGroup, setParticipantFilterGroup] = useState<string>(
-    defaultParticipantFilterGroup ?? "all",
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedParticipant, setSelectedParticipant] =
     useState<ParticipantRow | null>(null);
@@ -190,12 +187,6 @@ export function LeaderboardClient({
         a.participant?.categoryId !== participantFilterCategory
       )
         return;
-      if (
-        participantFilterGroup !== "all" &&
-        a.groupId !== participantFilterGroup
-      )
-        return;
-
       const sid = a.participant.id;
       const name = a.participant.name ?? "Unknown";
       const groupName = a.group?.name ?? a.participant?.group?.name ?? null;
@@ -245,7 +236,6 @@ export function LeaderboardClient({
     results,
     tier,
     participantFilterCategory,
-    participantFilterGroup,
     searchQuery,
   ]);
 
@@ -318,23 +308,6 @@ export function LeaderboardClient({
                     </SelectItem>
                   ))}
               </SelectContent>
-            </Select>
-            <Select
-              value={participantFilterGroup}
-              onValueChange={setParticipantFilterGroup}
-            >
-              <SelectTrigger className="h-9 text-sm w-[150px] sm:w-[180px] bg-background">
-                <SelectValue placeholder="All Groups" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Groups</SelectItem>
-                {groups.map((g) => (
-                  <SelectItem key={g.id} value={g.id}>
-                    {g.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
       )}

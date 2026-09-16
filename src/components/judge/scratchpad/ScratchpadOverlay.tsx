@@ -17,6 +17,11 @@ export function ScratchpadOverlay({
   isReadOnly,
   ...keyProps
 }: ScratchpadOverlayProps) {
+  const onCloseRef = React.useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // Trap back button on mobile
   useEffect(() => {
     // Push a dummy state so the physical back button doesn`t leave the scoring page
@@ -24,14 +29,14 @@ export function ScratchpadOverlay({
 
     const handlePopState = (_e: PopStateEvent) => {
       // User pressed back, close the overlay instead of navigating
-      onClose();
+      onCloseRef.current();
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background lg:static lg:z-auto lg:h-full lg:w-[40%] xl:w-[50%] lg:shrink-0 lg:border-l lg:border-border">

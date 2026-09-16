@@ -1,5 +1,7 @@
 "use client";
 
+import "@excalidraw/excalidraw/index.css";
+
 import {
   CheckCircle2,
   Circle,
