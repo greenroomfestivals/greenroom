@@ -747,7 +747,7 @@ export async function publishStandings(
     const highestResult = await db.query.programme.findFirst({
       where: and(
         eq(programmeTable.festivalId, festivalId),
-        eq(programmeTable.status, "PUBLISHED"),
+        inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"]),
       ),
       columns: { resultNumber: true },
       orderBy: (p, { desc }) => [desc(p.resultNumber)],
@@ -758,7 +758,7 @@ export async function publishStandings(
       .update(festivalTable)
       .set({
         queuedTeamStandings: standings,
-        standingsPublishedAtResultNumber: highestResult?.resultNumber ?? null,
+        standingsPublishedAtResultNumber: upToResultNumber ?? highestResult?.resultNumber ?? null,
         standingsPublishedAt: now,
         updatedAt: now,
       })
@@ -785,7 +785,7 @@ export async function publishGeneralStandings(
     const highestResult = await db.query.programme.findFirst({
       where: and(
         eq(programmeTable.festivalId, festivalId),
-        eq(programmeTable.status, "PUBLISHED"),
+        inArray(programmeTable.status, ["PUBLISHED", "ANNOUNCED"]),
       ),
       columns: { resultNumber: true },
       orderBy: (p, { desc }) => [desc(p.resultNumber)],
