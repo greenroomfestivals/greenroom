@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, notInArray, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/core/database/client";
 import {
   group as groupTable,
@@ -75,9 +75,8 @@ export async function getCallListProgrammes(
   const notified = schedules
     .filter(
       (s) =>
+        s.callListNotifiedAt != null &&
         s.programme &&
-        (s.callListNotifiedAt != null ||
-          ["REPORTING", "JUDGING"].includes(s.programme.status)) &&
         !["PENDING_PUBLICATION", "PUBLISHED", "ANNOUNCED"].includes(
           s.programme.status,
         ),
@@ -130,12 +129,7 @@ export async function getActiveReportingSessions(
     .where(
       and(
         eq(programmeReportingSession.festivalId, festivalId),
-        inArray(programmeReportingSession.status, ["IN_PROGRESS", "CLOSED", "COMPLETED"]),
-        notInArray(programmeTable.status, [
-          "PENDING_PUBLICATION",
-          "PUBLISHED",
-          "ANNOUNCED",
-        ]),
+        eq(programmeReportingSession.status, "IN_PROGRESS"),
       ),
     )
     .orderBy(asc(programmeReportingSession.startedAt));
