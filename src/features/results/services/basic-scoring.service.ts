@@ -23,14 +23,6 @@ function validatePoints(points: number) {
   }
 }
 
-async function countTeamMembers(assignmentId: string): Promise<number> {
-  const [row] = await db
-    .select({ c: count() })
-    .from(assignmentMemberTable)
-    .where(eq(assignmentMemberTable.assignmentId, assignmentId));
-  return Math.max(1, row?.c ?? 0);
-}
-
 export async function saveBasicProgrammeScores(input: {
   festivalId: string;
   programmeId: string;
@@ -43,6 +35,7 @@ export async function saveBasicProgrammeScores(input: {
       festivalId: true,
       categoryId: true,
       type: true,
+      maxParticipantsPerTeam: true,
     },
   });
 
@@ -123,7 +116,7 @@ export async function saveBasicProgrammeScores(input: {
           "GROUP programme assignment is missing its groupId.",
         );
       }
-      participantsCount = await countTeamMembers(assignmentId);
+      participantsCount = programme.maxParticipantsPerTeam;
     }
 
     const policyResolved = await resolveScoringPolicy({

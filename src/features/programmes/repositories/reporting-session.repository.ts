@@ -275,23 +275,29 @@ export const ReportingSessionRepository = {
     if (!participant) return null;
 
     if (session.programme?.type === "GROUP") {
-      const member = await db.query.programmeAssignmentMember.findFirst({
-        where: eq(assignmentMemberTable.participantId, participant.id),
-        with: {
-          assignment: {
-            columns: {
-              id: true,
-              programmeId: true,
-              teamNumber: true,
-            },
-          },
-        },
-      });
-      if (member?.assignment?.programmeId === session.programmeId) {
+      const [memberRecord] = await db
+        .select({
+          assignmentId: assignmentMemberTable.assignmentId,
+          teamNumber: assignmentTable.teamNumber,
+        })
+        .from(assignmentMemberTable)
+        .innerJoin(
+          assignmentTable,
+          eq(assignmentTable.id, assignmentMemberTable.assignmentId)
+        )
+        .where(
+          and(
+            eq(assignmentMemberTable.participantId, participant.id),
+            eq(assignmentTable.programmeId, session.programmeId)
+          )
+        )
+        .limit(1);
+
+      if (memberRecord) {
         return {
-          assignmentId: member.assignment.id,
+          assignmentId: memberRecord.assignmentId,
           participantId: participant.id,
-          teamNumber: member.assignment.teamNumber,
+          teamNumber: memberRecord.teamNumber,
         };
       }
     } else {
