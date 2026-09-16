@@ -58,10 +58,7 @@ export async function getParticipantTopScorers(
           eq(resultTable.programmeId, programmeTable.id),
         )
         .where(
-          and(
-            eq(resultTable.festivalId, festivalId),
-            eq(resultTable.isPublished, true),
-          ),
+          eq(resultTable.festivalId, festivalId),
         ),
       db.query.programmeAssignment.findMany({
         where: eq(programmeAssignment.festivalId, festivalId),

@@ -16,13 +16,12 @@ export function isResultVisibleForLeaderboard(
   view: LeaderboardResultView,
 ): boolean {
   const resolved = getResolvedTier(tier);
-  const published = Boolean(result.isPublished);
 
   if (isBasicTier(resolved)) {
-    return view === "standings" && published;
+    return view === "standings";
   }
 
-  return published;
+  return true;
 }
 
 export function filterResultsForLeaderboard<T extends LeaderboardResultLike>(

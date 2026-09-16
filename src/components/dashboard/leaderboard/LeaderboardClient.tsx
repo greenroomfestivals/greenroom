@@ -285,8 +285,7 @@ export function LeaderboardClient({
           Top Scorers
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          View event top performers and their total points (only includes
-          published results)
+          View event top performers and their total points
         </p>
       </div>
 

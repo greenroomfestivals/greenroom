@@ -9,13 +9,13 @@ const row = (published: boolean) => ({
 });
 
 describe("isResultVisibleForLeaderboard", () => {
-  it("BASIC standings: published only", () => {
+  it("BASIC standings: allows all submitted", () => {
     expect(isResultVisibleForLeaderboard(row(true), "BASIC", "standings")).toBe(
       true,
     );
     expect(
       isResultVisibleForLeaderboard(row(false), "BASIC", "standings"),
-    ).toBe(false);
+    ).toBe(true);
     expect(isResultVisibleForLeaderboard(row(true), "BASIC", "desk")).toBe(
       false,
     );
@@ -24,21 +24,21 @@ describe("isResultVisibleForLeaderboard", () => {
     );
   });
 
-  it("Standard desk: published only", () => {
+  it("Standard desk: allows all submitted", () => {
     expect(isResultVisibleForLeaderboard(row(true), "STANDARD", "desk")).toBe(
       true,
     );
     expect(isResultVisibleForLeaderboard(row(false), "STANDARD", "desk")).toBe(
-      false,
+      true,
     );
   });
 
-  it("Standard onAir: published only (no separate announce step)", () => {
+  it("Standard onAir: allows all submitted", () => {
     expect(isResultVisibleForLeaderboard(row(true), "STANDARD", "onAir")).toBe(
       true,
     );
     expect(isResultVisibleForLeaderboard(row(false), "STANDARD", "onAir")).toBe(
-      false,
+      true,
     );
   });
 });
@@ -46,15 +46,17 @@ describe("isResultVisibleForLeaderboard", () => {
 describe("filterResultsForLeaderboard", () => {
   const results = [row(false), row(true), row(true)];
 
-  it("filters BASIC to published rows only", () => {
+  it("filters BASIC to submitted rows only (all rows)", () => {
     expect(filterResultsForLeaderboard(results, "BASIC", "standings")).toEqual([
+      row(false),
       row(true),
       row(true),
     ]);
   });
 
-  it("filters Standard onAir to published rows", () => {
+  it("filters Standard onAir to submitted rows (all rows)", () => {
     expect(filterResultsForLeaderboard(results, "STANDARD", "onAir")).toEqual([
+      row(false),
       row(true),
       row(true),
     ]);
