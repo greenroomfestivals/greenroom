@@ -308,6 +308,7 @@ export function LeaderboardClient({
                     </SelectItem>
                   ))}
               </SelectContent>
+            </Select>
           </div>
         </div>
       )}
