@@ -15,6 +15,7 @@ export function ReportingWorkspaceHero({
   isPending,
   activeAction,
   onStart,
+  isReadOnly,
 }: {
   assignmentsCount: number;
   isTimedOut: boolean;

@@ -208,6 +208,7 @@ function BulkActionsMenu({
   onMarkAllPresent,
   onRevealAll,
   onReset,
+  isReadOnly,
 }: {
   activeAction: ReportingActiveAction;
   isPending: boolean;

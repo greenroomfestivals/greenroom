@@ -74,6 +74,7 @@ interface StartSessionDialogProps {
    */
   onStarted?: (session: StartedSession) => void;
   triggerLabel?: string;
+  isReadOnly?: boolean;
 }
 
 function hhmmToMinutes(value: string): number | null {

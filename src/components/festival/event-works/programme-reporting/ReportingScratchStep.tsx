@@ -15,6 +15,7 @@ export function ReportingScratchStep({
   currentQueuePosition,
   isRevealing,
   activeAction,
+  isReadOnly,
   onScratch,
   onRevealAll,
 }: {

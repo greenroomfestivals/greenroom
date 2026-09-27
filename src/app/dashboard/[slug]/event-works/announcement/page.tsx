@@ -67,7 +67,6 @@ export default async function AnnouncerPage({
         nextResultNumber={nextNumber}
         publishedResults={publishedResults}
         standingsContext={standingsContext}
-        readOnly={context.festival.status === "PAST"}
       />
     </div>
   );
