@@ -23,6 +23,7 @@ export function JudgeProgrammeCard({
   active,
   judged,
   isCompleting,
+  isReadOnly,
   onStartWizard,
   onOpenParticipants,
   onShowCredentials,
@@ -34,6 +35,7 @@ export function JudgeProgrammeCard({
   active: ActiveConfig | undefined;
   judged: JudgedProgrammeCard | undefined;
   isCompleting: boolean;
+  isReadOnly?: boolean;
   onStartWizard: () => void;
   onOpenParticipants: () => void;
   onShowCredentials: (stage: { id: string; name: string | null }) => void;
@@ -48,7 +50,8 @@ export function JudgeProgrammeCard({
   return (
     <Card
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border bg-background/60 shadow-sm transition-all hover:shadow-md cursor-pointer",
+        "group relative flex flex-col overflow-hidden rounded-xl border bg-background/60 shadow-sm transition-all hover:shadow-md",
+        !isReadOnly && "cursor-pointer",
         active
           ? "border-purple/50 ring-1 ring-purple/15 bg-purple/[0.03] hover:border-purple/70 hover:bg-purple/[0.05]"
           : "border-border/40 hover:border-border/80 hover:bg-muted/10",
@@ -58,6 +61,7 @@ export function JudgeProgrammeCard({
           onOpenParticipants();
           return;
         }
+        if (isReadOnly) return;
         onStartWizard();
       }}
     >
@@ -139,7 +143,7 @@ export function JudgeProgrammeCard({
                 size="sm"
                 variant="default"
                 className="h-8 flex-1 text-[11px] sm:text-xs bg-green-600 hover:bg-green-700 text-white"
-                disabled={isCompleting}
+                disabled={isCompleting || isReadOnly}
                 onClick={(e) => {
                   e.stopPropagation();
                   onComplete(active.id);
@@ -153,6 +157,7 @@ export function JudgeProgrammeCard({
                 size="sm"
                 variant="outline"
                 className="h-8 flex-1 text-[11px] sm:text-xs text-green-600 border-green-600 hover:bg-green-50"
+                disabled={isReadOnly}
                 onClick={(e) => {
                   e.stopPropagation();
                   onRestart(programme.id);
@@ -166,6 +171,7 @@ export function JudgeProgrammeCard({
                 size="sm"
                 variant="outline"
                 className="h-8 flex-1 text-[11px] sm:text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                disabled={isReadOnly}
                 onClick={(e) => {
                   e.stopPropagation();
                   onCancel(programme.id);

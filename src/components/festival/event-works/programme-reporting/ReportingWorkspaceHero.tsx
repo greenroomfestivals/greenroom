@@ -21,6 +21,7 @@ export function ReportingWorkspaceHero({
   isReset: boolean;
   sessionLocked: boolean;
   isPending: boolean;
+  isReadOnly?: boolean;
   activeAction: ReportingActiveAction;
   onStart: () => void;
 }) {
@@ -33,7 +34,7 @@ export function ReportingWorkspaceHero({
         type="button"
         onClick={onStart}
         disabled={
-          isPending || activeAction != null || sessionLocked || !hasAssignments
+          isPending || activeAction != null || sessionLocked || !hasAssignments || isReadOnly
         }
         className="flex h-40 w-40 items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-lg font-bold uppercase tracking-wide text-white shadow-lg shadow-primary/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
       >

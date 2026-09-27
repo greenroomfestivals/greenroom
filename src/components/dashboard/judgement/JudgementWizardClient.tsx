@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { queryKeys } from "@/api/client/_query-keys";
@@ -296,12 +297,14 @@ export function JudgementWizardClient({
   ]);
 
   // ----------------------------------------------------- wizard hook ------
+  const { isReadOnly } = useFestivalReadOnly();
   const wizard = useJudgementWizard({
     festivalId,
     programmes: judgeProgrammes,
     rejudgeProgrammes,
     judgesByStageId,
     judgedByProgrammeId,
+    isReadOnly,
   });
 
   const wizardProgramme = useMemo(() => {
@@ -374,6 +377,7 @@ export function JudgementWizardClient({
         pageSize={PAGE_SIZE}
         onPageChange={setJudgePageIndex}
         isCompleting={isCompleting}
+        isReadOnly={isReadOnly}
         onStartWizard={(programmeId) => wizard.open(programmeId, "create")}
         onOpenParticipants={(programme) => {
           if (!programme.reportingDetails) return;

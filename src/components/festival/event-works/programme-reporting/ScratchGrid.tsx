@@ -15,6 +15,7 @@ type ScratchGridProps = {
   onScratch: (codeLetterId: string) => void;
   onRevealAll: () => void;
   isRevealingAll: boolean;
+  isReadOnly?: boolean;
 };
 
 /**
@@ -32,6 +33,7 @@ export function ScratchGrid({
   onScratch,
   onRevealAll,
   isRevealingAll,
+  isReadOnly,
 }: ScratchGridProps) {
   const [pendingId, setPendingId] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export function ScratchGrid({
   const isDone = remaining === 0;
 
   const handleScratch = (tile: ScratchTile) => {
-    if (tile.revealedAt || isRevealing || !current) return;
+    if (tile.revealedAt || isRevealing || isReadOnly || !current) return;
     setPendingId(tile.codeLetterId);
     onScratch(tile.codeLetterId);
   };
@@ -90,7 +92,7 @@ export function ScratchGrid({
               variant="outline"
               size="sm"
               onClick={onRevealAll}
-              disabled={isRevealingAll || isRevealing}
+              disabled={isRevealingAll || isRevealing || isReadOnly}
             >
               {isRevealingAll ? (
                 <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
@@ -105,7 +107,7 @@ export function ScratchGrid({
         {tiles.map((tile) => {
           const revealed = Boolean(tile.revealedAt);
           const isPending = pendingId === tile.codeLetterId && isRevealing;
-          const canScratch = !revealed && Boolean(current) && !isRevealing;
+          const canScratch = !revealed && Boolean(current) && !isRevealing && !isReadOnly;
 
           return (
             <button

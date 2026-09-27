@@ -6,7 +6,13 @@ import { verifyPaymentByOrderIdDomain } from "@/features/payments/services/payme
 
 const handler = createProtectedHandler({
   async POST({ request }) {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      console.error("[PaymentsVerify] JSON parse failed. Body might be empty (Next.js dev compilation bug).", error);
+      return badRequest("INVALID_INPUT", "Invalid or empty JSON body. If you are in local development, please try again.");
+    }
     const data = body.data ?? body;
     const parsed = verifyPaymentInput.safeParse(data);
 

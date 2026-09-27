@@ -54,6 +54,7 @@ export default async function CheckpointsPage({
         todayString={todayString}
         checkpoints={checkpoints}
         categories={categories}
+        readOnly={context.festival.status === "PAST"}
       />
     </div>
   );

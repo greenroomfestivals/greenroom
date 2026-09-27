@@ -108,6 +108,9 @@ function PlaceLabel({ rank }: { rank: number }) {
     );
   return <span className="pl-6 text-muted-foreground">{rank}th</span>;
 }
+
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
+
 export function AnnouncerClient({
   festivalId,
   festivalSlug,
@@ -115,6 +118,7 @@ export function AnnouncerClient({
   publishedResults,
   standingsContext,
 }: AnnouncerClientProps) {
+  const { isReadOnly } = useFestivalReadOnly();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeProgramme, setActiveProgramme] =
@@ -358,6 +362,7 @@ export function AnnouncerClient({
                 <Button
                   className="w-full bg-[#0088cc] hover:bg-[#0088cc]/90 text-white shadow-sm"
                   onClick={() => {
+                    if (isReadOnly) return;
                     startTransition(async () => {
                       const res = await announceStandings(festivalId);
                       if (!res.success) {
@@ -368,7 +373,7 @@ export function AnnouncerClient({
                       router.refresh();
                     });
                   }}
-                  disabled={isPending}
+                  disabled={isPending || isReadOnly}
                 >
                   {isPending ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

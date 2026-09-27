@@ -145,6 +145,7 @@ export const ParticipantLoginService = {
     }
 
     const otpCode = generateOtpCode();
+    console.log("=== LOCAL DEV OTP ===", otpCode);
     const codeHash = hashOtp(otpCode);
     const expiresAt = fromNow(OTP_TTL_MS);
     const now = serverNowIso();

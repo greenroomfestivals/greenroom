@@ -25,6 +25,7 @@ import {
 import { cn } from "@/core/utils/cn";
 import { announceResult } from "@/features/announcement/actions/announcer.actions";
 import type { AnnouncerQueueProgramme } from "@/features/announcement/services/announcer.service";
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
 import { toast } from "@/lib/toast";
 
 const MEDAL_ROWS = [
@@ -49,10 +50,11 @@ export function AnnouncerResultDrawer({
   onAnnounceSuccess,
 }: AnnouncerResultDrawerProps) {
   const router = useRouter();
+  const { isReadOnly } = useFestivalReadOnly();
   const [isPending, startTransition] = useTransition();
 
   function handleAnnounce() {
-    if (!activeProgramme) return;
+    if (!activeProgramme || isReadOnly) return;
     startTransition(async () => {
       const res = await announceResult(festivalId, activeProgramme.id);
       if (!res.success) {
@@ -275,7 +277,7 @@ export function AnnouncerResultDrawer({
                 <Button
                   onClick={handleAnnounce}
                   size="lg"
-                  disabled={isPending || activeProgramme.resultNumber == null}
+                  disabled={isPending || activeProgramme.resultNumber == null || isReadOnly}
                   className="relative overflow-hidden font-bold bg-violet-600 hover:bg-violet-700 text-white"
                 >
                   {isPending ? (

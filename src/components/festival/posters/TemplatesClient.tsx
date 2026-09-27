@@ -136,12 +136,19 @@ export function TemplatesClient({
       <div className="flex items-center justify-between gap-4 mb-4">
         <h2 className="text-xl font-semibold">Templates</h2>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="px-3 sm:px-4">
-            <Link href={festivalEditorPath(festivalSlug)}>
+          {readOnly ? (
+            <Button disabled size="sm" className="px-3 sm:px-4">
               <Pencil className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Open editor</span>
-            </Link>
-          </Button>
+            </Button>
+          ) : (
+            <Button asChild size="sm" className="px-3 sm:px-4">
+              <Link href={festivalEditorPath(festivalSlug)}>
+                <Pencil className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Open editor</span>
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -327,18 +334,30 @@ function TemplateCard({
               <Eye className="mr-2 h-3.5 w-3.5" />
               Preview
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              asChild
-              disabled={pending}
-            >
-              <Link href={editorHref}>
+            {readOnly ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                disabled
+              >
                 <Pencil className="mr-2 h-3.5 w-3.5" />
                 Edit
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                asChild
+                disabled={pending}
+              >
+                <Link href={editorHref}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" />
+                  Edit
+                </Link>
+              </Button>
+            )}
             {!readOnly && (
               <Button
                 type="button"

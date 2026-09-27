@@ -166,6 +166,7 @@ export const auth = betterAuth({
       storeOTP: "hashed",
       async sendVerificationOTP({ email, otp }) {
         if (process.env.GREENROOM_SILENT_AUTH === "1") return;
+        console.log("=== BETTER AUTH OTP ===", otp);
         const { sendEmailSync } = await import(
           "@/core/integrations/email/send"
         );
@@ -202,6 +203,7 @@ export const auth = betterAuth({
         // user — we want an email.
         async sendOTP({ otp, user: u }) {
           if (process.env.GREENROOM_SILENT_AUTH === "1") return;
+          console.log("=== BETTER AUTH 2FA OTP ===", otp);
           const { sendEmailSync } = await import(
             "@/core/integrations/email/send"
           );

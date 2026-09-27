@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
 import type { ProgrammeReportingAssignmentRow } from "@/features/programmes/domain/assignment-row";
 import { LargeTimerDrawer } from "./LargeTimerDrawer";
 import { ReportingAutoOpen } from "./ReportingAutoOpen";
@@ -73,10 +74,12 @@ export function ProgrammeReportingClient({
     },
   });
 
+  const { isReadOnly } = useFestivalReadOnly();
   const actions = useReportingActions({
     festivalId,
     session,
     derived,
+    isReadOnly,
   });
 
   // If the currently-selected entry falls out of the filtered view (e.g. the
@@ -177,6 +180,7 @@ export function ProgrammeReportingClient({
       <ReportingWorkspace
         festivalId={festivalId}
         selected={session.selected}
+        isReadOnly={isReadOnly}
         derived={{
           assignmentsWithReported: derived.assignmentsWithReported,
           rosterTableRows: derived.rosterTableRows,

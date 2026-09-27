@@ -88,6 +88,7 @@ export function ReportingWorkspaceHeader({
                   disabled={
                     actions.isPending ||
                     actions.activeAction != null ||
+                    actions.isReadOnly ||
                     !selected.reportingSession?.id ||
                     sessionLocked ||
                     !session.isInProgress ||
@@ -118,6 +119,7 @@ export function ReportingWorkspaceHeader({
                     actions.isPending ||
                     actions.activeAction != null ||
                     session.isRevealing ||
+                    actions.isReadOnly ||
                     !selected.reportingSession?.id ||
                     sessionLocked ||
                     !session.isInProgress ||
@@ -144,6 +146,7 @@ export function ReportingWorkspaceHeader({
                 allMarked={allMarked}
                 hasAssignments={hasAssignments}
                 allTilesRevealed={derived.allTilesRevealed}
+                isReadOnly={actions.isReadOnly}
                 onMarkAllPresent={() =>
                   actions.onMarkAllPresent(
                     derived.assignmentsWithReported.map((a) => a.id),
@@ -161,6 +164,7 @@ export function ReportingWorkspaceHeader({
               disabled={
                 actions.isPending ||
                 actions.activeAction != null ||
+                actions.isReadOnly ||
                 !selected.reportingSession?.id
               }
             >
@@ -214,6 +218,7 @@ function BulkActionsMenu({
   allMarked: boolean;
   hasAssignments: boolean;
   allTilesRevealed: boolean;
+  isReadOnly?: boolean;
   onMarkAllPresent: () => void;
   onRevealAll: () => void;
   onReset: () => void;
@@ -226,6 +231,7 @@ function BulkActionsMenu({
           size="sm"
           className="shrink-0"
           aria-label="More reporting actions"
+          disabled={isReadOnly}
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>

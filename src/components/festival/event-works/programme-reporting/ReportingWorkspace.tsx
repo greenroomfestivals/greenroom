@@ -42,6 +42,7 @@ export function ReportingWorkspace({
   derived,
   actions,
   session,
+  isReadOnly,
   refreshBoard,
 }: {
   festivalId: string;
@@ -49,6 +50,7 @@ export function ReportingWorkspace({
   derived: ReportingWorkspaceDerived;
   actions: ReportingActions;
   session: ReportingSessionState;
+  isReadOnly?: boolean;
   refreshBoard: () => void;
 }) {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -119,6 +121,7 @@ export function ReportingWorkspace({
                   isReset={session.isReset}
                   sessionLocked={Boolean(selected.reportingSession?.isLocked)}
                   isPending={actions.isPending}
+                  isReadOnly={isReadOnly}
                   activeAction={actions.activeAction}
                   onStart={actions.onStart}
                 />
@@ -140,6 +143,7 @@ export function ReportingWorkspace({
                   currentQueuePosition={derived.currentQueuePosition}
                   isRevealing={session.isRevealing}
                   activeAction={actions.activeAction}
+                  isReadOnly={isReadOnly}
                   onScratch={actions.onScratchTile}
                   onRevealAll={actions.onRevealAllRemaining}
                 />

@@ -88,6 +88,8 @@ function nowMinutes(): number {
   return d.getHours() * 60 + d.getMinutes();
 }
 
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
+
 export function StartSessionDialog({
   festivalId,
   basePath,
@@ -98,6 +100,7 @@ export function StartSessionDialog({
   onStarted,
   triggerLabel = "Start session",
 }: StartSessionDialogProps) {
+  const { isReadOnly } = useFestivalReadOnly();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [checkpoints, setCheckpoints] =
@@ -136,6 +139,7 @@ export function StartSessionDialog({
   };
 
   const handleCreateCheckpoint = async () => {
+    if (isReadOnly) return;
     const name = query.trim();
     if (!name) return;
     setCreating(true);
@@ -165,6 +169,7 @@ export function StartSessionDialog({
   };
 
   const handleStart = async () => {
+    if (isReadOnly) return;
     if (!selectedId) {
       setError("Select a checkpoint first.");
       return;
@@ -229,7 +234,7 @@ export function StartSessionDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="w-1/2 sm:w-auto">
+        <Button size="sm" className="w-1/2 sm:w-auto" disabled={isReadOnly}>
           <Play className="mr-2 h-4 w-4" />
           {triggerLabel}
         </Button>
@@ -356,7 +361,7 @@ export function StartSessionDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleStart} disabled={submitting || !selectedId}>
+          <Button onClick={handleStart} disabled={submitting || !selectedId || isReadOnly}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Start session
           </Button>

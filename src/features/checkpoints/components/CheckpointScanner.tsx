@@ -69,6 +69,7 @@ interface CheckpointScannerProps {
   festivalId: string;
   session: CheckpointSessionView;
   filters: Filters;
+  readOnly?: boolean;
 }
 
 type Scan = {
@@ -113,6 +114,7 @@ export function CheckpointScanner({
   festivalId,
   session,
   filters,
+  readOnly,
 }: CheckpointScannerProps) {
   const router = useRouter();
   const [view, setView] = useState<"scanned" | "absent">("scanned");
@@ -128,7 +130,7 @@ export function CheckpointScanner({
   const [status, setStatus] = useState<"OPEN" | "CLOSED">(session.status);
   const [cameraOpen, setCameraOpen] = useState(false);
 
-  const isScannable = status === "OPEN";
+  const isScannable = status === "OPEN" && !readOnly;
 
   useEffect(() => {
     setStatus(session.status);

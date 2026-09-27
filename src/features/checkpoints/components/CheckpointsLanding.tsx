@@ -25,6 +25,7 @@ interface CheckpointsLandingProps {
   checkpoints: CheckpointCard[];
   /** All festival categories, available to scope a new session. */
   categories?: { id: string; name: string }[];
+  readOnly?: boolean;
 }
 
 function iconFor(name: string) {
@@ -40,6 +41,7 @@ export function CheckpointsLanding({
   todayString,
   checkpoints,
   categories = [],
+  readOnly,
 }: CheckpointsLandingProps) {
   return (
     <div className="space-y-6">
@@ -55,6 +57,7 @@ export function CheckpointsLanding({
             requiresWindow: c.requiresWindow,
           }))}
           categories={categories}
+          isReadOnly={readOnly}
         />
       </div>
 
@@ -102,10 +105,12 @@ export function CheckpointsLanding({
                     <EditCheckpointDialog
                       festivalId={festivalId}
                       checkpoint={c}
+                      readOnly={readOnly}
                     />
                     <DeleteCheckpointDialog
                       festivalId={festivalId}
                       checkpoint={c}
+                      readOnly={readOnly}
                     />
                   </div>
                 )}

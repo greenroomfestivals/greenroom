@@ -72,6 +72,7 @@ export function ReportingRosterSection({
             markingIds={session.markingIds}
             getIssuedCodeForRow={derived.getIssuedCodeForRow}
             programmeType={programmeType}
+            disabled={actions.isReadOnly}
           />
         </div>
       </ReportingQuickAddSection>
@@ -92,7 +93,7 @@ export function ReportingRosterSection({
         markingIds={session.markingIds}
         getIssuedCodeForRow={derived.getIssuedCodeForRow}
         programmeType={programmeType}
-        disabled={session.wizardStep === "scratch"}
+        disabled={actions.isReadOnly || session.wizardStep === "scratch"}
       />
     </div>
   );

@@ -21,11 +21,13 @@ import { updateCheckpointAction } from "../actions/checkpoint.actions";
 interface EditCheckpointDialogProps {
   festivalId: string;
   checkpoint: { id: string; name: string; requiresWindow: boolean };
+  readOnly?: boolean;
 }
 
 export function EditCheckpointDialog({
   festivalId,
   checkpoint,
+  readOnly,
 }: EditCheckpointDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -77,6 +79,7 @@ export function EditCheckpointDialog({
           size="icon"
           className="h-7 w-7"
           aria-label={`Edit ${checkpoint.name}`}
+          disabled={readOnly}
         >
           <Pencil className="h-4 w-4" />
         </Button>
@@ -98,6 +101,7 @@ export function EditCheckpointDialog({
               value={name}
               maxLength={50}
               onChange={(e) => setName(e.target.value)}
+              disabled={readOnly}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -105,6 +109,7 @@ export function EditCheckpointDialog({
               id={`cp-window-${checkpoint.id}`}
               checked={requiresWindow}
               onCheckedChange={(v) => setRequiresWindow(v === true)}
+              disabled={readOnly}
             />
             <Label
               htmlFor={`cp-window-${checkpoint.id}`}
@@ -117,7 +122,7 @@ export function EditCheckpointDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSave} disabled={submitting}>
+          <Button onClick={handleSave} disabled={submitting || readOnly}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save changes
           </Button>

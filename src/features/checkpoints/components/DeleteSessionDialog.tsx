@@ -19,12 +19,14 @@ interface DeleteSessionDialogProps {
   festivalId: string;
   session: { id: string; name: string; scannedCount: number };
   onDeleted: () => void;
+  readOnly?: boolean;
 }
 
 export function DeleteSessionDialog({
   festivalId,
   session,
   onDeleted,
+  readOnly,
 }: DeleteSessionDialogProps) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -38,6 +40,7 @@ export function DeleteSessionDialog({
       : "";
 
   const handleDelete = async () => {
+    if (readOnly) return;
     setSubmitting(true);
     setError(null);
     const res = await deleteSessionAction({
@@ -67,6 +70,7 @@ export function DeleteSessionDialog({
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-destructive"
           aria-label={`Delete session ${session.name}`}
+          disabled={readOnly}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -87,7 +91,7 @@ export function DeleteSessionDialog({
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={submitting}
+            disabled={submitting || readOnly}
           >
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Delete

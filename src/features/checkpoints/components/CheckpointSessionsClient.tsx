@@ -45,6 +45,7 @@ interface CheckpointSessionsClientProps {
   };
   todayString: string;
   openSessionId?: string;
+  readOnly?: boolean;
 }
 
 function fmtMin(min: number) {
@@ -75,6 +76,7 @@ export function CheckpointSessionsClient({
   filters,
   todayString,
   openSessionId,
+  readOnly,
 }: CheckpointSessionsClientProps) {
   const [sessions, setSessions] = useState<SessionRow[]>(initialSessions);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
@@ -185,6 +187,7 @@ export function CheckpointSessionsClient({
               },
             ]}
             onStarted={handleStarted}
+            isReadOnly={readOnly}
           />
         </div>
       </div>
@@ -244,7 +247,7 @@ export function CheckpointSessionsClient({
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => handleCloseSession(s.id)}
-                    disabled={closingId === s.id}
+                    disabled={closingId === s.id || readOnly}
                     aria-label={`Close session ${s.name}`}
                     title="Close session"
                   >
@@ -263,6 +266,7 @@ export function CheckpointSessionsClient({
                     scannedCount: s.scannedCount,
                   }}
                   onDeleted={() => handleDeleteSession(s.id)}
+                  readOnly={readOnly}
                 />
               </div>
             </div>

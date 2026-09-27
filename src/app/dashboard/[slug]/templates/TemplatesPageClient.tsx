@@ -13,13 +13,17 @@ interface TemplatesPageClientProps {
   readOnly?: boolean;
 }
 
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
+
 export function TemplatesPageClient({
   festivalId,
   festivalSlug,
   initialTemplates,
   initialAssignments,
-  readOnly,
+  readOnly: _readOnly,
 }: TemplatesPageClientProps) {
+  const { isReadOnly } = useFestivalReadOnly();
+  const readOnly = _readOnly || isReadOnly;
   return (
     <div className="w-full flex flex-col">
       <TemplatesClient

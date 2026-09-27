@@ -22,6 +22,7 @@ export function ReportingScratchStep({
   currentQueuePosition: number | null;
   isRevealing: boolean;
   activeAction: ReportingActiveAction;
+  isReadOnly?: boolean;
   onScratch: (codeLetterId: string) => void;
   onRevealAll: () => void;
 }) {
@@ -41,6 +42,7 @@ export function ReportingScratchStep({
         tiles={scratchTiles}
         currentQueuePosition={currentQueuePosition}
         isRevealing={isRevealing}
+        isReadOnly={isReadOnly}
         onScratch={onScratch}
         onRevealAll={onRevealAll}
         isRevealingAll={activeAction === "reveal-all"}

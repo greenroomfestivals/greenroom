@@ -25,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useFestivalReadOnly } from "@/features/festivals/hooks/use-festival-read-only";
 import {
   Command,
   CommandEmpty,
@@ -98,6 +99,7 @@ export function GeneralEntriesClient({
   entries: Entry[];
   groups: Group[];
 }) {
+  const { isReadOnly } = useFestivalReadOnly();
   const [isPending, startTransition] = useTransition();
 
   const [localCategories, setLocalCategories] =
@@ -135,6 +137,7 @@ export function GeneralEntriesClient({
   const [viewSheetOpen, setViewSheetOpen] = useState(false);
 
   function handleCreateCategory() {
+    if (isReadOnly) return;
     if (!newCategoryName.trim()) return;
     startTransition(async () => {
       try {
@@ -229,6 +232,7 @@ export function GeneralEntriesClient({
   }
 
   function openCreateEntry() {
+    if (isReadOnly) return;
     setEditingEntry(null);
     setEntryName("");
     setEntryCategoryId("none");
@@ -241,6 +245,7 @@ export function GeneralEntriesClient({
   }
 
   function openEditEntry(entry: Entry) {
+    if (isReadOnly) return;
     setEditingEntry(entry);
     setEntryName(entry.name);
     setEntryCategoryId(entry.categoryId || "none");
@@ -395,10 +400,10 @@ export function GeneralEntriesClient({
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="e.g. Literary, March Past"
-                      disabled={isPending}
+                      disabled={isPending || isReadOnly}
                     />
                     <Button
-                      disabled={isPending || !newCategoryName.trim()}
+                      disabled={isPending || !newCategoryName.trim() || isReadOnly}
                       onClick={handleCreateCategory}
                     >
                       Add
@@ -428,13 +433,14 @@ export function GeneralEntriesClient({
                                 }
                                 className="h-8"
                                 autoFocus
+                                disabled={isReadOnly}
                               />
                               <Button
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8 text-green-600"
                                 disabled={
-                                  isPending || !editingCategoryName.trim()
+                                  isPending || !editingCategoryName.trim() || isReadOnly
                                 }
                                 onClick={() => handleUpdateCategory(c.id)}
                               >
@@ -444,7 +450,7 @@ export function GeneralEntriesClient({
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8 text-muted-foreground"
-                                disabled={isPending}
+                                disabled={isPending || isReadOnly}
                                 onClick={() => setEditingCategoryId(null)}
                               >
                                 <X className="w-4 h-4" />
@@ -460,7 +466,7 @@ export function GeneralEntriesClient({
                                   size="icon"
                                   variant="ghost"
                                   className="h-8 w-8 text-muted-foreground"
-                                  disabled={isPending}
+                                  disabled={isPending || isReadOnly}
                                   onClick={() => {
                                     setEditingCategoryId(c.id);
                                     setEditingCategoryName(c.name);
@@ -478,7 +484,7 @@ export function GeneralEntriesClient({
                                       size="icon"
                                       variant="ghost"
                                       className="h-8 w-8 text-destructive opacity-80"
-                                      disabled={isPending}
+                                      disabled={isPending || isReadOnly}
                                     >
                                       <Trash2 className="w-3 h-3" />
                                     </Button>
@@ -501,7 +507,7 @@ export function GeneralEntriesClient({
             className="h-9 w-9 sm:w-auto p-0 sm:px-3.5 gap-2"
             aria-label="Add Entry"
             title="Add Entry"
-            disabled={isPending}
+            disabled={isPending || isReadOnly}
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">Add Entry</span>
@@ -725,7 +731,7 @@ export function GeneralEntriesClient({
             <Button
               type="button"
               variant="outline"
-              disabled={isPending || !entryName.trim()}
+              disabled={isPending || !entryName.trim() || isReadOnly}
               onClick={() => handleSaveEntry(false)}
               className="w-full sm:w-auto flex-1"
             >
@@ -737,6 +743,7 @@ export function GeneralEntriesClient({
               variant="default"
               disabled={
                 isPending ||
+                isReadOnly ||
                 !entryName.trim() ||
                 !entryAwards.some(
                   (a) =>
@@ -844,7 +851,7 @@ export function GeneralEntriesClient({
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto flex-1"
-                  disabled={isPending}
+                  disabled={isPending || isReadOnly}
                   onClick={() => openEditEntry(viewEntry)}
                 >
                   <Pencil className="w-4 h-4 mr-2" /> Edit
@@ -857,7 +864,7 @@ export function GeneralEntriesClient({
                       : "default"
                   }
                   className="w-full sm:w-auto flex-1"
-                  disabled={isPending || viewEntry.awards.length === 0}
+                  disabled={isPending || viewEntry.awards.length === 0 || isReadOnly}
                   onClick={() =>
                     handlePublishEntry(
                       viewEntry.id,
@@ -969,7 +976,7 @@ export function GeneralEntriesClient({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              disabled={isPending}
+                              disabled={isPending || isReadOnly}
                               onClick={() => openEditEntry(entry)}
                             >
                               <Pencil className="w-4 h-4" />
@@ -984,7 +991,7 @@ export function GeneralEntriesClient({
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8 text-destructive"
-                                  disabled={isPending || isPublished}
+                                  disabled={isPending || isPublished || isReadOnly}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -1087,7 +1094,7 @@ export function GeneralEntriesClient({
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
-                          disabled={isPending}
+                          disabled={isPending || isReadOnly}
                           onClick={() => openEditEntry(entry)}
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -1102,7 +1109,7 @@ export function GeneralEntriesClient({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-destructive"
-                              disabled={isPending || isPublished}
+                              disabled={isPending || isPublished || isReadOnly}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>

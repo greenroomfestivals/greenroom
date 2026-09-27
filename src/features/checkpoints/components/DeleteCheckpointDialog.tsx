@@ -21,11 +21,13 @@ import { deleteCheckpointAction } from "../actions/checkpoint.actions";
 interface DeleteCheckpointDialogProps {
   festivalId: string;
   checkpoint: { id: string; name: string; sessionCount: number };
+  readOnly?: boolean;
 }
 
 export function DeleteCheckpointDialog({
   festivalId,
   checkpoint,
+  readOnly,
 }: DeleteCheckpointDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -40,7 +42,7 @@ export function DeleteCheckpointDialog({
   const canDelete = !hasSessions || confirmed;
 
   const handleDelete = async () => {
-    if (!canDelete) return;
+    if (!canDelete || readOnly) return;
     setSubmitting(true);
     setError(null);
     const res = await deleteCheckpointAction({
@@ -73,6 +75,7 @@ export function DeleteCheckpointDialog({
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
           aria-label={`Delete ${checkpoint.name}`}
+          disabled={readOnly}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -94,6 +97,7 @@ export function DeleteCheckpointDialog({
               checked={confirmed}
               onCheckedChange={(v) => setConfirmed(v === true)}
               className="mt-0.5"
+              disabled={readOnly}
             />
             <Label
               htmlFor={`cp-del-${checkpoint.id}`}
@@ -111,7 +115,7 @@ export function DeleteCheckpointDialog({
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={!canDelete || submitting}
+            disabled={!canDelete || submitting || readOnly}
           >
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Delete

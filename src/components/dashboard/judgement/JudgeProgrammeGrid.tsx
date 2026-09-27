@@ -18,6 +18,7 @@ export function JudgeProgrammeGrid({
   pageSize,
   onPageChange,
   isCompleting,
+  isReadOnly,
   onStartWizard,
   onOpenParticipants,
   onShowCredentials,
@@ -32,6 +33,7 @@ export function JudgeProgrammeGrid({
   pageSize: number;
   onPageChange: (p: number) => void;
   isCompleting: boolean;
+  isReadOnly?: boolean;
   onStartWizard: (programmeId: string) => void;
   onOpenParticipants: (programme: Programme) => void;
   onShowCredentials: (stage: { id: string; name: string | null }) => void;
@@ -61,6 +63,7 @@ export function JudgeProgrammeGrid({
               active={activeByProgrammeId.get(p.id)}
               judged={judgedByProgrammeId.get(p.id)}
               isCompleting={isCompleting}
+              isReadOnly={isReadOnly}
               onStartWizard={() => {
                 if (!p.reportingDetails) {
                   toast.error("Reporting details not available yet.");

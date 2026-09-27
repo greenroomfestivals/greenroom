@@ -36,11 +36,13 @@ export interface UseReportingActionsArgs {
   festivalSlug?: string;
   session: ReportingSessionState;
   derived: ReturnType<typeof useReportingBoard>;
+  isReadOnly?: boolean;
 }
 
 export interface ReportingActions {
   activeAction: ReportingActiveAction;
   isPending: boolean;
+  isReadOnly?: boolean;
   confettiRef: React.RefObject<HTMLDivElement | null>;
   refreshBoard: () => void;
 
@@ -68,6 +70,7 @@ export function useReportingActions({
   festivalId,
   session,
   derived,
+  isReadOnly,
 }: UseReportingActionsArgs): ReportingActions {
   const router = useRouter();
   const pathname = usePathname();
@@ -112,6 +115,7 @@ export function useReportingActions({
   };
 
   const onStart = () => {
+    if (isReadOnly) return;
     if (!session.selected) return;
     const sid = session.selected.reportingSession?.id;
     setActiveAction("start");
@@ -149,6 +153,7 @@ export function useReportingActions({
   };
 
   const onReset = () => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
     setActiveAction("reset");
@@ -172,6 +177,7 @@ export function useReportingActions({
    * server refuses further attendance changes, so warn before crossing.
    */
   const onCompleteCheckout = () => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
 
@@ -231,6 +237,7 @@ export function useReportingActions({
   };
 
   const onScratchTile = (codeLetterId: string) => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
 
@@ -307,6 +314,7 @@ export function useReportingActions({
   };
 
   const onRevealAllRemaining = () => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
 
@@ -320,6 +328,7 @@ export function useReportingActions({
   };
 
   const onClose = () => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     const programmeType = session.selected?.programme?.type;
     if (!sid) return;
@@ -372,6 +381,7 @@ export function useReportingActions({
   };
 
   const onReopen = () => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
     setActiveAction("reopen");
@@ -401,6 +411,7 @@ export function useReportingActions({
   };
 
   const onMarkRow = async (row: RosterTableRow, checked: boolean) => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
 
@@ -442,6 +453,7 @@ export function useReportingActions({
   };
 
   const onMarkAllPresent = (assignmentIds: string[]) => {
+    if (isReadOnly) return;
     const sid = session.selected?.reportingSession?.id;
     if (!sid) return;
     setActiveAction("mark");
@@ -463,6 +475,7 @@ export function useReportingActions({
   return {
     activeAction,
     isPending,
+    isReadOnly,
     confettiRef,
     refreshBoard,
     onStart,

@@ -9,6 +9,11 @@ function getRazorpayKeys(): { key_id: string; key_secret: string } {
       "Razorpay credentials are required. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your environment.",
     );
   }
+  
+  if (process.env.NODE_ENV !== "production" && key_id.startsWith("rzp_live")) {
+    throw new Error("SECURITY: Local development must use Razorpay test keys (rzp_test_...)!");
+  }
+
   return { key_id, key_secret };
 }
 

@@ -50,7 +50,10 @@ export function useJudgementWizard({
   rejudgeProgrammes,
   judgesByStageId,
   judgedByProgrammeId,
-}: UseJudgementWizardArgs): UseJudgementWizardResult {
+  isReadOnly,
+}: UseJudgementWizardArgs & {
+  isReadOnly?: boolean;
+}): UseJudgementWizardResult {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [wizardKind, setWizardKind] = useState<"create" | "rejudge">("create");
@@ -73,6 +76,7 @@ export function useJudgementWizard({
   };
 
   const open = (programmeId: string, kind: "create" | "rejudge" = "create") => {
+    if (isReadOnly) return;
     // Prefill judges: rejudge → prior panel; else the programme's stage
     // default panel (judge_stage_assignment); else empty.
     const priorJudgeIds =
@@ -105,6 +109,7 @@ export function useJudgementWizard({
   };
 
   const addJudge = (overrideName?: string) => {
+    if (isReadOnly) return;
     const name = (overrideName ?? newJudgeName).trim();
     if (!name) return;
     startAddJudgeTransition(async () => {
@@ -125,6 +130,7 @@ export function useJudgementWizard({
   };
 
   const startJudgement = (programmeId: string | null) => {
+    if (isReadOnly) return;
     if (!programmeId) return;
     startTransition(async () => {
       try {
