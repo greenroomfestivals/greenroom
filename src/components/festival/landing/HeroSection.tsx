@@ -123,17 +123,19 @@ export function HeroSection({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="grid items-center gap-6 text-center md:grid-cols-[minmax(0,auto)_minmax(0,1fr)] md:gap-12 md:text-left"
+          className={`grid items-center gap-6 text-center md:gap-12 ${
+            festival.logo
+              ? "md:grid-cols-[minmax(0,auto)_minmax(0,1fr)] md:text-left"
+              : "place-items-center"
+          }`}
         >
           {/* Brand mark on the left. We render the image with `object-contain`
               inside a fixed-aspect frame so a 512px upload never crops or
               stretches to fit — the wrapper absorbs the aspect ratio and the
               image scales to the longer edge. The hover lift gives the mark a
-              tactile, interactive feel without needing a border. Without a
-              logo we fall back to an initial chip so the layout still
-              balances. */}
-          <div className="flex items-center justify-center md:justify-end">
-            {festival.logo ? (
+              tactile, interactive feel without needing a border. */}
+          {festival.logo && (
+            <div className="flex items-center justify-center md:justify-end">
               <div
                 className="group/logo relative h-48 w-48 shrink-0 overflow-hidden rounded-3xl transition duration-500 hover:-translate-y-1 sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-80 lg:w-80"
                 aria-hidden
@@ -146,20 +148,16 @@ export function HeroSection({
                   className="object-contain p-4 transition duration-500 group-hover/logo:scale-[1.04]"
                 />
               </div>
-            ) : (
-              <div
-                className="flex h-48 w-48 shrink-0 items-center justify-center rounded-3xl text-5xl font-semibold text-white transition duration-500 hover:-translate-y-1 sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-80 lg:w-80"
-                style={{ backgroundColor: accentColor }}
-                aria-hidden
-              >
-                {festival.name.charAt(0)}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Content on the right */}
           <div className="min-w-0">
-            <div className="mb-5 flex items-center justify-center gap-3 md:justify-start">
+            <div
+              className={`mb-5 flex items-center justify-center gap-3 ${
+                festival.logo ? "md:justify-start" : ""
+              }`}
+            >
               {isLive && (
                 <span
                   className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em]"
@@ -179,7 +177,11 @@ export function HeroSection({
             </h1>
 
             {festival.tagline && (
-              <p className="mx-auto mt-5 max-w-lg text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg md:mx-0">
+              <p
+                className={`mx-auto mt-5 max-w-lg text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg ${
+                  festival.logo ? "md:mx-0" : ""
+                }`}
+              >
                 {festival.tagline}
               </p>
             )}
@@ -189,7 +191,11 @@ export function HeroSection({
               <>
                 <motion.div
                   aria-hidden
-                  className="mx-auto mt-9 h-px origin-center md:mx-0 md:origin-left"
+                  className={`mx-auto mt-9 h-px ${
+                    festival.logo
+                      ? "origin-center md:mx-0 md:origin-left"
+                      : "origin-center"
+                  }`}
                   style={{
                     background: `linear-gradient(90deg, ${accentColor}, transparent)`,
                   }}
@@ -197,7 +203,11 @@ export function HeroSection({
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
                 />
-                <dl className="mt-5 flex flex-wrap justify-center gap-x-12 gap-y-4 md:justify-start">
+                <dl
+                  className={`mt-5 flex flex-wrap justify-center gap-x-12 gap-y-4 ${
+                    festival.logo ? "md:justify-start" : ""
+                  }`}
+                >
                   {facts.map((fact) => (
                     <div key={fact}>
                       <dd className="text-sm font-medium text-heading">
@@ -209,7 +219,11 @@ export function HeroSection({
               </>
             )}
 
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3 text-sm font-medium md:justify-start">
+            <div
+              className={`mt-9 flex flex-wrap items-center justify-center gap-3 text-sm font-medium ${
+                festival.logo ? "md:justify-start" : ""
+              }`}
+            >
               <HeroLink
                 href={basicMode ? "#results" : `${basePath}/results`}
                 accentColor={accentColor}
