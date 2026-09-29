@@ -1,4 +1,4 @@
-# Greenroom
+# Greenroom Festivals.in
 
 Festival-management SaaS — tickets, schedules, teams, payments, the lot.
 
@@ -77,19 +77,19 @@ Windows: in CMD use `set URL=...&& pnpm ...`; in PowerShell use `$env:URL="...";
 
 ## Useful scripts
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | Dev server |
-| `pnpm build` / `pnpm start` | Production build & serve |
-| `pnpm lint` / `pnpm format` / `pnpm check` | Biome |
-| `pnpm test` | Vitest |
-| `pnpm db:push` | Apply Drizzle schema |
-| `pnpm db:generate` | Diff schema → SQL migration files |
-| `pnpm db:migrate` | Run generated migrations |
-| `pnpm db:studio` | Drizzle Studio GUI |
-| `pnpm db:seed` | Seed Super Admin + sample festival |
-| `pnpm db:reset` | Clean → push → seed (local only unless `--force`) |
-| `pnpm db:setup` | Docker variant of `db:reset` |
+| Command                                    | What it does                                      |
+| ------------------------------------------ | ------------------------------------------------- |
+| `pnpm dev`                                 | Dev server                                        |
+| `pnpm build` / `pnpm start`                | Production build & serve                          |
+| `pnpm lint` / `pnpm format` / `pnpm check` | Biome                                             |
+| `pnpm test`                                | Vitest                                            |
+| `pnpm db:push`                             | Apply Drizzle schema                              |
+| `pnpm db:generate`                         | Diff schema → SQL migration files                 |
+| `pnpm db:migrate`                          | Run generated migrations                          |
+| `pnpm db:studio`                           | Drizzle Studio GUI                                |
+| `pnpm db:seed`                             | Seed Super Admin + sample festival                |
+| `pnpm db:reset`                            | Clean → push → seed (local only unless `--force`) |
+| `pnpm db:setup`                            | Docker variant of `db:reset`                      |
 
 ---
 
