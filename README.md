@@ -1,4 +1,4 @@
-# Greenroom
+# Greenroom Festivals
 
 Festival-management SaaS — tickets, schedules, teams, payments, the lot.
 
